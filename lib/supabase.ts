@@ -13,3 +13,12 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: false,
   },
 });
+
+// Clear invalid sessions on startup
+supabase.auth.getSession().catch(async (error) => {
+  if (error?.message?.includes('Refresh Token')) {
+    console.log('Clearing invalid session');
+    await AsyncStorage.removeItem('supabase.auth.token');
+    await supabase.auth.signOut();
+  }
+});
