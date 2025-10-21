@@ -1,6 +1,5 @@
 import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Colors } from '@/constants/colors';
 
 interface CategoryButtonProps {
   nameEn: string;
@@ -47,7 +46,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 2,
     marginRight: 12,
-    backgroundColor: Colors.white,
+    backgroundColor: '#ffffff',
   },
   content: {
     flexDirection: 'row',

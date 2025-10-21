@@ -14,7 +14,6 @@ import { supabase } from '@/lib/supabase';
 import ActivityCard from '@/components/ActivityCard';
 import { Heart, Settings } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { Colors } from '@/constants/colors';
 
 interface Favorite {
   id: string;
@@ -159,15 +158,15 @@ export default function FavoritesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#f8fafc',
   },
   header: {
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 24,
-    backgroundColor: Colors.white,
+    backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: Colors.mutedGrey,
+    borderBottomColor: '#e2e8f0',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -175,12 +174,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: '#1e293b',
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
-    color: Colors.lightGrey,
+    color: '#64748b',
   },
   settingsButton: {
     padding: 8,
@@ -201,13 +200,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: '#1e293b',
     marginTop: 16,
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 14,
-    color: Colors.lightGrey,
+    color: '#64748b',
     textAlign: 'center',
     lineHeight: 20,
   },

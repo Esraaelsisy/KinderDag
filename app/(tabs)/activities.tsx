@@ -13,7 +13,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Calendar as CalendarIcon, Clock, MapPin, Trash2 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { Colors } from '@/constants/colors';
 
 interface ScheduledActivity {
   id: string;
@@ -153,32 +152,32 @@ export default function ActivitiesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#f8fafc',
   },
   header: {
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 24,
-    backgroundColor: Colors.white,
+    backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: Colors.mutedGrey,
+    borderBottomColor: '#e2e8f0',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: '#1e293b',
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
-    color: Colors.lightGrey,
+    color: '#64748b',
   },
   list: {
     padding: 20,
   },
   activityCard: {
     flexDirection: 'row',
-    backgroundColor: Colors.white,
+    backgroundColor: '#ffffff',
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -187,8 +186,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
-    borderWidth: 1,
-    borderColor: Colors.cardBorder,
   },
   activityContent: {
     flex: 1,
@@ -198,7 +195,7 @@ const styles = StyleSheet.create({
   dateBox: {
     width: 60,
     height: 60,
-    backgroundColor: Colors.secondary,
+    backgroundColor: '#10B981',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
@@ -206,12 +203,12 @@ const styles = StyleSheet.create({
   dateDay: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: '#ffffff',
   },
   dateMonth: {
     fontSize: 12,
     fontWeight: '600',
-    color: Colors.text,
+    color: '#ffffff',
     textTransform: 'uppercase',
   },
   activityInfo: {
@@ -220,7 +217,7 @@ const styles = StyleSheet.create({
   activityName: {
     fontSize: 16,
     fontWeight: '700',
-    color: Colors.text,
+    color: '#1e293b',
     marginBottom: 8,
   },
   activityDetails: {
@@ -233,11 +230,11 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 13,
-    color: Colors.lightGrey,
+    color: '#64748b',
   },
   notes: {
     fontSize: 13,
-    color: Colors.lightGrey,
+    color: '#64748b',
     marginTop: 8,
     fontStyle: 'italic',
   },
@@ -254,13 +251,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: '#1e293b',
     marginTop: 16,
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 14,
-    color: Colors.lightGrey,
+    color: '#64748b',
     textAlign: 'center',
     lineHeight: 20,
   },
