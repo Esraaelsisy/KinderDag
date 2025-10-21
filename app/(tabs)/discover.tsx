@@ -881,6 +881,9 @@ export default function DiscoverScreen() {
                 onPress={() => {
                   setSearchQuery('');
                   clearFilters();
+                  if (categoryId) {
+                    router.push('/(tabs)/discover');
+                  }
                 }}
               >
                 <Text style={styles.emptyStateButtonText}>Clear Filters</Text>
