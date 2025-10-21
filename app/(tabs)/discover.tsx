@@ -52,6 +52,7 @@ export default function DiscoverScreen() {
   useEffect(() => {
     if (categoryId) {
       setSelectedCategory(categoryId);
+      setViewMode('list');
       loadCategoryActivities(categoryId);
     } else {
       loadActivities();
