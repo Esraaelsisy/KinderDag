@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Colors } from '@/constants/colors';
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
@@ -32,7 +33,7 @@ export default function SignInScreen() {
 
   return (
     <LinearGradient
-      colors={['#1ABC9C', '#16A085']}
+      colors={[Colors.primary, Colors.primaryDark]}
       style={styles.container}
     >
       <KeyboardAvoidingView
@@ -47,7 +48,7 @@ export default function SignInScreen() {
             <TextInput
               style={styles.input}
               placeholder={t('auth.email')}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={Colors.lightGrey}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
@@ -56,7 +57,7 @@ export default function SignInScreen() {
             <TextInput
               style={styles.input}
               placeholder={t('auth.password')}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={Colors.lightGrey}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -101,12 +102,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: Colors.white,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#ffffff',
+    color: Colors.white,
     textAlign: 'center',
     marginBottom: 48,
     opacity: 0.9,
@@ -116,14 +117,14 @@ const styles = StyleSheet.create({
     maxWidth: 400,
   },
   input: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
     marginBottom: 16,
   },
   button: {
-    backgroundColor: '#1ABC9C',
+    backgroundColor: Colors.primary,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -133,7 +134,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
-    color: '#ffffff',
+    color: Colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -143,11 +144,11 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   footerText: {
-    color: '#ffffff',
+    color: Colors.white,
     fontSize: 14,
   },
   linkText: {
-    color: '#ffffff',
+    color: Colors.white,
     fontSize: 14,
     fontWeight: '600',
     textDecorationLine: 'underline',

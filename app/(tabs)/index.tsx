@@ -17,6 +17,7 @@ import ActivityCard from '@/components/ActivityCard';
 import CategoryButton from '@/components/CategoryButton';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MapPin } from 'lucide-react-native';
+import { Colors } from '@/constants/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -260,7 +261,7 @@ export default function HomeScreen() {
       showsVerticalScrollIndicator={false}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
-      <LinearGradient colors={['#1ABC9C', '#16A085']} style={styles.header}>
+      <LinearGradient colors={[Colors.primary, Colors.primaryDark]} style={styles.header}>
         <View style={styles.headerContent}>
           <View>
             <Text style={styles.greeting}>
@@ -268,7 +269,7 @@ export default function HomeScreen() {
             </Text>
             {profile?.location_name && (
               <View style={styles.locationRow}>
-                <MapPin size={16} color="#ffffff" />
+                <MapPin size={16} color={Colors.white} />
                 <Text style={styles.location}>{profile.location_name}</Text>
               </View>
             )}
@@ -490,7 +491,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: Colors.background,
   },
   header: {
     paddingTop: 60,
@@ -505,7 +506,7 @@ const styles = StyleSheet.create({
   greeting: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: Colors.white,
     marginBottom: 4,
   },
   locationRow: {
@@ -515,7 +516,7 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: 14,
-    color: '#ffffff',
+    color: Colors.white,
     opacity: 0.9,
   },
   bannerContainer: {
@@ -540,12 +541,12 @@ const styles = StyleSheet.create({
   bannerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: Colors.white,
     marginBottom: 4,
   },
   bannerSubtitle: {
     fontSize: 14,
-    color: '#ffffff',
+    color: Colors.white,
     opacity: 0.9,
   },
   bannerDots: {
@@ -562,7 +563,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
   bannerDotActive: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
   },
   categoriesSection: {
     marginBottom: 20,
@@ -577,12 +578,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#333333',
+    color: Colors.text,
   },
   seeAllLink: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#9B59B6',
+    color: Colors.secondary,
   },
   categoriesList: {
     paddingHorizontal: 20,

@@ -1,5 +1,6 @@
 import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Colors } from '@/constants/colors';
 
 interface CategoryButtonProps {
   nameEn: string;
@@ -33,7 +34,7 @@ export default function CategoryButton({
     >
       <View style={styles.content}>
         {emoji && <Text style={styles.emoji}>{emoji}</Text>}
-        <Text style={[styles.text, { color: isActive ? '#ffffff' : color }]}>{name}</Text>
+        <Text style={[styles.text, { color: isActive ? Colors.white : color }]}>{name}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -46,7 +47,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 2,
     marginRight: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
   },
   content: {
     flexDirection: 'row',

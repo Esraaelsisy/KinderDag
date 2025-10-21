@@ -14,6 +14,7 @@ import { supabase } from '@/lib/supabase';
 import ActivityCard from '@/components/ActivityCard';
 import { Heart } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { Colors } from '@/constants/colors';
 
 interface Favorite {
   id: string;
@@ -126,7 +127,7 @@ export default function FavoritesScreen() {
           contentContainerStyle={styles.emptyContainer}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
-          <Heart size={64} color="#cbd5e1" />
+          <Heart size={64} color={Colors.mutedGrey} />
           <Text style={styles.emptyTitle}>{t('favorites.empty')}</Text>
           <Text style={styles.emptyText}>{t('favorites.addSome')}</Text>
         </ScrollView>
@@ -148,20 +149,20 @@ export default function FavoritesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: Colors.background,
   },
   header: {
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 24,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: Colors.border,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: Colors.textDark,
   },
   list: {
     padding: 20,
@@ -179,13 +180,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: Colors.textDark,
     marginTop: 16,
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 14,
-    color: '#64748b',
+    color: Colors.textLight,
     textAlign: 'center',
     lineHeight: 20,
   },

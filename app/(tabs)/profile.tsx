@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { MapPin, LogOut } from 'lucide-react-native';
+import { Colors } from '@/constants/colors';
 
 export default function ProfileScreen() {
   const { profile, signOut } = useAuth();
@@ -35,7 +36,7 @@ export default function ProfileScreen() {
                 <View style={styles.divider} />
                 <View style={styles.infoRow}>
                   <View style={styles.labelWithIcon}>
-                    <MapPin size={16} color="#64748b" />
+                    <MapPin size={16} color={Colors.textLight} />
                     <Text style={styles.label}>Location</Text>
                   </View>
                   <Text style={styles.value}>{profile.location_name}</Text>
@@ -57,7 +58,7 @@ export default function ProfileScreen() {
         </View>
 
         <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
-          <LogOut size={20} color="#ef4444" />
+          <LogOut size={20} color={Colors.error} />
           <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -68,20 +69,20 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: Colors.background,
   },
   header: {
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 24,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: Colors.border,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: Colors.textDark,
   },
   content: {
     flex: 1,
@@ -92,11 +93,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1e293b',
+    color: Colors.textDark,
     marginBottom: 12,
   },
   infoCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
     borderRadius: 16,
     padding: 16,
     shadowColor: '#000',
@@ -118,23 +119,23 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#64748b',
+    color: Colors.textLight,
     fontWeight: '600',
   },
   value: {
     fontSize: 14,
-    color: '#1e293b',
+    color: Colors.textDark,
     fontWeight: '600',
   },
   divider: {
     height: 1,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: Colors.border,
   },
   signOutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
     marginHorizontal: 20,
     marginTop: 20,
     marginBottom: 20,
@@ -147,6 +148,6 @@ const styles = StyleSheet.create({
   signOutText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ef4444',
+    color: Colors.error,
   },
 });
