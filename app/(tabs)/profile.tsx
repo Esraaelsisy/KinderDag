@@ -1,7 +1,8 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { MapPin, LogOut } from 'lucide-react-native';
+import { MapPin, LogOut, Shield } from 'lucide-react-native';
+import { router } from 'expo-router';
 
 export default function ProfileScreen() {
   const { profile, signOut } = useAuth();
@@ -55,6 +56,14 @@ export default function ProfileScreen() {
             </View>
           </View>
         </View>
+
+        <TouchableOpacity
+          style={styles.adminButton}
+          onPress={() => router.push('/(tabs)/admin')}
+        >
+          <Shield size={20} color="#10B981" />
+          <Text style={styles.adminText}>Admin Panel</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
           <LogOut size={20} color="#ef4444" />
@@ -130,13 +139,32 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#e2e8f0',
   },
+  adminButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+    marginHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 8,
+    padding: 16,
+    borderRadius: 12,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#d1fae5',
+  },
+  adminText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#10B981',
+  },
   signOutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#ffffff',
     marginHorizontal: 20,
-    marginVertical: 20,
+    marginBottom: 20,
     padding: 16,
     borderRadius: 12,
     gap: 8,
