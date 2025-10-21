@@ -2,9 +2,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import AddActivity from './pages/AddActivity';
-import EditActivity from './pages/EditActivity';
+import Activities from './pages/Activities';
+import Categories from './pages/Categories';
+import Tags from './pages/Tags';
 
 function App() {
   const [session, setSession] = useState<any>(null);
@@ -27,7 +27,7 @@ function App() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#0f172a' }}>
         <p style={{ color: 'white', fontSize: '18px' }}>Loading...</p>
       </div>
     );
@@ -36,10 +36,11 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
-        <Route path="/" element={session ? <Dashboard /> : <Navigate to="/login" />} />
-        <Route path="/add" element={session ? <AddActivity /> : <Navigate to="/login" />} />
-        <Route path="/edit/:id" element={session ? <EditActivity /> : <Navigate to="/login" />} />
+        <Route path="/login" element={!session ? <Login /> : <Navigate to="/activities" />} />
+        <Route path="/" element={session ? <Navigate to="/activities" /> : <Navigate to="/login" />} />
+        <Route path="/activities" element={session ? <Activities /> : <Navigate to="/login" />} />
+        <Route path="/categories" element={session ? <Categories /> : <Navigate to="/login" />} />
+        <Route path="/tags" element={session ? <Tags /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   );
