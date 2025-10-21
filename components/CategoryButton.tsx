@@ -1,10 +1,11 @@
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CategoryButtonProps {
   nameEn: string;
   nameNl: string;
   color: string;
+  emoji?: string;
   isActive?: boolean;
   onPress: () => void;
 }
@@ -13,6 +14,7 @@ export default function CategoryButton({
   nameEn,
   nameNl,
   color,
+  emoji,
   isActive = false,
   onPress,
 }: CategoryButtonProps) {
@@ -29,7 +31,10 @@ export default function CategoryButton({
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <Text style={[styles.text, { color: isActive ? '#ffffff' : color }]}>{name}</Text>
+      <View style={styles.content}>
+        {emoji && <Text style={styles.emoji}>{emoji}</Text>}
+        <Text style={[styles.text, { color: isActive ? '#ffffff' : color }]}>{name}</Text>
+      </View>
     </TouchableOpacity>
   );
 }
@@ -43,8 +48,16 @@ const styles = StyleSheet.create({
     marginRight: 12,
     backgroundColor: '#ffffff',
   },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   text: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  emoji: {
+    fontSize: 16,
   },
 });

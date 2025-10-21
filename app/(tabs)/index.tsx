@@ -56,6 +56,9 @@ interface Banner {
 export default function HomeScreen() {
   const [featured, setFeatured] = useState<Activity[]>([]);
   const [seasonal, setSeasonal] = useState<Activity[]>([]);
+  const [dontMiss, setDontMiss] = useState<Activity[]>([]);
+  const [catchItBeforeEnds, setCatchItBeforeEnds] = useState<Activity[]>([]);
+  const [hotPicks, setHotPicks] = useState<Activity[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [banners, setBanners] = useState<Banner[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -91,7 +94,15 @@ export default function HomeScreen() {
   }, [selectedCategory]);
 
   const loadData = async () => {
-    await Promise.all([loadFeatured(), loadSeasonal(), loadCategories(), loadBanners()]);
+    await Promise.all([
+      loadFeatured(),
+      loadSeasonal(),
+      loadDontMiss(),
+      loadCatchItBeforeEnds(),
+      loadHotPicks(),
+      loadCategories(),
+      loadBanners(),
+    ]);
   };
 
   const loadFeatured = async () => {
@@ -117,6 +128,44 @@ export default function HomeScreen() {
       .limit(10);
 
     if (data) setSeasonal(data);
+  };
+
+  const loadDontMiss = async () => {
+    const { data } = await supabase
+      .from('activities')
+      .select('*')
+      .eq('is_featured', true)
+      .order('average_rating', { ascending: false })
+      .limit(10);
+
+    if (data) setDontMiss(data);
+  };
+
+  const loadCatchItBeforeEnds = async () => {
+    const today = new Date();
+    const nextWeek = new Date();
+    nextWeek.setDate(today.getDate() + 7);
+    const { data } = await supabase
+      .from('activities')
+      .select('*')
+      .eq('is_seasonal', true)
+      .lte('season_end', nextWeek.toISOString().split('T')[0])
+      .gte('season_end', today.toISOString().split('T')[0])
+      .order('season_end', { ascending: true })
+      .limit(10);
+
+    if (data) setCatchItBeforeEnds(data);
+  };
+
+  const loadHotPicks = async () => {
+    const { data } = await supabase
+      .from('activities')
+      .select('*')
+      .gte('average_rating', 4.0)
+      .order('total_reviews', { ascending: false })
+      .limit(10);
+
+    if (data) setHotPicks(data);
   };
 
   const loadCategories = async () => {
@@ -268,18 +317,31 @@ export default function HomeScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoriesList}
         >
-          {categories.map((category) => (
-            <CategoryButton
-              key={category.id}
-              nameEn={category.name_en}
-              nameNl={category.name_nl}
-              color={category.color}
-              isActive={selectedCategory === category.id}
-              onPress={() =>
-                setSelectedCategory(selectedCategory === category.id ? null : category.id)
-              }
-            />
-          ))}
+          {categories.map((category) => {
+            const categoryEmojis: Record<string, string> = {
+              'outdoor': '🏞️',
+              'indoor': '🏠',
+              'sports': '⚽',
+              'arts': '🎨',
+              'learning': '📚',
+              'adventure': '🧗',
+            };
+            const emoji = categoryEmojis[category.name_en.toLowerCase()] || '🎯';
+
+            return (
+              <CategoryButton
+                key={category.id}
+                nameEn={category.name_en}
+                nameNl={category.name_nl}
+                color={category.color}
+                emoji={emoji}
+                isActive={selectedCategory === category.id}
+                onPress={() =>
+                  setSelectedCategory(selectedCategory === category.id ? null : category.id)
+                }
+              />
+            );
+          })}
         </ScrollView>
       </View>
 
@@ -292,6 +354,54 @@ export default function HomeScreen() {
           </Text>
           <FlatList
             data={categoryActivities}
+            renderItem={({ item }) => renderActivity(item)}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.activitiesList}
+          />
+        </View>
+      )}
+
+      {dontMiss.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            {language === 'en' ? "Don't miss this week" : 'Mis deze week niet'}
+          </Text>
+          <FlatList
+            data={dontMiss}
+            renderItem={({ item }) => renderActivity(item)}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.activitiesList}
+          />
+        </View>
+      )}
+
+      {catchItBeforeEnds.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            {language === 'en' ? 'Catch it before it Ends' : 'Grijp het voordat het eindigt'}
+          </Text>
+          <FlatList
+            data={catchItBeforeEnds}
+            renderItem={({ item }) => renderActivity(item)}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.activitiesList}
+          />
+        </View>
+      )}
+
+      {hotPicks.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            {language === 'en' ? 'Hot Picks' : 'Populaire keuzes'}
+          </Text>
+          <FlatList
+            data={hotPicks}
             renderItem={({ item }) => renderActivity(item)}
             keyExtractor={(item) => item.id}
             horizontal
