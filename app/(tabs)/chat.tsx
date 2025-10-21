@@ -141,7 +141,7 @@ export default function ChatScreen() {
           {!isUser && <Bot size={20} color={Colors.primary} />}
           {isUser && <User size={20} color="white" />}
           <Text style={[styles.messageRole, isUser && styles.userMessageRole]}>
-            {isUser ? 'You' : 'KinderBot'}
+            {isUser ? 'You' : 'KinderDag'}
           </Text>
         </View>
         <Text style={[styles.messageText, isUser && styles.userMessageText]}>
@@ -160,7 +160,7 @@ export default function ChatScreen() {
       <View style={styles.header}>
         <Bot size={32} color={Colors.primary} />
         <View style={styles.headerText}>
-          <Text style={styles.title}>KinderBot Assistant</Text>
+          <Text style={styles.title}>KinderDag Assistant</Text>
           <Text style={styles.subtitle}>Find perfect activities for your child</Text>
         </View>
       </View>
