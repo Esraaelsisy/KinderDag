@@ -49,8 +49,6 @@ export default function HomeScreen() {
   const [hotPicks, setHotPicks] = useState<Activity[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [banners, setBanners] = useState<Banner[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [categoryActivities, setCategoryActivities] = useState<Activity[]>([]);
   const [currentBanner, setCurrentBanner] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const bannerInterval = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
@@ -76,11 +74,6 @@ export default function HomeScreen() {
     };
   }, [banners.length]);
 
-  useEffect(() => {
-    if (selectedCategory) {
-      loadCategoryActivities(selectedCategory);
-    }
-  }, [selectedCategory]);
 
   const loadData = async () => {
     await Promise.all([
@@ -176,20 +169,6 @@ export default function HomeScreen() {
     if (data) setBanners(data);
   };
 
-  const loadCategoryActivities = async (categoryId: string) => {
-    const { data } = await supabase
-      .from('activity_category_links')
-      .select('activity_id, activities(*)')
-      .eq('category_id', categoryId)
-      .limit(10);
-
-    if (data) {
-      const activities = data
-        .map((item: any) => item.activities)
-        .filter(Boolean);
-      setCategoryActivities(activities);
-    }
-  };
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
     const R = 6371;
@@ -350,33 +329,22 @@ export default function HomeScreen() {
                 nameNl={category.name_nl}
                 color={category.color}
                 emoji={emoji}
-                isActive={selectedCategory === category.id}
-                onPress={() =>
-                  setSelectedCategory(selectedCategory === category.id ? null : category.id)
-                }
+                isActive={false}
+                onPress={() => {
+                  router.push({
+                    pathname: '/(tabs)/discover',
+                    params: {
+                      categoryId: category.id,
+                      categoryName: language === 'en' ? category.name_en : category.name_nl
+                    }
+                  });
+                }}
               />
             );
           })}
         </ScrollView>
       </View>
 
-      {selectedCategory && categoryActivities.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {categories.find((c) => c.id === selectedCategory)?.[
-              language === 'en' ? 'name_en' : 'name_nl'
-            ]}
-          </Text>
-          <FlatList
-            data={categoryActivities}
-            renderItem={({ item }) => renderActivity(item)}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.activitiesList}
-          />
-        </View>
-      )}
 
       {dontMiss.length > 0 && (
         <View style={styles.section}>

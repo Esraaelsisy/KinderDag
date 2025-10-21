@@ -20,8 +20,15 @@ import { Activity } from '@/types';
 import { activitiesService } from '@/services/activities';
 import { citiesService } from '@/services/cities';
 import { calculateDistance } from '@/utils/location';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { supabase } from '@/lib/supabase';
 
 export default function DiscoverScreen() {
+  const params = useLocalSearchParams();
+  const router = useRouter();
+  const categoryId = params.categoryId as string | undefined;
+  const categoryName = params.categoryName as string | undefined;
+
   const [searchQuery, setSearchQuery] = useState('');
   const [activities, setActivities] = useState<Activity[]>([]);
   const [filteredActivities, setFilteredActivities] = useState<Activity[]>([]);
@@ -30,6 +37,7 @@ export default function DiscoverScreen() {
   const [cities, setCities] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('map');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     indoor: false,
     outdoor: false,
@@ -42,12 +50,17 @@ export default function DiscoverScreen() {
   const { profile, updateProfile } = useAuth();
 
   useEffect(() => {
-    loadActivities();
+    if (categoryId) {
+      setSelectedCategory(categoryId);
+      loadCategoryActivities(categoryId);
+    } else {
+      loadActivities();
+    }
     loadCities();
     if (profile?.location_name) {
       setSelectedCity(profile.location_name);
     }
-  }, []);
+  }, [categoryId]);
 
   useEffect(() => {
     if (profile?.location_name) {
@@ -65,6 +78,24 @@ export default function DiscoverScreen() {
       setActivities(data);
     } catch (error) {
       console.error('Failed to load activities:', error);
+    }
+  };
+
+  const loadCategoryActivities = async (catId: string) => {
+    try {
+      const { data } = await supabase
+        .from('activity_category_links')
+        .select('activity_id, activities(*)')
+        .eq('category_id', catId);
+
+      if (data) {
+        const categoryActivities = data
+          .map((item: any) => item.activities)
+          .filter(Boolean);
+        setActivities(categoryActivities);
+      }
+    } catch (error) {
+      console.error('Failed to load category activities:', error);
     }
   };
 
@@ -219,7 +250,19 @@ export default function DiscoverScreen() {
   return (
     <View style={styles.container}>
       <LinearGradient colors={[Colors.primary, Colors.primaryDark]} style={styles.header}>
-        <Text style={styles.title}>{t('nav.discover')}</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>{categoryName || t('nav.discover')}</Text>
+          {categoryId && (
+            <TouchableOpacity
+              style={styles.clearCategoryButton}
+              onPress={() => {
+                router.push('/(tabs)/discover');
+              }}
+            >
+              <X size={20} color={Colors.white} />
+            </TouchableOpacity>
+          )}
+        </View>
         <View style={styles.searchRow}>
           <View style={styles.searchContainer}>
             <Search size={20} color={Colors.textLight} style={styles.searchIcon} />
@@ -470,11 +513,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 16,
   },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: Colors.white,
-    marginBottom: 16,
+  },
+  clearCategoryButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   searchRow: {
     flexDirection: 'row',

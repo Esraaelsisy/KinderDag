@@ -91,7 +91,10 @@ export default function CategoriesScreen() {
     return (
       <TouchableOpacity
         style={styles.categoryCard}
-        onPress={() => router.push(`/category/${item.id}`)}
+        onPress={() => router.push({
+          pathname: '/(tabs)/discover',
+          params: { categoryId: item.id, categoryName: language === 'en' ? item.name_en : item.name_nl }
+        })}
         activeOpacity={0.8}
       >
         <LinearGradient
