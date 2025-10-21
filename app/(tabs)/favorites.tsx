@@ -12,7 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import ActivityCard from '@/components/ActivityCard';
-import { Heart, Settings } from 'lucide-react-native';
+import { Heart } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 
 interface Favorite {
@@ -38,7 +38,7 @@ export default function FavoritesScreen() {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const { t } = useLanguage();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -118,17 +118,7 @@ export default function FavoritesScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>{t('nav.favorites')}</Text>
-          {profile && (
-            <Text style={styles.subtitle}>
-              {profile.full_name} • {profile.location_name || 'Netherlands'}
-            </Text>
-          )}
-        </View>
-        <TouchableOpacity style={styles.settingsButton} onPress={signOut}>
-          <Settings size={24} color="#64748b" />
-        </TouchableOpacity>
+        <Text style={styles.title}>{t('nav.favorites')}</Text>
       </View>
 
       {favorites.length === 0 ? (
@@ -167,22 +157,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#1e293b',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#64748b',
-  },
-  settingsButton: {
-    padding: 8,
   },
   list: {
     padding: 20,
