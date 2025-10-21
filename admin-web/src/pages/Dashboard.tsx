@@ -18,6 +18,7 @@ interface Activity {
 export default function Dashboard() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [importing, setImporting] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -58,6 +59,114 @@ export default function Dashboard() {
     await supabase.auth.signOut();
   };
 
+  const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    const reader = new FileReader();
+
+    reader.onload = async (e) => {
+      try {
+        const content = e.target?.result as string;
+        let activitiesData: any[];
+
+        if (file.name.endsWith('.json')) {
+          activitiesData = JSON.parse(content);
+        } else if (file.name.endsWith('.csv')) {
+          activitiesData = parseCSV(content);
+        } else {
+          alert('Please upload a JSON or CSV file');
+          setImporting(false);
+          return;
+        }
+
+        // Validate and insert activities
+        const validActivities = activitiesData.map(activity => ({
+          title: activity.title || '',
+          description: activity.description || '',
+          category: activity.category || '',
+          age_range: activity.age_range || '',
+          duration: parseInt(activity.duration) || 30,
+          materials: Array.isArray(activity.materials) ? activity.materials :
+                     (typeof activity.materials === 'string' ? activity.materials.split(',').map(m => m.trim()) : []),
+          indoor: activity.indoor === true || activity.indoor === 'true' || activity.indoor === '1',
+          image_url: activity.image_url || null,
+        }));
+
+        const { data, error } = await supabase
+          .from('activities')
+          .insert(validActivities)
+          .select();
+
+        if (error) {
+          alert('Error importing activities: ' + error.message);
+        } else {
+          alert(`Successfully imported ${data.length} activities!`);
+          fetchActivities();
+        }
+      } catch (error) {
+        alert('Error parsing file: ' + (error as Error).message);
+      } finally {
+        setImporting(false);
+        // Reset file input
+        event.target.value = '';
+      }
+    };
+
+    reader.readAsText(file);
+  };
+
+  const parseCSV = (content: string): any[] => {
+    const lines = content.split('\n').filter(line => line.trim());
+    if (lines.length < 2) return [];
+
+    const headers = lines[0].split(',').map(h => h.trim());
+    const activities = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(',').map(v => v.trim());
+      const activity: any = {};
+      headers.forEach((header, index) => {
+        activity[header] = values[index];
+      });
+      activities.push(activity);
+    }
+
+    return activities;
+  };
+
+  const downloadTemplate = (format: 'json' | 'csv') => {
+    const template = {
+      title: 'Example Activity',
+      description: 'A fun activity for kids',
+      category: 'Creative',
+      age_range: '3-5',
+      duration: 30,
+      materials: ['paper', 'crayons'],
+      indoor: true,
+      image_url: 'https://example.com/image.jpg'
+    };
+
+    if (format === 'json') {
+      const blob = new Blob([JSON.stringify([template], null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'activities_template.json';
+      a.click();
+    } else {
+      const csv = 'title,description,category,age_range,duration,materials,indoor,image_url\n' +
+                  'Example Activity,"A fun activity for kids",Creative,3-5,30,"paper,crayons",true,https://example.com/image.jpg';
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'activities_template.csv';
+      a.click();
+    }
+  };
+
   if (loading) {
     return (
       <div style={styles.container}>
@@ -74,6 +183,33 @@ export default function Dashboard() {
           <button onClick={() => navigate('/add')} style={styles.addButton}>
             + Add Activity
           </button>
+          <div style={styles.importGroup}>
+            <input
+              type="file"
+              accept=".json,.csv"
+              onChange={handleFileImport}
+              style={{ display: 'none' }}
+              id="file-import"
+              disabled={importing}
+            />
+            <label htmlFor="file-import" style={importing ? styles.importButtonDisabled : styles.importButton}>
+              {importing ? 'Importing...' : '📁 Bulk Import'}
+            </label>
+            <button
+              onClick={() => downloadTemplate('json')}
+              style={styles.templateButton}
+              title="Download JSON template"
+            >
+              JSON
+            </button>
+            <button
+              onClick={() => downloadTemplate('csv')}
+              style={styles.templateButton}
+              title="Download CSV template"
+            >
+              CSV
+            </button>
+          </div>
           <button onClick={handleLogout} style={styles.logoutButton}>
             Logout
           </button>
@@ -147,6 +283,45 @@ const styles = {
   headerButtons: {
     display: 'flex',
     gap: '12px',
+    flexWrap: 'wrap' as const,
+    alignItems: 'center',
+  },
+  importGroup: {
+    display: 'flex',
+    gap: '8px',
+    alignItems: 'center',
+  },
+  importButton: {
+    padding: '12px 24px',
+    background: '#48bb78',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '16px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'background 0.2s',
+  },
+  importButtonDisabled: {
+    padding: '12px 24px',
+    background: '#a0aec0',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '16px',
+    fontWeight: '600',
+    cursor: 'not-allowed',
+  },
+  templateButton: {
+    padding: '8px 12px',
+    background: 'rgba(255, 255, 255, 0.2)',
+    color: 'white',
+    border: '1px solid white',
+    borderRadius: '6px',
+    fontSize: '12px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'background 0.2s',
   },
   addButton: {
     padding: '12px 24px',
