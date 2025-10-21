@@ -691,33 +691,63 @@ export default function DiscoverScreen() {
               <View style={styles.ageRangeHeader}>
                 <Text style={styles.sectionTitle}>AGE RANGE</Text>
                 <Text style={styles.ageRangeValue}>
-                  ({filters.minAge || '2'} - {filters.maxAge || 'Adult'})
+                  {filters.minAge || '2'} - {filters.maxAge || '18'}
                 </Text>
               </View>
-              <View style={styles.ageInputRow}>
-                <TextInput
-                  style={styles.ageInput}
-                  placeholder="Min"
-                  placeholderTextColor={Colors.lightGrey}
-                  value={filters.minAge}
-                  onChangeText={(value) =>
-                    setFilters({ ...filters, minAge: value.replace(/[^0-9]/g, '') })
-                  }
-                  keyboardType="number-pad"
-                  maxLength={2}
-                />
-                <Text style={styles.ageSeparator}>-</Text>
-                <TextInput
-                  style={styles.ageInput}
-                  placeholder="Max"
-                  placeholderTextColor={Colors.lightGrey}
-                  value={filters.maxAge}
-                  onChangeText={(value) =>
-                    setFilters({ ...filters, maxAge: value.replace(/[^0-9]/g, '') })
-                  }
-                  keyboardType="number-pad"
-                  maxLength={2}
-                />
+              <View style={styles.rangePickerContainer}>
+                <View style={styles.rangeLabels}>
+                  <Text style={styles.rangeLabelText}>2</Text>
+                  <Text style={styles.rangeLabelText}>18</Text>
+                </View>
+                <View style={styles.rangeTrack}>
+                  <View
+                    style={[
+                      styles.rangeProgress,
+                      {
+                        left: `${((parseInt(filters.minAge) || 2) - 2) / 16 * 100}%`,
+                        right: `${100 - ((parseInt(filters.maxAge) || 18) - 2) / 16 * 100}%`,
+                      },
+                    ]}
+                  />
+                </View>
+                <View style={styles.ageInputRow}>
+                  <View style={styles.ageInputGroup}>
+                    <Text style={styles.ageInputLabel}>Min</Text>
+                    <TextInput
+                      style={styles.ageInput}
+                      placeholder="2"
+                      placeholderTextColor={Colors.lightGrey}
+                      value={filters.minAge}
+                      onChangeText={(value) => {
+                        const numValue = value.replace(/[^0-9]/g, '');
+                        const num = parseInt(numValue) || 2;
+                        if (num >= 2 && num <= 18) {
+                          setFilters({ ...filters, minAge: numValue });
+                        }
+                      }}
+                      keyboardType="number-pad"
+                      maxLength={2}
+                    />
+                  </View>
+                  <View style={styles.ageInputGroup}>
+                    <Text style={styles.ageInputLabel}>Max</Text>
+                    <TextInput
+                      style={styles.ageInput}
+                      placeholder="18"
+                      placeholderTextColor={Colors.lightGrey}
+                      value={filters.maxAge}
+                      onChangeText={(value) => {
+                        const numValue = value.replace(/[^0-9]/g, '');
+                        const num = parseInt(numValue) || 18;
+                        if (num >= 2 && num <= 18) {
+                          setFilters({ ...filters, maxAge: numValue });
+                        }
+                      }}
+                      keyboardType="number-pad"
+                      maxLength={2}
+                    />
+                  </View>
+                </View>
               </View>
             </View>
           </ScrollView>
@@ -1120,16 +1150,53 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   ageRangeValue: {
+    fontSize: 16,
+    color: Colors.secondary,
+    fontWeight: '600',
+  },
+  rangePickerContainer: {
+    marginTop: 8,
+  },
+  rangeLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  rangeLabelText: {
     fontSize: 14,
     color: Colors.textLight,
+    fontWeight: '500',
+  },
+  rangeTrack: {
+    height: 6,
+    backgroundColor: Colors.border,
+    borderRadius: 3,
+    position: 'relative',
+    marginBottom: 24,
+  },
+  rangeProgress: {
+    position: 'absolute',
+    height: 6,
+    backgroundColor: Colors.secondary,
+    borderRadius: 3,
+    top: 0,
   },
   ageInputRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+    alignItems: 'flex-start',
+    gap: 16,
+  },
+  ageInputGroup: {
+    flex: 1,
+  },
+  ageInputLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.textLight,
+    marginBottom: 8,
+    textTransform: 'uppercase',
   },
   ageInput: {
-    flex: 1,
     backgroundColor: Colors.inputBackground,
     borderRadius: 8,
     paddingHorizontal: 16,
@@ -1138,10 +1205,7 @@ const styles = StyleSheet.create({
     color: Colors.textDark,
     borderWidth: 1,
     borderColor: Colors.border,
-  },
-  ageSeparator: {
-    fontSize: 18,
-    color: Colors.textLight,
+    textAlign: 'center',
   },
   divider: {
     height: 1,
@@ -1161,20 +1225,20 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#4FC3F7',
+    borderColor: Colors.secondary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#4FC3F7',
+    color: Colors.secondary,
   },
   applyButton: {
     flex: 1,
     paddingVertical: 16,
     borderRadius: 12,
-    backgroundColor: '#4FC3F7',
+    backgroundColor: Colors.secondary,
     alignItems: 'center',
     justifyContent: 'center',
   },
