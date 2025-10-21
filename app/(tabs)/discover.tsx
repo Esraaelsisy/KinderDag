@@ -283,17 +283,7 @@ export default function DiscoverScreen() {
     <View style={styles.container}>
       <LinearGradient colors={[Colors.primary, Colors.primaryDark]} style={styles.header}>
         <View style={styles.titleRow}>
-          <Text style={styles.title}>{categoryName || t('nav.discover')}</Text>
-          {categoryId && (
-            <TouchableOpacity
-              style={styles.clearCategoryButton}
-              onPress={() => {
-                router.push('/(tabs)/discover');
-              }}
-            >
-              <X size={20} color={Colors.white} />
-            </TouchableOpacity>
-          )}
+          <Text style={styles.title}>{t('nav.discover')}</Text>
         </View>
         <View style={styles.searchRow}>
           <View style={styles.searchContainer}>
@@ -860,12 +850,6 @@ export default function DiscoverScreen() {
 
       {viewMode === 'list' ? (
         <>
-          <View style={styles.resultsHeader}>
-            <Text style={styles.resultsText}>
-              {filteredActivities.length} {filteredActivities.length === 1 ? 'activity' : 'activities'} found
-            </Text>
-          </View>
-
           <FlatList
             data={filteredActivities}
             renderItem={renderActivity}

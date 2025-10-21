@@ -17,11 +17,16 @@ export default function FloatingChatButton() {
   return (
     <>
       <TouchableOpacity
-        style={styles.fab}
+        style={[styles.fab, isOpen && styles.fabActive]}
         onPress={() => setIsOpen(true)}
         activeOpacity={0.8}
       >
-        <MessageCircle size={28} color={Colors.white} strokeWidth={2.5} />
+        <MessageCircle
+          size={28}
+          color={isOpen ? Colors.white : Colors.secondary}
+          strokeWidth={2.5}
+          fill={isOpen ? Colors.primary : 'none'}
+        />
       </TouchableOpacity>
 
       <Modal
@@ -53,7 +58,9 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.white,
+    borderWidth: 2,
+    borderColor: Colors.secondary,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -65,6 +72,10 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 12,
     zIndex: 1000,
+  },
+  fabActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
   modalContainer: {
     flex: 1,
