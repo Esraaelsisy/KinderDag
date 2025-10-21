@@ -1,6 +1,7 @@
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { MapPin, Star, Euro } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { Colors } from '@/constants/colors';
 
 interface ActivityCardProps {
   id: string;
@@ -85,7 +86,7 @@ export default function ActivityCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
     borderRadius: 16,
     overflow: 'hidden',
     marginRight: 16,
@@ -95,11 +96,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
+    borderWidth: 1,
+    borderColor: Colors.cardBorder,
   },
   image: {
     width: '100%',
     height: 160,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: Colors.mutedGrey,
   },
   content: {
     padding: 12,
@@ -107,7 +110,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    color: Colors.text,
     marginBottom: 4,
   },
   row: {
@@ -117,7 +120,7 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: 13,
-    color: '#64748b',
+    color: Colors.lightGrey,
   },
   footer: {
     flexDirection: 'row',
@@ -127,7 +130,7 @@ const styles = StyleSheet.create({
   },
   rating: {
     fontSize: 13,
-    color: '#64748b',
+    color: Colors.lightGrey,
     fontWeight: '600',
   },
   tags: {
@@ -135,28 +138,28 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   tag: {
-    backgroundColor: '#e0f2fe',
+    backgroundColor: '#E3F5FC',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
   },
   tagText: {
     fontSize: 11,
-    color: '#0369a1',
+    color: Colors.primary,
     fontWeight: '600',
   },
   tagFree: {
-    backgroundColor: '#d1fae5',
+    backgroundColor: '#F1F8E9',
   },
   tagTextFree: {
     fontSize: 11,
-    color: '#065f46',
+    color: Colors.success,
     fontWeight: '600',
   },
   priceTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#d1fae5',
+    backgroundColor: '#F1F8E9',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -164,7 +167,7 @@ const styles = StyleSheet.create({
   },
   priceText: {
     fontSize: 11,
-    color: '#065f46',
+    color: Colors.success,
     fontWeight: '600',
   },
 });

@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import ActivityCard from '@/components/ActivityCard';
 import { Search, SlidersHorizontal, X, List, MapPin as MapPinIcon } from 'lucide-react-native';
+import { Colors } from '@/constants/colors';
 
 interface Activity {
   id: string;
@@ -434,18 +435,18 @@ export default function DiscoverScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: Colors.background,
   },
   header: {
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: Colors.text,
     marginBottom: 16,
   },
   searchRow: {
@@ -458,7 +459,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f1f5f9',
+    backgroundColor: Colors.mutedGrey,
     borderRadius: 12,
     paddingHorizontal: 16,
   },
@@ -469,19 +470,19 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#1e293b',
+    color: Colors.text,
   },
   iconButton: {
     width: 44,
     height: 44,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: Colors.mutedGrey,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   viewToggle: {
     flexDirection: 'row',
-    backgroundColor: '#f0fdfa',
+    backgroundColor: '#E3F5FC',
     borderRadius: 12,
     padding: 4,
   },
@@ -502,22 +503,22 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 8,
   },
   toggleButtonActive: {
-    backgroundColor: '#0f766e',
+    backgroundColor: Colors.primary,
   },
   toggleButtonText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#0f766e',
+    color: Colors.primary,
   },
   toggleButtonTextActive: {
-    color: '#ffffff',
+    color: Colors.white,
   },
   filtersContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
     paddingHorizontal: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: Colors.mutedGrey,
   },
   filtersHeader: {
     flexDirection: 'row',
@@ -528,11 +529,11 @@ const styles = StyleSheet.create({
   filtersTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: Colors.text,
   },
   clearText: {
     fontSize: 14,
-    color: '#10B981',
+    color: Colors.accent,
     fontWeight: '600',
   },
   filterGroup: {
@@ -541,7 +542,7 @@ const styles = StyleSheet.create({
   filterLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#64748b',
+    color: Colors.lightGrey,
     marginBottom: 8,
   },
   filterRow: {
@@ -552,43 +553,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: Colors.background,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: Colors.mutedGrey,
   },
   filterChipActive: {
-    backgroundColor: '#10B981',
-    borderColor: '#10B981',
+    backgroundColor: Colors.success,
+    borderColor: Colors.success,
   },
   filterChipText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#64748b',
+    color: Colors.lightGrey,
   },
   filterChipTextActive: {
-    color: '#ffffff',
+    color: Colors.white,
   },
   filterInput: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: Colors.mutedGrey,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
-    color: '#1e293b',
+    color: Colors.text,
   },
   filterSeparator: {
     paddingVertical: 10,
     fontSize: 14,
-    color: '#64748b',
+    color: Colors.lightGrey,
   },
   filterInputFull: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: Colors.mutedGrey,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
-    color: '#1e293b',
+    color: Colors.text,
   },
   resultsHeader: {
     paddingHorizontal: 20,
@@ -596,7 +597,7 @@ const styles = StyleSheet.create({
   },
   resultsText: {
     fontSize: 14,
-    color: '#64748b',
+    color: Colors.lightGrey,
     fontWeight: '600',
   },
   list: {
@@ -615,19 +616,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 40,
-    backgroundColor: '#f8fafc',
+    backgroundColor: Colors.background,
   },
   mapPlaceholderTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: Colors.text,
     textAlign: 'center',
     marginTop: 24,
     marginBottom: 8,
   },
   mapPlaceholderText: {
     fontSize: 16,
-    color: '#64748b',
+    color: Colors.lightGrey,
     textAlign: 'center',
     marginBottom: 32,
   },
@@ -635,7 +636,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0f766e',
+    backgroundColor: Colors.primary,
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 12,
@@ -645,7 +646,7 @@ const styles = StyleSheet.create({
   openMapsButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: Colors.white,
   },
   backToListButton: {
     paddingVertical: 12,
@@ -654,6 +655,6 @@ const styles = StyleSheet.create({
   backToListButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#0f766e',
+    color: Colors.primary,
   },
 });

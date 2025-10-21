@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import { Home, Search, Calendar, Heart } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Colors } from '@/constants/colors';
 
 export default function TabLayout() {
   const { t } = useLanguage();
@@ -9,12 +10,12 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#10B981',
-        tabBarInactiveTintColor: '#64748b',
+        tabBarActiveTintColor: Colors.primary,
+        tabBarInactiveTintColor: Colors.lightGrey,
         tabBarStyle: {
-          backgroundColor: '#ffffff',
+          backgroundColor: Colors.white,
           borderTopWidth: 1,
-          borderTopColor: '#e2e8f0',
+          borderTopColor: Colors.mutedGrey,
           paddingTop: 8,
           paddingBottom: 8,
           height: 60,
