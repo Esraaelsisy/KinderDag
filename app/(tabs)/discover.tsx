@@ -333,6 +333,101 @@ export default function DiscoverScreen() {
         </View>
       </LinearGradient>
 
+      {(categoryName || hasActiveFilters) && (
+        <View style={styles.activeFiltersBar}>
+          <View style={styles.filterChipsRow}>
+            {categoryName && (
+              <View style={styles.activeFilterChip}>
+                <Text style={styles.activeFilterChipText}>{categoryName}</Text>
+                <TouchableOpacity
+                  onPress={() => router.push('/(tabs)/discover')}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <X size={16} color={Colors.textDark} />
+                </TouchableOpacity>
+              </View>
+            )}
+            {filters.indoor && (
+              <View style={styles.activeFilterChip}>
+                <Text style={styles.activeFilterChipText}>Indoor</Text>
+                <TouchableOpacity
+                  onPress={() => setFilters({ ...filters, indoor: false })}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <X size={16} color={Colors.textDark} />
+                </TouchableOpacity>
+              </View>
+            )}
+            {filters.outdoor && (
+              <View style={styles.activeFilterChip}>
+                <Text style={styles.activeFilterChipText}>Outdoor</Text>
+                <TouchableOpacity
+                  onPress={() => setFilters({ ...filters, outdoor: false })}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <X size={16} color={Colors.textDark} />
+                </TouchableOpacity>
+              </View>
+            )}
+            {filters.free && (
+              <View style={styles.activeFilterChip}>
+                <Text style={styles.activeFilterChipText}>Free</Text>
+                <TouchableOpacity
+                  onPress={() => setFilters({ ...filters, free: false })}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <X size={16} color={Colors.textDark} />
+                </TouchableOpacity>
+              </View>
+            )}
+            {(filters.minAge || filters.maxAge) && (
+              <View style={styles.activeFilterChip}>
+                <Text style={styles.activeFilterChipText}>
+                  Ages {filters.minAge || '2'}-{filters.maxAge || 'Adult'}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setFilters({ ...filters, minAge: '', maxAge: '' })}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <X size={16} color={Colors.textDark} />
+                </TouchableOpacity>
+              </View>
+            )}
+            {filters.maxDistance && (
+              <View style={styles.activeFilterChip}>
+                <Text style={styles.activeFilterChipText}>
+                  Within {filters.maxDistance}km
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setFilters({ ...filters, maxDistance: '' })}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <X size={16} color={Colors.textDark} />
+                </TouchableOpacity>
+              </View>
+            )}
+            {selectedCity && (
+              <View style={styles.activeFilterChip}>
+                <Text style={styles.activeFilterChipText}>{selectedCity}</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedCity(null);
+                    updateProfile({
+                      location_lat: null,
+                      location_lng: null,
+                      location_name: null,
+                    });
+                  }}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <X size={16} color={Colors.textDark} />
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        </View>
+      )}
+
       {showCityPicker && (
         <View style={styles.cityPickerModal}>
           <View style={styles.cityPickerHeader}>
@@ -541,6 +636,33 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  activeFiltersBar: {
+    backgroundColor: Colors.white,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  filterChipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  activeFilterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E3F5FF',
+    paddingVertical: 8,
+    paddingLeft: 14,
+    paddingRight: 10,
+    borderRadius: 20,
+    gap: 6,
+  },
+  activeFilterChipText: {
+    fontSize: 14,
+    color: Colors.textDark,
+    fontWeight: '500',
   },
   searchRow: {
     flexDirection: 'row',
