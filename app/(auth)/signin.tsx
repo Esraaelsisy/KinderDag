@@ -32,7 +32,7 @@ export default function SignInScreen() {
 
   return (
     <LinearGradient
-      colors={['#10B981', '#059669']}
+      colors={['#1ABC9C', '#16A085']}
       style={styles.container}
     >
       <KeyboardAvoidingView
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   button: {
-    backgroundColor: '#1e293b',
+    backgroundColor: '#1ABC9C',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',

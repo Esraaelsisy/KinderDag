@@ -85,13 +85,13 @@ const styles = {
   title: {
     fontSize: '28px',
     fontWeight: 'bold',
-    color: '#1a202c',
+    color: '#333333',
     marginBottom: '8px',
     textAlign: 'center' as const,
   },
   subtitle: {
     fontSize: '14px',
-    color: '#718096',
+    color: '#9B59B6',
     marginBottom: '32px',
     textAlign: 'center' as const,
   },
@@ -108,7 +108,7 @@ const styles = {
   label: {
     fontSize: '14px',
     fontWeight: '500',
-    color: '#2d3748',
+    color: '#333333',
   },
   input: {
     padding: '12px',
@@ -120,7 +120,7 @@ const styles = {
   },
   button: {
     padding: '12px',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    background: '#1ABC9C',
     color: 'white',
     border: 'none',
     borderRadius: '6px',

@@ -260,7 +260,7 @@ export default function HomeScreen() {
       showsVerticalScrollIndicator={false}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
-      <LinearGradient colors={['#10B981', '#059669']} style={styles.header}>
+      <LinearGradient colors={['#1ABC9C', '#16A085']} style={styles.header}>
         <View style={styles.headerContent}>
           <View>
             <Text style={styles.greeting}>
@@ -490,7 +490,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#FAFAFA',
   },
   header: {
     paddingTop: 60,
@@ -577,12 +577,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: '#333333',
   },
   seeAllLink: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#0ea5e9',
+    color: '#9B59B6',
   },
   categoriesList: {
     paddingHorizontal: 20,

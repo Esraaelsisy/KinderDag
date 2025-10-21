@@ -70,7 +70,7 @@ export default function ActivityCard({
               </View>
             ) : (
               <View style={styles.priceTag}>
-                <Euro size={12} color="#10B981" />
+                <Euro size={12} color="#1ABC9C" />
                 <Text style={styles.priceText}>
                   {priceMin === priceMax ? priceMin : `${priceMin}-${priceMax}`}
                 </Text>
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    color: '#333333',
     marginBottom: 4,
   },
   row: {
@@ -135,28 +135,28 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   tag: {
-    backgroundColor: '#e0f2fe',
+    backgroundColor: '#E8D5F2',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
   },
   tagText: {
     fontSize: 11,
-    color: '#0369a1',
+    color: '#9B59B6',
     fontWeight: '600',
   },
   tagFree: {
-    backgroundColor: '#d1fae5',
+    backgroundColor: '#C8F2E5',
   },
   tagTextFree: {
     fontSize: 11,
-    color: '#065f46',
+    color: '#1ABC9C',
     fontWeight: '600',
   },
   priceTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#d1fae5',
+    backgroundColor: '#C8F2E5',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   },
   priceText: {
     fontSize: 11,
-    color: '#065f46',
+    color: '#1ABC9C',
     fontWeight: '600',
   },
 });

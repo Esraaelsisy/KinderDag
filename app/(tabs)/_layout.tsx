@@ -10,7 +10,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#10B981',
+        tabBarActiveTintColor: '#1ABC9C',
         tabBarInactiveTintColor: '#64748b',
         tabBarStyle: {
           backgroundColor: '#ffffff',
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#10B981',
+    backgroundColor: '#1ABC9C',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -104,6 +104,6 @@ const styles = StyleSheet.create({
     borderColor: '#ffffff',
   },
   centerIconActive: {
-    backgroundColor: '#059669',
+    backgroundColor: '#16A085',
   },
 });

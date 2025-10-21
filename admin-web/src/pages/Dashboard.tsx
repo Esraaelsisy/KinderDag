@@ -642,7 +642,7 @@ const styles = {
   addButton: {
     padding: '12px 24px',
     background: 'white',
-    color: '#667eea',
+    color: '#1ABC9C',
     border: 'none',
     borderRadius: '8px',
     fontSize: '16px',
@@ -718,7 +718,7 @@ const styles = {
   },
   bulkEditButton: {
     padding: '10px 20px',
-    background: '#667eea',
+    background: '#1ABC9C',
     color: 'white',
     border: 'none',
     borderRadius: '8px',
@@ -787,7 +787,7 @@ const styles = {
     position: 'relative' as const,
   },
   cardSelected: {
-    boxShadow: '0 0 0 3px #667eea',
+    boxShadow: '0 0 0 3px #1ABC9C',
   },
   cardCheckbox: {
     position: 'absolute' as const,
@@ -810,7 +810,7 @@ const styles = {
   cardTitle: {
     fontSize: '20px',
     fontWeight: 'bold',
-    color: '#1a202c',
+    color: '#333333',
     marginBottom: '8px',
   },
   cardDescription: {
@@ -843,7 +843,7 @@ const styles = {
   editButton: {
     flex: 1,
     padding: '10px',
-    background: '#667eea',
+    background: '#1ABC9C',
     color: 'white',
     border: 'none',
     borderRadius: '6px',
@@ -886,7 +886,7 @@ const styles = {
   modalTitle: {
     fontSize: '24px',
     fontWeight: 'bold',
-    color: '#1a202c',
+    color: '#333333',
     marginBottom: '8px',
   },
   modalSubtitle: {
@@ -920,7 +920,7 @@ const styles = {
   saveButton: {
     flex: 1,
     padding: '12px',
-    background: '#667eea',
+    background: '#1ABC9C',
     color: 'white',
     border: 'none',
     borderRadius: '8px',
