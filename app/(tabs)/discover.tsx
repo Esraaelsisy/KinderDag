@@ -7,13 +7,24 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
+  Platform,
 } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import ActivityCard from '@/components/ActivityCard';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Search, SlidersHorizontal, X, List, MapPin as MapPinIcon } from 'lucide-react-native';
+
+let MapView: any;
+let Marker: any;
+let PROVIDER_GOOGLE: any;
+
+if (Platform.OS !== 'web') {
+  const MapModule = require('react-native-maps');
+  MapView = MapModule.default;
+  Marker = MapModule.Marker;
+  PROVIDER_GOOGLE = MapModule.PROVIDER_GOOGLE;
+}
 
 interface Activity {
   id: string;
@@ -179,6 +190,20 @@ export default function DiscoverScreen() {
   };
 
   const renderMapView = () => {
+    if (Platform.OS === 'web') {
+      return (
+        <View style={styles.mapPlaceholder}>
+          <MapPinIcon size={48} color="#94a3b8" />
+          <Text style={styles.mapPlaceholderText}>
+            Map view is only available on mobile devices
+          </Text>
+          <Text style={styles.mapPlaceholderSubtext}>
+            Please use the List view or open the app on your phone
+          </Text>
+        </View>
+      );
+    }
+
     const userLocation = profile?.location_lat && profile?.location_lng
       ? {
           latitude: profile.location_lat,
@@ -603,5 +628,25 @@ const styles = StyleSheet.create({
   },
   map: {
     flex: 1,
+  },
+  mapPlaceholder: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+    backgroundColor: '#f8fafc',
+  },
+  mapPlaceholderText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1e293b',
+    textAlign: 'center',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  mapPlaceholderSubtext: {
+    fontSize: 14,
+    color: '#64748b',
+    textAlign: 'center',
   },
 });
