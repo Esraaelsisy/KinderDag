@@ -23,7 +23,8 @@ export default function Categories() {
         adminCategoriesService.getAll(),
         adminActivitiesService.getAll(),
       ]);
-      setCategories(categoriesData || []);
+      const sorted = (categoriesData || []).sort((a: any, b: any) => a.sort_order - b.sort_order);
+      setCategories(sorted);
       setActivities(activitiesData || []);
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -79,6 +80,31 @@ export default function Categories() {
     }
   };
 
+  const moveCategory = async (index: number, direction: 'up' | 'down') => {
+    if ((direction === 'up' && index === 0) || (direction === 'down' && index === categories.length - 1)) {
+      return;
+    }
+
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    const newCategories = [...categories];
+    const [moved] = newCategories.splice(index, 1);
+    newCategories.splice(newIndex, 0, moved);
+
+    const updates = newCategories.map((cat, idx) => ({
+      id: cat.id,
+      sort_order: idx,
+    }));
+
+    setCategories(newCategories);
+
+    try {
+      await adminCategoriesService.updateSortOrders(updates);
+    } catch (error) {
+      alert('Failed to update sort order');
+      await loadData();
+    }
+  };
+
   return (
     <AdminLayout>
       <div>
@@ -122,6 +148,7 @@ export default function Categories() {
                   <th style={{ padding: '16px', textAlign: 'left' }}>
                     <input type="checkbox" checked={selectedIds.length === categories.length && categories.length > 0} onChange={handleSelectAll} />
                   </th>
+                  <th style={{ padding: '16px', textAlign: 'left', color: 'white', fontWeight: '600' }}>Sort</th>
                   <th style={{ padding: '16px', textAlign: 'left', color: 'white', fontWeight: '600' }}>Name (EN)</th>
                   <th style={{ padding: '16px', textAlign: 'left', color: 'white', fontWeight: '600' }}>Name (NL)</th>
                   <th style={{ padding: '16px', textAlign: 'left', color: 'white', fontWeight: '600' }}>Color</th>
@@ -130,10 +157,44 @@ export default function Categories() {
                 </tr>
               </thead>
               <tbody>
-                {categories.map((category) => (
+                {categories.map((category, index) => (
                   <tr key={category.id} style={{ borderBottom: '1px solid #334155' }}>
                     <td style={{ padding: '16px' }}>
                       <input type="checkbox" checked={selectedIds.includes(category.id)} onChange={() => handleSelectOne(category.id)} />
+                    </td>
+                    <td style={{ padding: '16px' }}>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button
+                          onClick={() => moveCategory(index, 'up')}
+                          disabled={index === 0}
+                          style={{
+                            padding: '4px 8px',
+                            backgroundColor: index === 0 ? '#334155' : '#3b82f6',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: index === 0 ? 'not-allowed' : 'pointer',
+                            fontSize: '12px',
+                          }}
+                        >
+                          ↑
+                        </button>
+                        <button
+                          onClick={() => moveCategory(index, 'down')}
+                          disabled={index === categories.length - 1}
+                          style={{
+                            padding: '4px 8px',
+                            backgroundColor: index === categories.length - 1 ? '#334155' : '#3b82f6',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: index === categories.length - 1 ? 'not-allowed' : 'pointer',
+                            fontSize: '12px',
+                          }}
+                        >
+                          ↓
+                        </button>
+                      </div>
                     </td>
                     <td style={{ padding: '16px', color: 'white' }}>{category.name_en}</td>
                     <td style={{ padding: '16px', color: '#94a3b8' }}>{category.name_nl}</td>

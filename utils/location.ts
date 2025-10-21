@@ -36,3 +36,53 @@ export const formatDistance = (distance: number): string => {
   }
   return `${distance.toFixed(1)} km`;
 };
+
+/**
+ * Request location permission from the user
+ * @returns true if permission granted, false otherwise
+ */
+export const requestLocationPermission = async (): Promise<boolean> => {
+  try {
+    const { Location } = await import('expo-location');
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    return status === 'granted';
+  } catch (error) {
+    console.error('Error requesting location permission:', error);
+    return false;
+  }
+};
+
+/**
+ * Get user's current location with city name
+ * @returns Object with latitude, longitude, and city name
+ */
+export const getCurrentLocation = async (): Promise<{
+  latitude: number;
+  longitude: number;
+  city: string;
+} | null> => {
+  try {
+    const { Location } = await import('expo-location');
+
+    const location = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Balanced,
+    });
+
+    const { latitude, longitude } = location.coords;
+
+    const reverseGeocode = await Location.reverseGeocodeAsync({
+      latitude,
+      longitude,
+    });
+
+    if (reverseGeocode.length > 0) {
+      const city = reverseGeocode[0].city || reverseGeocode[0].subregion || 'Unknown';
+      return { latitude, longitude, city };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error getting location:', error);
+    throw error;
+  }
+};

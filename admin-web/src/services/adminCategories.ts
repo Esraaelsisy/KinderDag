@@ -170,4 +170,18 @@ export const adminCategoriesService = {
 
     if (error) throw error;
   },
+
+  /**
+   * Update sort orders for multiple categories
+   */
+  async updateSortOrders(updates: { id: string; sort_order: number }[]) {
+    for (const update of updates) {
+      const { error } = await supabase
+        .from('activity_categories')
+        .update({ sort_order: update.sort_order })
+        .eq('id', update.id);
+
+      if (error) throw error;
+    }
+  },
 };

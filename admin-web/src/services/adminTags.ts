@@ -8,6 +8,7 @@ export interface Tag {
   color: string;
   icon: string;
   is_active: boolean;
+  show_on_home?: boolean;
   sort_order: number;
 }
 
@@ -171,5 +172,19 @@ export const adminTagsService = {
       .eq('tag_id', tagId);
 
     if (error) throw error;
+  },
+
+  /**
+   * Update sort orders for multiple tags
+   */
+  async updateSortOrders(updates: { id: string; sort_order: number }[]) {
+    for (const update of updates) {
+      const { error } = await supabase
+        .from('tags')
+        .update({ sort_order: update.sort_order })
+        .eq('id', update.id);
+
+      if (error) throw error;
+    }
   },
 };
