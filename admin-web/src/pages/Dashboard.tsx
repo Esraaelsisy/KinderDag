@@ -288,6 +288,30 @@ export default function Dashboard() {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) {
+      alert('Please select activities to delete');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete ${selectedIds.size} activities? This action cannot be undone.`)) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from('activities')
+      .delete()
+      .in('id', Array.from(selectedIds));
+
+    if (error) {
+      alert('Error deleting activities: ' + error.message);
+    } else {
+      alert(`Successfully deleted ${selectedIds.size} activities!`);
+      setSelectedIds(new Set());
+      fetchActivities();
+    }
+  };
+
   const categories = Array.from(new Set(activities.map(a => a.category)));
   const ageRanges = Array.from(new Set(activities.map(a => a.age_range)));
 
@@ -392,6 +416,9 @@ export default function Dashboard() {
             <span style={styles.bulkText}>{selectedIds.size} selected</span>
             <button onClick={() => setShowBulkEdit(true)} style={styles.bulkEditButton}>
               Bulk Edit
+            </button>
+            <button onClick={handleBulkDelete} style={styles.bulkDeleteButton}>
+              Bulk Delete
             </button>
             <button onClick={() => setSelectedIds(new Set())} style={styles.clearSelectionButton}>
               Clear Selection
@@ -692,6 +719,16 @@ const styles = {
   bulkEditButton: {
     padding: '10px 20px',
     background: '#667eea',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+  bulkDeleteButton: {
+    padding: '10px 20px',
+    background: '#fc8181',
     color: 'white',
     border: 'none',
     borderRadius: '8px',
