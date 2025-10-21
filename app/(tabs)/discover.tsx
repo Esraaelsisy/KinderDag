@@ -691,14 +691,13 @@ export default function DiscoverScreen() {
               <View style={styles.ageRangeHeader}>
                 <Text style={styles.sectionTitle}>AGE RANGE</Text>
                 <Text style={styles.ageRangeValue}>
-                  {filters.minAge || '2'} - {filters.maxAge || '18'}
+                  ({filters.minAge || '2'} - {filters.maxAge || '18'})
                 </Text>
               </View>
+              <Text style={styles.ageRangeDefault}>
+                Default ({filters.minAge || '2'} - {filters.maxAge || '18'})
+              </Text>
               <View style={styles.rangePickerContainer}>
-                <View style={styles.rangeLabels}>
-                  <Text style={styles.rangeLabelText}>2</Text>
-                  <Text style={styles.rangeLabelText}>18</Text>
-                </View>
                 <View style={styles.rangeTrack}>
                   <View
                     style={[
@@ -709,44 +708,26 @@ export default function DiscoverScreen() {
                       },
                     ]}
                   />
+                  <View
+                    style={[
+                      styles.rangeThumb,
+                      {
+                        left: `${((parseInt(filters.minAge) || 2) - 2) / 16 * 100}%`,
+                      },
+                    ]}
+                  />
+                  <View
+                    style={[
+                      styles.rangeThumb,
+                      {
+                        left: `${((parseInt(filters.maxAge) || 18) - 2) / 16 * 100}%`,
+                      },
+                    ]}
+                  />
                 </View>
-                <View style={styles.ageInputRow}>
-                  <View style={styles.ageInputGroup}>
-                    <Text style={styles.ageInputLabel}>Min</Text>
-                    <TextInput
-                      style={styles.ageInput}
-                      placeholder="2"
-                      placeholderTextColor={Colors.lightGrey}
-                      value={filters.minAge}
-                      onChangeText={(value) => {
-                        const numValue = value.replace(/[^0-9]/g, '');
-                        const num = parseInt(numValue) || 2;
-                        if (num >= 2 && num <= 18) {
-                          setFilters({ ...filters, minAge: numValue });
-                        }
-                      }}
-                      keyboardType="number-pad"
-                      maxLength={2}
-                    />
-                  </View>
-                  <View style={styles.ageInputGroup}>
-                    <Text style={styles.ageInputLabel}>Max</Text>
-                    <TextInput
-                      style={styles.ageInput}
-                      placeholder="18"
-                      placeholderTextColor={Colors.lightGrey}
-                      value={filters.maxAge}
-                      onChangeText={(value) => {
-                        const numValue = value.replace(/[^0-9]/g, '');
-                        const num = parseInt(numValue) || 18;
-                        if (num >= 2 && num <= 18) {
-                          setFilters({ ...filters, maxAge: numValue });
-                        }
-                      }}
-                      keyboardType="number-pad"
-                      maxLength={2}
-                    />
-                  </View>
+                <View style={styles.rangeLabels}>
+                  <Text style={styles.rangeLabelText}>0</Text>
+                  <Text style={styles.rangeLabelText}>Adult</Text>
                 </View>
               </View>
             </View>
@@ -1154,32 +1135,52 @@ const styles = StyleSheet.create({
     color: Colors.secondary,
     fontWeight: '600',
   },
+  ageRangeDefault: {
+    fontSize: 14,
+    color: Colors.textLight,
+    marginBottom: 16,
+    textAlign: 'right',
+  },
   rangePickerContainer: {
-    marginTop: 8,
+    marginTop: 10,
   },
   rangeLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginTop: 12,
   },
   rangeLabelText: {
     fontSize: 14,
-    color: Colors.textLight,
+    color: Colors.textDark,
     fontWeight: '500',
   },
   rangeTrack: {
-    height: 6,
-    backgroundColor: Colors.border,
-    borderRadius: 3,
+    height: 4,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 2,
     position: 'relative',
-    marginBottom: 24,
+    marginBottom: 10,
   },
   rangeProgress: {
     position: 'absolute',
-    height: 6,
-    backgroundColor: Colors.secondary,
-    borderRadius: 3,
+    height: 4,
+    backgroundColor: '#14b8a6',
+    borderRadius: 2,
     top: 0,
+  },
+  rangeThumb: {
+    position: 'absolute',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#f97316',
+    top: -10,
+    marginLeft: -12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   ageInputRow: {
     flexDirection: 'row',
@@ -1225,20 +1226,20 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: Colors.secondary,
+    borderColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: Colors.secondary,
+    color: Colors.primary,
   },
   applyButton: {
     flex: 1,
     paddingVertical: 16,
     borderRadius: 12,
-    backgroundColor: Colors.secondary,
+    backgroundColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
