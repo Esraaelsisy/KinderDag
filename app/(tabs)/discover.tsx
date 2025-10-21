@@ -12,7 +12,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import ActivityCard from '@/components/ActivityCard';
-import { Search, SlidersHorizontal, X } from 'lucide-react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { Search, SlidersHorizontal, X, List, MapPin as MapPinIcon } from 'lucide-react-native';
 
 interface Activity {
   id: string;
@@ -37,6 +38,7 @@ export default function DiscoverScreen() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [filteredActivities, setFilteredActivities] = useState<Activity[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [filters, setFilters] = useState({
     indoor: false,
     outdoor: false,
@@ -176,27 +178,113 @@ export default function DiscoverScreen() {
     );
   };
 
+  const renderMapView = () => {
+    const userLocation = profile?.location_lat && profile?.location_lng
+      ? {
+          latitude: profile.location_lat,
+          longitude: profile.location_lng,
+          latitudeDelta: 0.5,
+          longitudeDelta: 0.5,
+        }
+      : {
+          latitude: 52.3676,
+          longitude: 4.9041,
+          latitudeDelta: 0.5,
+          longitudeDelta: 0.5,
+        };
+
+    return (
+      <MapView
+        style={styles.map}
+        provider={PROVIDER_GOOGLE}
+        initialRegion={userLocation}
+        showsUserLocation={true}
+        showsMyLocationButton={true}
+      >
+        {filteredActivities.map((activity) => (
+          <Marker
+            key={activity.id}
+            coordinate={{
+              latitude: activity.location_lat,
+              longitude: activity.location_lng,
+            }}
+            title={activity.name}
+            description={activity.city}
+            pinColor="#10B981"
+          />
+        ))}
+      </MapView>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{t('nav.discover')}</Text>
-        <View style={styles.searchContainer}>
-          <Search size={20} color="#64748b" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder={t('search.placeholder')}
-            placeholderTextColor="#94a3b8"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
+        <View style={styles.searchRow}>
+          <View style={styles.searchContainer}>
+            <Search size={20} color="#64748b" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder={t('search.placeholder')}
+              placeholderTextColor="#94a3b8"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
           <TouchableOpacity
-            style={styles.filterButton}
+            style={styles.iconButton}
             onPress={() => setShowFilters(!showFilters)}
           >
             <SlidersHorizontal
               size={20}
               color={hasActiveFilters ? '#10B981' : '#64748b'}
             />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => {}}
+          >
+            <MapPinIcon size={20} color="#64748b" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.viewToggle}>
+          <TouchableOpacity
+            style={[
+              styles.toggleButton,
+              styles.toggleButtonLeft,
+              viewMode === 'list' && styles.toggleButtonActive,
+            ]}
+            onPress={() => setViewMode('list')}
+          >
+            <List size={18} color={viewMode === 'list' ? '#ffffff' : '#0f766e'} />
+            <Text
+              style={[
+                styles.toggleButtonText,
+                viewMode === 'list' && styles.toggleButtonTextActive,
+              ]}
+            >
+              List
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.toggleButton,
+              styles.toggleButtonRight,
+              viewMode === 'map' && styles.toggleButtonActive,
+            ]}
+            onPress={() => setViewMode('map')}
+          >
+            <MapPinIcon size={18} color={viewMode === 'map' ? '#ffffff' : '#0f766e'} />
+            <Text
+              style={[
+                styles.toggleButtonText,
+                viewMode === 'map' && styles.toggleButtonTextActive,
+              ]}
+            >
+              Map
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -313,20 +401,26 @@ export default function DiscoverScreen() {
         </View>
       )}
 
-      <View style={styles.resultsHeader}>
-        <Text style={styles.resultsText}>
-          {filteredActivities.length} {filteredActivities.length === 1 ? 'activity' : 'activities'} found
-        </Text>
-      </View>
+      {viewMode === 'list' ? (
+        <>
+          <View style={styles.resultsHeader}>
+            <Text style={styles.resultsText}>
+              {filteredActivities.length} {filteredActivities.length === 1 ? 'activity' : 'activities'} found
+            </Text>
+          </View>
 
-      <FlatList
-        data={filteredActivities}
-        renderItem={renderActivity}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-        numColumns={1}
-      />
+          <FlatList
+            data={filteredActivities}
+            renderItem={renderActivity}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.list}
+            showsVerticalScrollIndicator={false}
+            numColumns={1}
+          />
+        </>
+      ) : (
+        renderMapView()
+      )}
     </View>
   );
 }
@@ -348,7 +442,14 @@ const styles = StyleSheet.create({
     color: '#1e293b',
     marginBottom: 16,
   },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
   searchContainer: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f1f5f9',
@@ -364,8 +465,46 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1e293b',
   },
-  filterButton: {
-    padding: 8,
+  iconButton: {
+    width: 44,
+    height: 44,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  viewToggle: {
+    flexDirection: 'row',
+    backgroundColor: '#f0fdfa',
+    borderRadius: 12,
+    padding: 4,
+  },
+  toggleButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    gap: 6,
+  },
+  toggleButtonLeft: {
+    borderTopLeftRadius: 8,
+    borderBottomLeftRadius: 8,
+  },
+  toggleButtonRight: {
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
+  },
+  toggleButtonActive: {
+    backgroundColor: '#0f766e',
+  },
+  toggleButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#0f766e',
+  },
+  toggleButtonTextActive: {
+    color: '#ffffff',
   },
   filtersContainer: {
     backgroundColor: '#ffffff',
@@ -461,5 +600,8 @@ const styles = StyleSheet.create({
   cardWrapper: {
     marginBottom: 16,
     width: '100%',
+  },
+  map: {
+    flex: 1,
   },
 });
