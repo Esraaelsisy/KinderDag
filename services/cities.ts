@@ -2,41 +2,37 @@ import { supabase } from '@/lib/supabase';
 
 export const citiesService = {
   /**
-   * Get all unique cities from activities
+   * Get all cities from the cities table
    */
   getAll: async (): Promise<string[]> => {
     const { data, error } = await supabase
-      .from('activities')
-      .select('city')
-      .not('city', 'is', null)
-      .order('city');
+      .from('cities')
+      .select('name')
+      .order('name');
 
     if (error) throw error;
 
-    // Extract unique cities
-    const uniqueCities = [...new Set(data?.map((item) => item.city) || [])];
-    return uniqueCities;
+    return data?.map((item) => item.name) || [];
   },
 
   /**
-   * Get coordinates for a city (uses first activity in that city)
+   * Get coordinates for a city from the cities table
    */
   getCityCoordinates: async (
     city: string
   ): Promise<{ lat: number; lng: number } | null> => {
     const { data, error } = await supabase
-      .from('activities')
-      .select('location_lat, location_lng')
-      .eq('city', city)
-      .limit(1)
+      .from('cities')
+      .select('latitude, longitude')
+      .eq('name', city)
       .maybeSingle();
 
     if (error) throw error;
     if (!data) return null;
 
     return {
-      lat: data.location_lat,
-      lng: data.location_lng,
+      lat: data.latitude,
+      lng: data.longitude,
     };
   },
 

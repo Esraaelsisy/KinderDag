@@ -3,11 +3,13 @@ import AdminLayout from '../components/AdminLayout';
 import { adminActivitiesService, Activity } from '../services/adminActivities';
 import { adminCategoriesService, Category } from '../services/adminCategories';
 import { adminTagsService, Tag } from '../services/adminTags';
+import { supabase } from '../lib/supabase';
 
 export default function Activities() {
   const [activities, setActivities] = useState<any[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
+  const [cities, setCities] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -21,18 +23,34 @@ export default function Activities() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [activitiesData, categoriesData, tagsData] = await Promise.all([
+      const [activitiesData, categoriesData, tagsData, citiesData] = await Promise.all([
         adminActivitiesService.getAll(),
         adminCategoriesService.getAll(),
         adminTagsService.getAll(),
+        loadCities(),
       ]);
       setActivities(activitiesData || []);
       setCategories(categoriesData || []);
       setTags(tagsData || []);
+      setCities(citiesData || []);
     } catch (error) {
       console.error('Failed to load data:', error);
     }
     setLoading(false);
+  };
+
+  const loadCities = async () => {
+    const { data, error } = await supabase
+      .from('cities')
+      .select('name')
+      .order('name');
+
+    if (error) {
+      console.error('Failed to load cities:', error);
+      return [];
+    }
+
+    return data?.map((city) => city.name) || [];
   };
 
   const handleSelectAll = () => {
@@ -265,6 +283,7 @@ export default function Activities() {
             selectedIds={selectedIds}
             categories={categories}
             tags={tags}
+            cities={cities}
             onClose={() => setShowModal(false)}
             onSave={async () => {
               setShowModal(false);
@@ -284,11 +303,12 @@ interface ActivityModalProps {
   selectedIds: string[];
   categories: Category[];
   tags: Tag[];
+  cities: string[];
   onClose: () => void;
   onSave: () => void;
 }
 
-function ActivityModal({ mode, activity, selectedIds, categories, tags, onClose, onSave }: ActivityModalProps) {
+function ActivityModal({ mode, activity, selectedIds, categories, tags, cities, onClose, onSave }: ActivityModalProps) {
   const [formData, setFormData] = useState<any>(
     activity || {
       name: '',
@@ -417,8 +437,7 @@ function ActivityModal({ mode, activity, selectedIds, categories, tags, onClose,
 
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ color: 'white', display: 'block', marginBottom: '8px' }}>City *</label>
-                <input
-                  type="text"
+                <select
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                   required
@@ -430,7 +449,14 @@ function ActivityModal({ mode, activity, selectedIds, categories, tags, onClose,
                     backgroundColor: '#0f172a',
                     color: 'white',
                   }}
-                />
+                >
+                  <option value="">Select a city</option>
+                  {cities.map((city) => (
+                    <option key={city} value={city}>
+                      {city}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
