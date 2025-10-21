@@ -54,6 +54,8 @@ export default function DiscoverScreen() {
     maxAge: '',
     maxDistance: '',
   });
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
   const { t } = useLanguage();
   const { profile, updateProfile } = useAuth();
 
@@ -631,29 +633,48 @@ export default function DiscoverScreen() {
 
             <View style={styles.filterSection}>
               <Text style={styles.sectionTitle}>CATEGORY</Text>
-              <View style={styles.scrollableList}>
-                <TouchableOpacity
-                  style={styles.listItem}
-                  onPress={() => setFilters({ ...filters, categoryFilter: '' })}
-                >
-                  <Text style={[styles.listItemText, !filters.categoryFilter && styles.listItemTextActive]}>
-                    Select
-                  </Text>
-                  {!filters.categoryFilter && <Text style={styles.checkmark}>✓</Text>}
-                </TouchableOpacity>
-                {categories.map((category) => (
+              <TouchableOpacity
+                style={styles.selectBox}
+                onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
+              >
+                <Text style={filters.categoryFilter ? styles.selectBoxTextActive : styles.selectBoxText}>
+                  {filters.categoryFilter
+                    ? categories.find(c => c.id === filters.categoryFilter)?.name || 'Select'
+                    : 'Select'}
+                </Text>
+                <Text style={styles.selectBoxArrow}>▼</Text>
+              </TouchableOpacity>
+              {showCategoryDropdown && (
+                <View style={styles.scrollableList}>
                   <TouchableOpacity
-                    key={category.id}
                     style={styles.listItem}
-                    onPress={() => setFilters({ ...filters, categoryFilter: category.id })}
+                    onPress={() => {
+                      setFilters({ ...filters, categoryFilter: '' });
+                      setShowCategoryDropdown(false);
+                    }}
                   >
-                    <Text style={[styles.listItemText, filters.categoryFilter === category.id && styles.listItemTextActive]}>
-                      {category.name}
+                    <Text style={[styles.listItemText, !filters.categoryFilter && styles.listItemTextActive]}>
+                      Select
                     </Text>
-                    {filters.categoryFilter === category.id && <Text style={styles.checkmark}>✓</Text>}
+                    {!filters.categoryFilter && <Text style={styles.checkmark}>✓</Text>}
                   </TouchableOpacity>
-                ))}
-              </View>
+                  {categories.map((category) => (
+                    <TouchableOpacity
+                      key={category.id}
+                      style={styles.listItem}
+                      onPress={() => {
+                        setFilters({ ...filters, categoryFilter: category.id });
+                        setShowCategoryDropdown(false);
+                      }}
+                    >
+                      <Text style={[styles.listItemText, filters.categoryFilter === category.id && styles.listItemTextActive]}>
+                        {category.name}
+                      </Text>
+                      {filters.categoryFilter === category.id && <Text style={styles.checkmark}>✓</Text>}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
             </View>
 
             <View style={styles.divider} />
@@ -680,50 +701,63 @@ export default function DiscoverScreen() {
 
             <View style={styles.filterSection}>
               <Text style={styles.sectionTitle}>CITY</Text>
-              <View style={styles.scrollableList}>
-                <TouchableOpacity
-                  style={styles.listItem}
-                  onPress={() => {
-                    setSelectedCity(null);
-                    updateProfile({
-                      location_lat: null,
-                      location_lng: null,
-                      location_name: null,
-                    });
-                  }}
-                >
-                  <Text style={[styles.listItemText, !selectedCity && styles.listItemTextActive]}>
-                    Select
-                  </Text>
-                  {!selectedCity && <Text style={styles.checkmark}>✓</Text>}
-                </TouchableOpacity>
-                {cities.map((city) => (
+              <TouchableOpacity
+                style={styles.selectBox}
+                onPress={() => setShowCityDropdown(!showCityDropdown)}
+              >
+                <Text style={selectedCity ? styles.selectBoxTextActive : styles.selectBoxText}>
+                  {selectedCity || 'Select'}
+                </Text>
+                <Text style={styles.selectBoxArrow}>▼</Text>
+              </TouchableOpacity>
+              {showCityDropdown && (
+                <View style={styles.scrollableList}>
                   <TouchableOpacity
-                    key={city}
                     style={styles.listItem}
-                    onPress={async () => {
-                      setSelectedCity(city);
-                      try {
-                        const coords = await citiesService.getCityCoordinates(city);
-                        if (coords) {
-                          await updateProfile({
-                            location_lat: coords.lat,
-                            location_lng: coords.lng,
-                            location_name: city,
-                          });
-                        }
-                      } catch (error) {
-                        console.error('Failed to update city:', error);
-                      }
+                    onPress={() => {
+                      setSelectedCity(null);
+                      updateProfile({
+                        location_lat: null,
+                        location_lng: null,
+                        location_name: null,
+                      });
+                      setShowCityDropdown(false);
                     }}
                   >
-                    <Text style={[styles.listItemText, selectedCity === city && styles.listItemTextActive]}>
-                      {city}
+                    <Text style={[styles.listItemText, !selectedCity && styles.listItemTextActive]}>
+                      Select
                     </Text>
-                    {selectedCity === city && <Text style={styles.checkmark}>✓</Text>}
+                    {!selectedCity && <Text style={styles.checkmark}>✓</Text>}
                   </TouchableOpacity>
-                ))}
-              </View>
+                  {cities.map((city) => (
+                    <TouchableOpacity
+                      key={city}
+                      style={styles.listItem}
+                      onPress={async () => {
+                        setSelectedCity(city);
+                        try {
+                          const coords = await citiesService.getCityCoordinates(city);
+                          if (coords) {
+                            await updateProfile({
+                              location_lat: coords.lat,
+                              location_lng: coords.lng,
+                              location_name: city,
+                            });
+                          }
+                        } catch (error) {
+                          console.error('Failed to update city:', error);
+                        }
+                        setShowCityDropdown(false);
+                      }}
+                    >
+                      <Text style={[styles.listItemText, selectedCity === city && styles.listItemTextActive]}>
+                        {city}
+                      </Text>
+                      {selectedCity === city && <Text style={styles.checkmark}>✓</Text>}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
             </View>
 
             <View style={styles.divider} />
