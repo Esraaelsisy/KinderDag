@@ -223,7 +223,7 @@ export default function ActivityDetailScreen() {
               </View>
             ) : (
               <View style={styles.priceTag}>
-                <Euro size={16} color="#10B981" />
+                <Euro size={16} color="#1ABC9C" />
                 <Text style={styles.priceText}>
                   {activity.price_min === activity.price_max
                     ? activity.price_min
@@ -280,7 +280,7 @@ export default function ActivityDetailScreen() {
               style={styles.scheduleButton}
               onPress={() => setShowScheduleModal(true)}
             >
-              <Calendar size={20} color="#10B981" />
+              <Calendar size={20} color="#1ABC9C" />
               <Text style={styles.scheduleButtonText}>Add to Schedule</Text>
             </TouchableOpacity>
             {activity.booking_url && (
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
   },
   tagTextFree: {
     fontSize: 13,
-    color: '#065f46',
+    color: '#1ABC9C',
     fontWeight: '600',
   },
   priceTag: {
@@ -447,7 +447,7 @@ const styles = StyleSheet.create({
   },
   priceText: {
     fontSize: 13,
-    color: '#065f46',
+    color: '#1ABC9C',
     fontWeight: '600',
   },
   section: {
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
   },
   contactText: {
     fontSize: 15,
-    color: '#10B981',
+    color: '#1ABC9C',
     textDecorationLine: 'underline',
   },
   actions: {
@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#ffffff',
     borderWidth: 2,
-    borderColor: '#10B981',
+    borderColor: '#1ABC9C',
     borderRadius: 12,
     padding: 16,
     gap: 8,
@@ -510,13 +510,13 @@ const styles = StyleSheet.create({
   scheduleButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#10B981',
+    color: '#1ABC9C',
   },
   bookButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#10B981',
+    backgroundColor: '#1ABC9C',
     borderRadius: 12,
     padding: 16,
     gap: 8,
@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     flex: 1,
-    backgroundColor: '#10B981',
+    backgroundColor: '#1ABC9C',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',

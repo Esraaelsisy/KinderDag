@@ -189,7 +189,7 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <LinearGradient colors={['#10B981', '#059669']} style={styles.container}>
+    <LinearGradient colors={['#1ABC9C', '#16A085']} style={styles.container}>
       <FlatList
         ref={flatListRef}
         data={steps}

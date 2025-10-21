@@ -244,7 +244,7 @@ export default function DiscoverScreen() {
           >
             <SlidersHorizontal
               size={20}
-              color={hasActiveFilters ? '#10B981' : '#64748b'}
+              color={hasActiveFilters ? '#1ABC9C' : '#64748b'}
             />
           </TouchableOpacity>
           <TouchableOpacity
@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
   },
   clearText: {
     fontSize: 14,
-    color: '#10B981',
+    color: '#1ABC9C',
     fontWeight: '600',
   },
   filterGroup: {
@@ -557,8 +557,8 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   filterChipActive: {
-    backgroundColor: '#10B981',
-    borderColor: '#10B981',
+    backgroundColor: '#1ABC9C',
+    borderColor: '#1ABC9C',
   },
   filterChipText: {
     fontSize: 14,

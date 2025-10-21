@@ -598,7 +598,7 @@ const styles = {
   },
   importButton: {
     padding: '12px 24px',
-    background: '#48bb78',
+    background: '#1ABC9C',
     color: 'white',
     border: 'none',
     borderRadius: '8px',

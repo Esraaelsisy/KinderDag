@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   dateBox: {
     width: 60,
     height: 60,
-    backgroundColor: '#10B981',
+    backgroundColor: '#1ABC9C',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',

@@ -72,7 +72,7 @@ export default function CategoriesScreen() {
   const getCategoryGradient = (index: number): [string, string] => {
     const gradients: Array<[string, string]> = [
       ['#06b6d4', '#0891b2'],
-      ['#10b981', '#059669'],
+      ['#1ABC9C', '#16A085'],
       ['#f59e0b', '#d97706'],
       ['#ef4444', '#dc2626'],
       ['#8b5cf6', '#7c3aed'],
@@ -110,7 +110,7 @@ export default function CategoriesScreen() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={['#10B981', '#059669']} style={styles.header}>
+      <LinearGradient colors={['#1ABC9C', '#16A085']} style={styles.header}>
         <Text style={styles.title}>
           {language === 'en' ? 'Categories' : 'Categorieën'}
         </Text>
