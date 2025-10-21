@@ -10,7 +10,7 @@ interface Category {
   name_nl: string;
   color: string;
   sort_order: number;
-  emoji?: string;
+  icon?: string;
 }
 
 const { width } = Dimensions.get('window');
@@ -27,7 +27,7 @@ export default function CategoriesScreen() {
 
   const loadCategories = async () => {
     const { data } = await supabase
-      .from('categories')
+      .from('activity_categories')
       .select('*')
       .order('sort_order', { ascending: true });
 
@@ -46,8 +46,8 @@ export default function CategoriesScreen() {
         <Text style={[styles.categoryName, { color: item.color || '#0ea5e9' }]}>
           {language === 'en' ? item.name_en : item.name_nl}
         </Text>
-        {item.emoji && (
-          <Text style={styles.emoji}>{item.emoji}</Text>
+        {item.icon && (
+          <Text style={styles.emoji}>{item.icon}</Text>
         )}
       </View>
     </TouchableOpacity>
