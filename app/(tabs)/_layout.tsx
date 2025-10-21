@@ -58,7 +58,6 @@ export default function TabLayout() {
                   color={focused ? Colors.white : Colors.secondary}
                   size={28}
                   strokeWidth={2.5}
-                  fill={focused ? Colors.white : 'none'}
                 />
               </View>
             </View>
