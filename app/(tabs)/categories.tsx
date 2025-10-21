@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions } from '
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface Category {
   id: string;
@@ -36,28 +37,73 @@ export default function CategoriesScreen() {
     }
   };
 
-  const renderCategory = ({ item }: { item: Category }) => (
-    <TouchableOpacity
-      style={styles.categoryCard}
-      onPress={() => {}}
-      activeOpacity={0.7}
-    >
-      <View style={styles.cardContent}>
-        <Text style={[styles.categoryName, { color: item.color || '#0ea5e9' }]}>
-          {language === 'en' ? item.name_en : item.name_nl}
-        </Text>
-        {item.icon && (
-          <Text style={styles.emoji}>{item.icon}</Text>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
+  const getCategoryEmoji = (nameEn: string) => {
+    const emojiMap: Record<string, string> = {
+      'outdoor': '🏞️',
+      'indoor': '🏠',
+      'sports': '⚽',
+      'arts': '🎨',
+      'learning': '📚',
+      'adventure': '🧗',
+      'water': '💧',
+      'creative': '✨',
+      'music': '🎵',
+      'science': '🔬',
+    };
+    return emojiMap[nameEn.toLowerCase()] || '🎯';
+  };
+
+  const getCategoryGradient = (index: number): [string, string] => {
+    const gradients: Array<[string, string]> = [
+      ['#06b6d4', '#0891b2'],
+      ['#10b981', '#059669'],
+      ['#f59e0b', '#d97706'],
+      ['#ef4444', '#dc2626'],
+      ['#8b5cf6', '#7c3aed'],
+      ['#ec4899', '#db2777'],
+      ['#14b8a6', '#0d9488'],
+      ['#f97316', '#ea580c'],
+    ];
+    return gradients[index % gradients.length];
+  };
+
+  const renderCategory = ({ item, index }: { item: Category; index: number }) => {
+    const gradient = getCategoryGradient(index);
+    const emoji = getCategoryEmoji(item.name_en);
+
+    return (
+      <TouchableOpacity
+        style={styles.categoryCard}
+        onPress={() => {}}
+        activeOpacity={0.8}
+      >
+        <LinearGradient
+          colors={gradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientCard}
+        >
+          <Text style={styles.emoji}>{emoji}</Text>
+          <Text style={styles.categoryName}>
+            {language === 'en' ? item.name_en : item.name_nl}
+          </Text>
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Categories</Text>
-      </View>
+      <LinearGradient colors={['#10B981', '#059669']} style={styles.header}>
+        <Text style={styles.title}>
+          {language === 'en' ? 'Categories' : 'Categorieën'}
+        </Text>
+        <Text style={styles.subtitle}>
+          {language === 'en'
+            ? 'Discover activities by category'
+            : 'Ontdek activiteiten per categorie'}
+        </Text>
+      </LinearGradient>
 
       <FlatList
         data={categories}
@@ -80,17 +126,22 @@ const styles = StyleSheet.create({
   header: {
     paddingTop: 60,
     paddingHorizontal: 20,
-    paddingBottom: 24,
-    backgroundColor: '#0ea5e9',
-    alignItems: 'center',
+    paddingBottom: 32,
   },
   title: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#ffffff',
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 15,
+    color: '#ffffff',
+    opacity: 0.9,
   },
   list: {
     padding: 16,
+    paddingBottom: 100,
   },
   row: {
     justifyContent: 'space-between',
@@ -98,27 +149,27 @@ const styles = StyleSheet.create({
   },
   categoryCard: {
     width: CARD_WIDTH,
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 20,
-    minHeight: 120,
+    borderRadius: 20,
+    overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 5,
   },
-  cardContent: {
-    flex: 1,
+  gradientCard: {
+    padding: 24,
+    minHeight: 140,
     justifyContent: 'space-between',
   },
-  categoryName: {
-    fontSize: 16,
-    fontWeight: '700',
-    lineHeight: 22,
-  },
   emoji: {
-    fontSize: 48,
-    alignSelf: 'flex-end',
+    fontSize: 56,
+    marginBottom: 12,
+  },
+  categoryName: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#ffffff',
+    lineHeight: 23,
   },
 });
