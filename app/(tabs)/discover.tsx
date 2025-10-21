@@ -19,6 +19,7 @@ import { Colors } from '@/constants/colors';
 import { Activity } from '@/types';
 import { activitiesService } from '@/services/activities';
 import { citiesService } from '@/services/cities';
+import { calculateDistance } from '@/utils/location';
 
 export default function DiscoverScreen() {
   const [searchQuery, setSearchQuery] = useState('');
