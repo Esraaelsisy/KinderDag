@@ -40,6 +40,9 @@ export default function DiscoverScreen() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [filteredActivities, setFilteredActivities] = useState<Activity[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [showCityPicker, setShowCityPicker] = useState(false);
+  const [cities, setCities] = useState<string[]>([]);
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('map');
   const [filters, setFilters] = useState({
     indoor: false,
@@ -50,11 +53,21 @@ export default function DiscoverScreen() {
     maxDistance: '',
   });
   const { t } = useLanguage();
-  const { profile } = useAuth();
+  const { profile, updateProfile } = useAuth();
 
   useEffect(() => {
     loadActivities();
+    loadCities();
+    if (profile?.location_name) {
+      setSelectedCity(profile.location_name);
+    }
   }, []);
+
+  useEffect(() => {
+    if (profile?.location_name) {
+      setSelectedCity(profile.location_name);
+    }
+  }, [profile?.location_name]);
 
   useEffect(() => {
     applyFilters();
@@ -68,6 +81,39 @@ export default function DiscoverScreen() {
 
     if (data) {
       setActivities(data);
+    }
+  };
+
+  const loadCities = async () => {
+    const { data } = await supabase
+      .from('activities')
+      .select('city')
+      .not('city', 'is', null)
+      .order('city');
+
+    if (data) {
+      const uniqueCities = [...new Set(data.map(item => item.city))];
+      setCities(uniqueCities);
+    }
+  };
+
+  const selectCity = async (city: string) => {
+    setSelectedCity(city);
+    setShowCityPicker(false);
+
+    const { data } = await supabase
+      .from('activities')
+      .select('location_lat, location_lng')
+      .eq('city', city)
+      .limit(1)
+      .maybeSingle();
+
+    if (data) {
+      await updateProfile({
+        location_lat: data.location_lat,
+        location_lng: data.location_lng,
+        location_name: city,
+      });
     }
   };
 
@@ -250,9 +296,9 @@ export default function DiscoverScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.iconButton}
-            onPress={() => {}}
+            onPress={() => setShowCityPicker(!showCityPicker)}
           >
-            <MapPinIcon size={20} color={Colors.textLight} />
+            <MapPinIcon size={20} color={selectedCity ? Colors.primary : Colors.textLight} />
           </TouchableOpacity>
         </View>
 
@@ -295,6 +341,42 @@ export default function DiscoverScreen() {
           </TouchableOpacity>
         </View>
       </View>
+
+      {showCityPicker && (
+        <View style={styles.cityPickerModal}>
+          <View style={styles.cityPickerHeader}>
+            <Text style={styles.cityPickerTitle}>Select Your City</Text>
+            <TouchableOpacity onPress={() => setShowCityPicker(false)}>
+              <X size={24} color={Colors.textDark} />
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            data={cities}
+            keyExtractor={(city) => city}
+            renderItem={({ item: city }) => (
+              <TouchableOpacity
+                style={[
+                  styles.cityPickerOption,
+                  selectedCity === city && styles.cityPickerOptionActive,
+                ]}
+                onPress={() => selectCity(city)}
+              >
+                <Text
+                  style={[
+                    styles.cityPickerOptionText,
+                    selectedCity === city && styles.cityPickerOptionTextActive,
+                  ]}
+                >
+                  {city}
+                </Text>
+                {selectedCity === city && (
+                  <Text style={styles.checkmark}>✓</Text>
+                )}
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      )}
 
       {showFilters && (
         <View style={styles.filtersContainer}>
@@ -656,5 +738,48 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: Colors.primary,
+  },
+  cityPickerModal: {
+    backgroundColor: Colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+    maxHeight: 300,
+  },
+  cityPickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  cityPickerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.textDark,
+  },
+  cityPickerOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  cityPickerOptionActive: {
+    backgroundColor: Colors.successLight,
+  },
+  cityPickerOptionText: {
+    fontSize: 16,
+    color: Colors.textDark,
+  },
+  cityPickerOptionTextActive: {
+    fontWeight: '600',
+    color: Colors.primary,
+  },
+  checkmark: {
+    fontSize: 20,
+    color: Colors.primary,
+    fontWeight: 'bold',
   },
 });

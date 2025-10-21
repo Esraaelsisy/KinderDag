@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -35,10 +35,30 @@ const steps: OnboardingStep[] = [
 export default function OnboardingScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [kids, setKids] = useState<{ name: string; birthYear: string }[]>([{ name: '', birthYear: '' }]);
+  const [cities, setCities] = useState<string[]>([]);
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [showCityPicker, setShowCityPicker] = useState(false);
   const flatListRef = useRef<FlatList>(null);
   const { user, updateProfile, refreshProfile } = useAuth();
   const { t, language, setLanguage } = useLanguage();
   const router = useRouter();
+
+  useEffect(() => {
+    loadCities();
+  }, []);
+
+  const loadCities = async () => {
+    const { data } = await supabase
+      .from('activities')
+      .select('city')
+      .not('city', 'is', null)
+      .order('city');
+
+    if (data) {
+      const uniqueCities = [...new Set(data.map(item => item.city))];
+      setCities(uniqueCities);
+    }
+  };
 
   const handleNext = () => {
     if (currentIndex < steps.length - 1) {
@@ -66,6 +86,26 @@ export default function OnboardingScreen() {
     router.replace('/(tabs)');
   };
 
+  const selectCity = async (city: string) => {
+    setSelectedCity(city);
+    setShowCityPicker(false);
+
+    const { data } = await supabase
+      .from('activities')
+      .select('location_lat, location_lng')
+      .eq('city', city)
+      .limit(1)
+      .maybeSingle();
+
+    if (data) {
+      await updateProfile({
+        location_lat: data.location_lat,
+        location_lng: data.location_lng,
+        location_name: city,
+      });
+    }
+  };
+
   const requestLocation = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -81,6 +121,7 @@ export default function OnboardingScreen() {
       });
 
       const locationName = geocode[0]?.city || geocode[0]?.region || 'Unknown';
+      setSelectedCity(locationName);
 
       await updateProfile({
         location_lat: location.coords.latitude,
@@ -177,9 +218,44 @@ export default function OnboardingScreen() {
 
         {item.id === 'location' && (
           <View style={styles.locationContainer}>
-            <TouchableOpacity style={styles.locationButton} onPress={requestLocation}>
-              <Text style={styles.locationButtonText}>Enable Location Services</Text>
+            <TouchableOpacity
+              style={styles.cityPickerButton}
+              onPress={() => setShowCityPicker(!showCityPicker)}
+            >
+              <Text style={styles.cityPickerButtonText}>
+                {selectedCity || 'Select your city'}
+              </Text>
+              <Text style={styles.dropdownArrow}>{showCityPicker ? '▲' : '▼'}</Text>
             </TouchableOpacity>
+
+            {showCityPicker && (
+              <View style={styles.cityPickerDropdown}>
+                <FlatList
+                  data={cities}
+                  keyExtractor={(city) => city}
+                  renderItem={({ item: city }) => (
+                    <TouchableOpacity
+                      style={styles.cityOption}
+                      onPress={() => selectCity(city)}
+                    >
+                      <Text style={styles.cityOptionText}>{city}</Text>
+                    </TouchableOpacity>
+                  )}
+                  style={styles.cityList}
+                />
+              </View>
+            )}
+
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <TouchableOpacity style={styles.locationButton} onPress={requestLocation}>
+              <Text style={styles.locationButtonText}>Use My Location</Text>
+            </TouchableOpacity>
+
             <TouchableOpacity onPress={handleNext}>
               <Text style={styles.skipText}>{t('onboarding.skip')}</Text>
             </TouchableOpacity>
@@ -327,16 +403,73 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     alignItems: 'center',
   },
-  locationButton: {
+  cityPickerButton: {
     backgroundColor: Colors.white,
+    borderRadius: 12,
+    padding: 20,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  cityPickerButtonText: {
+    color: Colors.textDark,
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  dropdownArrow: {
+    color: Colors.textDark,
+    fontSize: 16,
+  },
+  cityPickerDropdown: {
+    backgroundColor: Colors.white,
+    borderRadius: 12,
+    width: '100%',
+    maxHeight: 200,
+    marginBottom: 16,
+  },
+  cityList: {
+    maxHeight: 200,
+  },
+  cityOption: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  cityOptionText: {
+    color: Colors.textDark,
+    fontSize: 16,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    marginVertical: 16,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  dividerText: {
+    color: Colors.white,
+    fontSize: 14,
+    marginHorizontal: 12,
+    opacity: 0.8,
+  },
+  locationButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 12,
     padding: 20,
     width: '100%',
     alignItems: 'center',
     marginBottom: 24,
+    borderWidth: 2,
+    borderColor: Colors.white,
   },
   locationButtonText: {
-    color: Colors.textDark,
+    color: Colors.white,
     fontSize: 18,
     fontWeight: '600',
   },
