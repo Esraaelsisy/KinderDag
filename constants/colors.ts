@@ -1,6 +1,6 @@
 export const Colors = {
-  primary: '#1ABC9C',
-  primaryDark: '#16A085',
+  primary: '#16b3cb',
+  primaryDark: '#1299af',
   secondary: '#9B59B6',
   secondaryDark: '#8E44AD',
   accent: '#FDD835',
@@ -15,7 +15,7 @@ export const Colors = {
   inputBackground: '#f1f5f9',
   cardBorder: '#E4E7EB',
   border: '#e2e8f0',
-  success: '#1ABC9C',
+  success: '#16b3cb',
   error: '#ef4444',
   warning: '#fbbf24',
   info: '#0369a1',
