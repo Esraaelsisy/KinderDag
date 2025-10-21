@@ -136,7 +136,7 @@ export default function HomeScreen() {
       .select('*')
       .eq('is_featured', true)
       .order('average_rating', { ascending: false })
-      .limit(10);
+      .limit(5);
 
     if (data) setDontMiss(data);
   };
@@ -172,7 +172,8 @@ export default function HomeScreen() {
     const { data } = await supabase
       .from('activity_categories')
       .select('*')
-      .order('sort_order', { ascending: true });
+      .order('sort_order', { ascending: true })
+      .limit(8);
 
     if (data) setCategories(data);
   };
@@ -311,7 +312,14 @@ export default function HomeScreen() {
       )}
 
       <View style={styles.categoriesSection}>
-        <Text style={styles.sectionTitle}>{t('home.categories')}</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>{t('home.categories')}</Text>
+          <TouchableOpacity>
+            <Text style={styles.seeAllLink}>
+              {language === 'en' ? 'See All' : 'Bekijk Alles'}
+            </Text>
+          </TouchableOpacity>
+        </View>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -365,9 +373,16 @@ export default function HomeScreen() {
 
       {dontMiss.length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {language === 'en' ? "Don't miss this week" : 'Mis deze week niet'}
-          </Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {language === 'en' ? "Don't miss this week" : 'Mis deze week niet'}
+            </Text>
+            <TouchableOpacity>
+              <Text style={styles.seeAllLink}>
+                {language === 'en' ? 'See All' : 'Bekijk Alles'}
+              </Text>
+            </TouchableOpacity>
+          </View>
           <FlatList
             data={dontMiss}
             renderItem={({ item }) => renderActivity(item)}
@@ -381,9 +396,16 @@ export default function HomeScreen() {
 
       {catchItBeforeEnds.length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {language === 'en' ? 'Catch it before it Ends' : 'Grijp het voordat het eindigt'}
-          </Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {language === 'en' ? 'Catch it before it Ends' : 'Grijp het voordat het eindigt'}
+            </Text>
+            <TouchableOpacity>
+              <Text style={styles.seeAllLink}>
+                {language === 'en' ? 'See All' : 'Bekijk Alles'}
+              </Text>
+            </TouchableOpacity>
+          </View>
           <FlatList
             data={catchItBeforeEnds}
             renderItem={({ item }) => renderActivity(item)}
@@ -397,9 +419,16 @@ export default function HomeScreen() {
 
       {hotPicks.length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {language === 'en' ? 'Hot Picks' : 'Populaire keuzes'}
-          </Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {language === 'en' ? 'Hot Picks' : 'Populaire keuzes'}
+            </Text>
+            <TouchableOpacity>
+              <Text style={styles.seeAllLink}>
+                {language === 'en' ? 'See All' : 'Bekijk Alles'}
+              </Text>
+            </TouchableOpacity>
+          </View>
           <FlatList
             data={hotPicks}
             renderItem={({ item }) => renderActivity(item)}
@@ -413,7 +442,14 @@ export default function HomeScreen() {
 
       {featured.length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('home.featured')}</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>{t('home.featured')}</Text>
+            <TouchableOpacity>
+              <Text style={styles.seeAllLink}>
+                {language === 'en' ? 'See All' : 'Bekijk Alles'}
+              </Text>
+            </TouchableOpacity>
+          </View>
           <FlatList
             data={featured}
             renderItem={({ item }) => renderActivity(item)}
@@ -427,7 +463,14 @@ export default function HomeScreen() {
 
       {seasonal.length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('home.seasonal')}</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>{t('home.seasonal')}</Text>
+            <TouchableOpacity>
+              <Text style={styles.seeAllLink}>
+                {language === 'en' ? 'See All' : 'Bekijk Alles'}
+              </Text>
+            </TouchableOpacity>
+          </View>
           <FlatList
             data={seasonal}
             renderItem={({ item }) => renderActivity(item)}
@@ -524,12 +567,22 @@ const styles = StyleSheet.create({
   categoriesSection: {
     marginBottom: 20,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
   sectionTitle: {
     fontSize: 22,
     fontWeight: 'bold',
     color: '#1e293b',
-    marginBottom: 16,
-    paddingHorizontal: 20,
+  },
+  seeAllLink: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0ea5e9',
   },
   categoriesList: {
     paddingHorizontal: 20,
