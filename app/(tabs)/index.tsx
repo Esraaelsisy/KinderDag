@@ -16,7 +16,7 @@ import { supabase } from '@/lib/supabase';
 import ActivityCard from '@/components/ActivityCard';
 import CategoryButton from '@/components/CategoryButton';
 import { LinearGradient } from 'expo-linear-gradient';
-import { MapPin, Sun } from 'lucide-react-native';
+import { MapPin } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -329,17 +329,7 @@ export default function HomeScreen() {
         </View>
       )}
 
-      <View style={styles.weatherSection}>
-        <View style={styles.weatherHeader}>
-          <Sun size={24} color="#fbbf24" />
-          <Text style={styles.weatherTitle}>{t('home.weather')}</Text>
-        </View>
-        <Text style={styles.weatherSubtitle}>
-          {language === 'en'
-            ? 'Weather integration coming soon'
-            : 'Weersinformatie komt binnenkort'}
-        </Text>
-      </View>
+      <View style={styles.bottomPadding} />
     </ScrollView>
   );
 }
@@ -377,7 +367,7 @@ const styles = StyleSheet.create({
   },
   bannerContainer: {
     marginHorizontal: 20,
-    marginTop: -40,
+    marginTop: 16,
     marginBottom: 20,
     borderRadius: 16,
     overflow: 'hidden',
@@ -440,31 +430,7 @@ const styles = StyleSheet.create({
   activitiesList: {
     paddingHorizontal: 20,
   },
-  weatherSection: {
-    marginHorizontal: 20,
-    marginBottom: 24,
-    padding: 20,
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  weatherHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 8,
-  },
-  weatherTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1e293b',
-  },
-  weatherSubtitle: {
-    fontSize: 14,
-    color: '#64748b',
+  bottomPadding: {
+    height: 100,
   },
 });
