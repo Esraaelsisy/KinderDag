@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
-import { Home, Search, Heart, Calendar, User } from 'lucide-react-native';
+import { Home, Search, Heart, LayoutGrid, User } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { View, StyleSheet, Platform } from 'react-native';
 
 export default function TabLayout() {
   const { t } = useLanguage();
@@ -17,7 +18,7 @@ export default function TabLayout() {
           borderTopColor: '#e2e8f0',
           paddingTop: 8,
           paddingBottom: 8,
-          height: 60,
+          height: 70,
         },
         tabBarLabelStyle: {
           fontSize: 12,
@@ -28,29 +29,36 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: t('nav.home'),
+          title: 'Home',
           tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
+        name="categories"
+        options={{
+          title: 'Categories',
+          tabBarIcon: ({ color, size }) => <LayoutGrid color={color} size={size} />,
         }}
       />
       <Tabs.Screen
         name="discover"
         options={{
-          title: t('nav.discover'),
-          tabBarIcon: ({ color, size }) => <Search color={color} size={size} />,
+          title: 'Search',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={styles.centerIconContainer}>
+              <View style={[styles.centerIcon, focused && styles.centerIconActive]}>
+                <Search color="#ffffff" size={28} strokeWidth={2.5} />
+              </View>
+            </View>
+          ),
+          tabBarLabel: () => null,
         }}
       />
       <Tabs.Screen
         name="favorites"
         options={{
-          title: t('nav.favorites'),
+          title: 'Favorite',
           tabBarIcon: ({ color, size }) => <Heart color={color} size={size} />,
-        }}
-      />
-      <Tabs.Screen
-        name="activities"
-        options={{
-          title: t('nav.activities'),
-          tabBarIcon: ({ color, size }) => <Calendar color={color} size={size} />,
         }}
       />
       <Tabs.Screen
@@ -60,6 +68,42 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
         }}
       />
+      <Tabs.Screen
+        name="activities"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  centerIconContainer: {
+    position: 'absolute',
+    top: -30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  centerIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#10B981',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+    borderWidth: 4,
+    borderColor: '#ffffff',
+  },
+  centerIconActive: {
+    backgroundColor: '#059669',
+  },
+});
