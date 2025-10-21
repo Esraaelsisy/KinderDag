@@ -17,6 +17,7 @@ import * as Location from 'expo-location';
 import { supabase } from '@/lib/supabase';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/colors';
+import { citiesService } from '@/services/cities';
 
 const { width } = Dimensions.get('window');
 
@@ -48,15 +49,11 @@ export default function OnboardingScreen() {
   }, []);
 
   const loadCities = async () => {
-    const { data } = await supabase
-      .from('activities')
-      .select('city')
-      .not('city', 'is', null)
-      .order('city');
-
-    if (data) {
-      const uniqueCities = [...new Set(data.map(item => item.city))];
-      setCities(uniqueCities);
+    try {
+      const data = await citiesService.getAll();
+      setCities(data);
+    } catch (error) {
+      console.error('Failed to load cities:', error);
     }
   };
 
@@ -90,19 +87,17 @@ export default function OnboardingScreen() {
     setSelectedCity(city);
     setShowCityPicker(false);
 
-    const { data } = await supabase
-      .from('activities')
-      .select('location_lat, location_lng')
-      .eq('city', city)
-      .limit(1)
-      .maybeSingle();
-
-    if (data) {
-      await updateProfile({
-        location_lat: data.location_lat,
-        location_lng: data.location_lng,
-        location_name: city,
-      });
+    try {
+      const coords = await citiesService.getCityCoordinates(city);
+      if (coords) {
+        await updateProfile({
+          location_lat: coords.lat,
+          location_lng: coords.lng,
+          location_name: city,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to select city:', error);
     }
   };
 

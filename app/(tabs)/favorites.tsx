@@ -10,33 +10,16 @@ import {
 } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
 import ActivityCard from '@/components/ActivityCard';
 import { Heart } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
-
-interface Favorite {
-  id: string;
-  activity: {
-    id: string;
-    name: string;
-    city: string;
-    images: string[];
-    average_rating: number;
-    total_reviews: number;
-    price_min: number;
-    price_max: number;
-    is_free: boolean;
-    age_min: number;
-    age_max: number;
-    location_lat: number;
-    location_lng: number;
-  };
-}
+import { Activity } from '@/types';
+import { favoritesService } from '@/services/favorites';
+import { calculateDistance } from '@/utils/location';
 
 export default function FavoritesScreen() {
-  const [favorites, setFavorites] = useState<Favorite[]>([]);
+  const [favorites, setFavorites] = useState<Activity[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const { t } = useLanguage();
   const { user, profile } = useAuth();
@@ -51,29 +34,12 @@ export default function FavoritesScreen() {
   const loadFavorites = async () => {
     if (!user) return;
 
-    const { data } = await supabase
-      .from('favorites')
-      .select('id, activity:activities(*)')
-      .eq('profile_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (data) {
-      setFavorites(data as any);
+    try {
+      const data = await favoritesService.getAll(user.id);
+      setFavorites(data);
+    } catch (error) {
+      console.error('Failed to load favorites:', error);
     }
-  };
-
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 6371;
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
   };
 
   const onRefresh = async () => {
@@ -82,35 +48,35 @@ export default function FavoritesScreen() {
     setRefreshing(false);
   };
 
-  const renderActivity = ({ item }: { item: Favorite }) => {
+  const renderActivity = ({ item }: { item: Activity }) => {
     let distance: number | undefined;
     if (profile?.location_lat && profile?.location_lng) {
       distance = calculateDistance(
         profile.location_lat,
         profile.location_lng,
-        item.activity.location_lat,
-        item.activity.location_lng
+        item.location_lat,
+        item.location_lng
       );
     }
 
     return (
       <View style={styles.cardWrapper}>
         <ActivityCard
-          id={item.activity.id}
-          name={item.activity.name}
-          city={item.activity.city}
+          id={item.id}
+          name={item.name}
+          city={item.city}
           distance={distance}
           image={
-            item.activity.images?.[0] ||
+            item.images?.[0] ||
             'https://images.pexels.com/photos/1648387/pexels-photo-1648387.jpeg'
           }
-          rating={item.activity.average_rating}
-          reviews={item.activity.total_reviews}
-          priceMin={item.activity.price_min}
-          priceMax={item.activity.price_max}
-          isFree={item.activity.is_free}
-          ageMin={item.activity.age_min}
-          ageMax={item.activity.age_max}
+          rating={item.average_rating}
+          reviews={item.total_reviews}
+          priceMin={item.price_min}
+          priceMax={item.price_max}
+          isFree={item.is_free}
+          ageMin={item.age_min}
+          ageMax={item.age_max}
         />
       </View>
     );

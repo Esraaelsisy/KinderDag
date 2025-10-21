@@ -12,28 +12,12 @@ import {
 } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
 import ActivityCard from '@/components/ActivityCard';
 import { Search, SlidersHorizontal, X, List, MapPin as MapPinIcon } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
-
-interface Activity {
-  id: string;
-  name: string;
-  city: string;
-  images: string[];
-  average_rating: number;
-  total_reviews: number;
-  price_min: number;
-  price_max: number;
-  is_free: boolean;
-  age_min: number;
-  age_max: number;
-  location_lat: number;
-  location_lng: number;
-  is_indoor: boolean;
-  is_outdoor: boolean;
-}
+import { Activity } from '@/types';
+import { activitiesService } from '@/services/activities';
+import { citiesService } from '@/services/cities';
 
 export default function DiscoverScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -74,26 +58,20 @@ export default function DiscoverScreen() {
   }, [searchQuery, filters, activities]);
 
   const loadActivities = async () => {
-    const { data } = await supabase
-      .from('activities')
-      .select('*')
-      .order('average_rating', { ascending: false });
-
-    if (data) {
+    try {
+      const data = await activitiesService.getAll();
       setActivities(data);
+    } catch (error) {
+      console.error('Failed to load activities:', error);
     }
   };
 
   const loadCities = async () => {
-    const { data } = await supabase
-      .from('activities')
-      .select('city')
-      .not('city', 'is', null)
-      .order('city');
-
-    if (data) {
-      const uniqueCities = [...new Set(data.map(item => item.city))];
-      setCities(uniqueCities);
+    try {
+      const data = await citiesService.getAll();
+      setCities(data);
+    } catch (error) {
+      console.error('Failed to load cities:', error);
     }
   };
 
@@ -101,39 +79,24 @@ export default function DiscoverScreen() {
     setSelectedCity(city);
     setShowCityPicker(false);
 
-    const { data } = await supabase
-      .from('activities')
-      .select('location_lat, location_lng')
-      .eq('city', city)
-      .limit(1)
-      .maybeSingle();
-
-    if (data) {
-      await updateProfile({
-        location_lat: data.location_lat,
-        location_lng: data.location_lng,
-        location_name: city,
-      });
+    try {
+      const coords = await citiesService.getCityCoordinates(city);
+      if (coords) {
+        await updateProfile({
+          location_lat: coords.lat,
+          location_lng: coords.lng,
+          location_name: city,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to select city:', error);
     }
-  };
-
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 6371;
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
   };
 
   const applyFilters = () => {
     let filtered = [...activities];
 
+    // Apply search query
     if (searchQuery) {
       filtered = filtered.filter(
         (activity) =>
@@ -142,40 +105,20 @@ export default function DiscoverScreen() {
       );
     }
 
-    if (filters.indoor) {
-      filtered = filtered.filter((activity) => activity.is_indoor);
-    }
-
-    if (filters.outdoor) {
-      filtered = filtered.filter((activity) => activity.is_outdoor);
-    }
-
-    if (filters.free) {
-      filtered = filtered.filter((activity) => activity.is_free);
-    }
-
-    if (filters.minAge) {
-      const minAge = parseInt(filters.minAge);
-      filtered = filtered.filter((activity) => activity.age_max >= minAge);
-    }
-
-    if (filters.maxAge) {
-      const maxAge = parseInt(filters.maxAge);
-      filtered = filtered.filter((activity) => activity.age_min <= maxAge);
-    }
-
-    if (filters.maxDistance && profile?.location_lat && profile?.location_lng) {
-      const maxDist = parseFloat(filters.maxDistance);
-      filtered = filtered.filter((activity) => {
-        const distance = calculateDistance(
-          profile.location_lat!,
-          profile.location_lng!,
-          activity.location_lat,
-          activity.location_lng
-        );
-        return distance <= maxDist;
-      });
-    }
+    // Apply all other filters using the service
+    filtered = activitiesService.filterActivities(
+      filtered,
+      {
+        indoor: filters.indoor,
+        outdoor: filters.outdoor,
+        free: filters.free,
+        minAge: filters.minAge,
+        maxAge: filters.maxAge,
+        maxDistance: filters.maxDistance,
+      },
+      profile?.location_lat || undefined,
+      profile?.location_lng || undefined
+    );
 
     setFilteredActivities(filtered);
   };

@@ -18,24 +18,10 @@ import CategoryButton from '@/components/CategoryButton';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MapPin } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
+import { Activity } from '@/types';
+import { activitiesService } from '@/services/activities';
 
 const { width } = Dimensions.get('window');
-
-interface Activity {
-  id: string;
-  name: string;
-  city: string;
-  images: string[];
-  average_rating: number;
-  total_reviews: number;
-  price_min: number;
-  price_max: number;
-  is_free: boolean;
-  age_min: number;
-  age_max: number;
-  location_lat: number;
-  location_lng: number;
-}
 
 interface Category {
   id: string;
@@ -107,14 +93,12 @@ export default function HomeScreen() {
   };
 
   const loadFeatured = async () => {
-    const { data } = await supabase
-      .from('activities')
-      .select('*')
-      .eq('is_featured', true)
-      .order('average_rating', { ascending: false })
-      .limit(10);
-
-    if (data) setFeatured(data);
+    try {
+      const data = await activitiesService.getFeatured(10);
+      setFeatured(data);
+    } catch (error) {
+      console.error('Failed to load featured activities:', error);
+    }
   };
 
   const loadSeasonal = async () => {
