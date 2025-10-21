@@ -20,6 +20,7 @@ import { MapPin } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { Activity } from '@/types';
 import { activitiesService } from '@/services/activities';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -55,6 +56,7 @@ export default function HomeScreen() {
   const bannerInterval = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const { profile } = useAuth();
   const { t, language } = useLanguage();
+  const router = useRouter();
 
   useEffect(() => {
     loadData();
@@ -299,7 +301,7 @@ export default function HomeScreen() {
       <View style={styles.categoriesSection}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>{t('home.categories')}</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/(tabs)/categories')}>
             <Text style={styles.seeAllLink}>
               {language === 'en' ? 'See All' : 'Bekijk Alles'}
             </Text>
