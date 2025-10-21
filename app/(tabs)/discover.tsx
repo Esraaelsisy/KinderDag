@@ -8,23 +8,13 @@ import {
   TouchableOpacity,
   FlatList,
   Platform,
+  Linking,
 } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import ActivityCard from '@/components/ActivityCard';
 import { Search, SlidersHorizontal, X, List, MapPin as MapPinIcon } from 'lucide-react-native';
-
-let MapView: any;
-let Marker: any;
-let PROVIDER_GOOGLE: any;
-
-if (Platform.OS !== 'web') {
-  const MapModule = require('react-native-maps');
-  MapView = MapModule.default;
-  Marker = MapModule.Marker;
-  PROVIDER_GOOGLE = MapModule.PROVIDER_GOOGLE;
-}
 
 interface Activity {
   id: string;
@@ -189,56 +179,47 @@ export default function DiscoverScreen() {
     );
   };
 
+  const openInGoogleMaps = () => {
+    const userLat = profile?.location_lat || 52.3676;
+    const userLng = profile?.location_lng || 4.9041;
+
+    const url = Platform.select({
+      ios: `maps://app?saddr=${userLat},${userLng}&daddr=${userLat},${userLng}&zoom=10`,
+      android: `geo:${userLat},${userLng}?q=${userLat},${userLng}(Activities)&z=10`,
+      default: `https://www.google.com/maps/@${userLat},${userLng},10z`,
+    });
+
+    Linking.openURL(url as string);
+  };
+
   const renderMapView = () => {
-    if (Platform.OS === 'web') {
-      return (
-        <View style={styles.mapPlaceholder}>
-          <MapPinIcon size={48} color="#94a3b8" />
-          <Text style={styles.mapPlaceholderText}>
-            Map view is only available on mobile devices
-          </Text>
-          <Text style={styles.mapPlaceholderSubtext}>
-            Please use the List view or open the app on your phone
-          </Text>
-        </View>
-      );
-    }
-
-    const userLocation = profile?.location_lat && profile?.location_lng
-      ? {
-          latitude: profile.location_lat,
-          longitude: profile.location_lng,
-          latitudeDelta: 0.5,
-          longitudeDelta: 0.5,
-        }
-      : {
-          latitude: 52.3676,
-          longitude: 4.9041,
-          latitudeDelta: 0.5,
-          longitudeDelta: 0.5,
-        };
-
     return (
-      <MapView
-        style={styles.map}
-        provider={PROVIDER_GOOGLE}
-        initialRegion={userLocation}
-        showsUserLocation={true}
-        showsMyLocationButton={true}
-      >
-        {filteredActivities.map((activity) => (
-          <Marker
-            key={activity.id}
-            coordinate={{
-              latitude: activity.location_lat,
-              longitude: activity.location_lng,
-            }}
-            title={activity.name}
-            description={activity.city}
-            pinColor="#10B981"
-          />
-        ))}
-      </MapView>
+      <View style={styles.mapPlaceholder}>
+        <MapPinIcon size={64} color="#0f766e" />
+        <Text style={styles.mapPlaceholderTitle}>
+          View Activities on Map
+        </Text>
+        <Text style={styles.mapPlaceholderText}>
+          See all activities near you on Google Maps
+        </Text>
+        <TouchableOpacity
+          style={styles.openMapsButton}
+          onPress={openInGoogleMaps}
+        >
+          <MapPinIcon size={20} color="#ffffff" />
+          <Text style={styles.openMapsButtonText}>
+            Open in Google Maps
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.backToListButton}
+          onPress={() => setViewMode('list')}
+        >
+          <Text style={styles.backToListButtonText}>
+            Back to List View
+          </Text>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -636,17 +617,43 @@ const styles = StyleSheet.create({
     padding: 40,
     backgroundColor: '#f8fafc',
   },
-  mapPlaceholderText: {
-    fontSize: 18,
-    fontWeight: '600',
+  mapPlaceholderTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
     color: '#1e293b',
     textAlign: 'center',
-    marginTop: 16,
+    marginTop: 24,
     marginBottom: 8,
   },
-  mapPlaceholderSubtext: {
-    fontSize: 14,
+  mapPlaceholderText: {
+    fontSize: 16,
     color: '#64748b',
     textAlign: 'center',
+    marginBottom: 32,
+  },
+  openMapsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0f766e',
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 12,
+    gap: 8,
+    marginBottom: 12,
+  },
+  openMapsButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  backToListButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+  },
+  backToListButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0f766e',
   },
 });
