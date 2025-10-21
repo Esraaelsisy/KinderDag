@@ -20,6 +20,7 @@ interface ActivityCardProps {
   isFree: boolean;
   ageMin: number;
   ageMax: number;
+  layout?: 'vertical' | 'horizontal';
 }
 
 export default function ActivityCard({
@@ -36,6 +37,7 @@ export default function ActivityCard({
   isFree,
   ageMin,
   ageMax,
+  layout = 'vertical',
 }: ActivityCardProps) {
   const router = useRouter();
   const { user } = useAuth();
@@ -78,6 +80,74 @@ export default function ActivityCard({
       setIsToggling(false);
     }
   };
+
+  if (layout === 'horizontal') {
+    return (
+      <TouchableOpacity
+        style={styles.cardHorizontal}
+        onPress={() => router.push(`/activity/${id}`)}
+        activeOpacity={0.7}
+      >
+        <View style={styles.imageContainerHorizontal}>
+          <Image source={{ uri: image }} style={styles.imageHorizontal} />
+        </View>
+        <View style={styles.contentHorizontal}>
+          <View style={styles.headerRow}>
+            <Text style={styles.nameHorizontal} numberOfLines={2}>
+              {name}
+            </Text>
+            {user && (
+              <TouchableOpacity
+                style={styles.favoriteButtonHorizontal}
+                onPress={handleFavoriteToggle}
+                activeOpacity={0.7}
+              >
+                <Heart
+                  size={18}
+                  color={isFavorite ? Colors.primary : Colors.textLight}
+                  fill={isFavorite ? Colors.primary : 'transparent'}
+                  strokeWidth={2}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+          <View style={styles.rowHorizontal}>
+            <MapPin size={14} color={Colors.textLight} />
+            <Text style={styles.locationHorizontal} numberOfLines={1}>
+              {city}
+            </Text>
+          </View>
+          <View style={styles.footerHorizontal}>
+            <View style={styles.rowHorizontal}>
+              <Star size={14} color={Colors.warning} fill={Colors.warning} />
+              <Text style={styles.ratingHorizontal}>
+                {rating.toFixed(1)} ({reviewsCount})
+              </Text>
+            </View>
+            <View style={styles.tagsHorizontal}>
+              <View style={styles.tag}>
+                <Text style={styles.tagText}>
+                  {ageMin}+
+                </Text>
+              </View>
+              {isFree ? (
+                <View style={[styles.tag, styles.tagFree]}>
+                  <Text style={styles.tagTextFree}>Free</Text>
+                </View>
+              ) : (
+                <View style={styles.priceTag}>
+                  <Euro size={12} color={Colors.primary} />
+                  <Text style={styles.priceText}>
+                    {priceMin === priceMax ? priceMin : `${priceMin}-${priceMax}`}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  }
 
   return (
     <TouchableOpacity
@@ -248,5 +318,73 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Colors.primary,
     fontWeight: '600',
+  },
+  cardHorizontal: {
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    overflow: 'hidden',
+    width: '100%',
+    flexDirection: 'row',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    height: 120,
+  },
+  imageContainerHorizontal: {
+    width: 120,
+    height: 120,
+  },
+  imageHorizontal: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: Colors.border,
+  },
+  contentHorizontal: {
+    flex: 1,
+    padding: 12,
+    justifyContent: 'space-between',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 4,
+  },
+  nameHorizontal: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: Colors.text,
+    flex: 1,
+    marginRight: 8,
+  },
+  favoriteButtonHorizontal: {
+    padding: 4,
+  },
+  rowHorizontal: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  locationHorizontal: {
+    fontSize: 12,
+    color: Colors.textLight,
+    flex: 1,
+  },
+  footerHorizontal: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  ratingHorizontal: {
+    fontSize: 12,
+    color: Colors.textLight,
+    fontWeight: '600',
+  },
+  tagsHorizontal: {
+    flexDirection: 'row',
+    gap: 6,
   },
 });
