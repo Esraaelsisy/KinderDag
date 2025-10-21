@@ -95,8 +95,8 @@ export default function ActivityCard({
           >
             <Heart
               size={20}
-              color={isFavorite ? Colors.error : Colors.white}
-              fill={isFavorite ? Colors.error : 'transparent'}
+              color={isFavorite ? '#8b5cf6' : Colors.white}
+              fill={isFavorite ? '#8b5cf6' : 'transparent'}
               strokeWidth={2.5}
             />
           </TouchableOpacity>
