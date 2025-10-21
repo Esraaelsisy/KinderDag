@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ChevronRight } from 'lucide-react-native';
 
 interface Category {
   id: string;
@@ -11,7 +10,11 @@ interface Category {
   name_nl: string;
   color: string;
   sort_order: number;
+  emoji?: string;
 }
+
+const { width } = Dimensions.get('window');
+const CARD_WIDTH = (width - 48) / 2;
 
 export default function CategoriesScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -35,15 +38,18 @@ export default function CategoriesScreen() {
 
   const renderCategory = ({ item }: { item: Category }) => (
     <TouchableOpacity
-      style={[styles.categoryCard, { borderLeftColor: item.color }]}
+      style={styles.categoryCard}
       onPress={() => {}}
+      activeOpacity={0.7}
     >
-      <View style={styles.categoryContent}>
-        <Text style={styles.categoryName}>
+      <View style={styles.cardContent}>
+        <Text style={[styles.categoryName, { color: item.color || '#0ea5e9' }]}>
           {language === 'en' ? item.name_en : item.name_nl}
         </Text>
+        {item.emoji && (
+          <Text style={styles.emoji}>{item.emoji}</Text>
+        )}
       </View>
-      <ChevronRight size={20} color="#94a3b8" />
     </TouchableOpacity>
   );
 
@@ -51,13 +57,14 @@ export default function CategoriesScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Categories</Text>
-        <Text style={styles.subtitle}>Browse activities by category</Text>
       </View>
 
       <FlatList
         data={categories}
         renderItem={renderCategory}
         keyExtractor={(item) => item.id}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
       />
@@ -74,44 +81,44 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 24,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    backgroundColor: '#0ea5e9',
+    alignItems: 'center',
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#1e293b',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#64748b',
+    color: '#ffffff',
   },
   list: {
-    padding: 20,
+    padding: 16,
+  },
+  row: {
+    justifyContent: 'space-between',
+    marginBottom: 16,
   },
   categoryCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    width: CARD_WIDTH,
     backgroundColor: '#ffffff',
     borderRadius: 16,
     padding: 20,
-    marginBottom: 12,
-    borderLeftWidth: 4,
+    minHeight: 120,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
   },
-  categoryContent: {
+  cardContent: {
     flex: 1,
+    justifyContent: 'space-between',
   },
   categoryName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    lineHeight: 22,
+  },
+  emoji: {
+    fontSize: 48,
+    alignSelf: 'flex-end',
   },
 });
