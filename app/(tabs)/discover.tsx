@@ -196,7 +196,7 @@ export default function DiscoverScreen() {
   const renderMapView = () => {
     return (
       <View style={styles.mapPlaceholder}>
-        <MapPinIcon size={64} color="#0f766e" />
+        <MapPinIcon size={64} color={Colors.primary} />
         <Text style={styles.mapPlaceholderTitle}>
           View Activities on Map
         </Text>
@@ -207,7 +207,7 @@ export default function DiscoverScreen() {
           style={styles.openMapsButton}
           onPress={openInGoogleMaps}
         >
-          <MapPinIcon size={20} color="#ffffff" />
+          <MapPinIcon size={20} color={Colors.white} />
           <Text style={styles.openMapsButtonText}>
             Open in Google Maps
           </Text>
@@ -230,11 +230,11 @@ export default function DiscoverScreen() {
         <Text style={styles.title}>{t('nav.discover')}</Text>
         <View style={styles.searchRow}>
           <View style={styles.searchContainer}>
-            <Search size={20} color="#64748b" style={styles.searchIcon} />
+            <Search size={20} color={Colors.textLight} style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
               placeholder={t('search.placeholder')}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={Colors.lightGrey}
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
@@ -252,7 +252,7 @@ export default function DiscoverScreen() {
             style={styles.iconButton}
             onPress={() => {}}
           >
-            <MapPinIcon size={20} color="#64748b" />
+            <MapPinIcon size={20} color={Colors.textLight} />
           </TouchableOpacity>
         </View>
 
@@ -265,7 +265,7 @@ export default function DiscoverScreen() {
             ]}
             onPress={() => setViewMode('list')}
           >
-            <List size={18} color={viewMode === 'list' ? '#ffffff' : '#0f766e'} />
+            <List size={18} color={viewMode === 'list' ? Colors.white : Colors.primary} />
             <Text
               style={[
                 styles.toggleButtonText,
@@ -283,7 +283,7 @@ export default function DiscoverScreen() {
             ]}
             onPress={() => setViewMode('map')}
           >
-            <MapPinIcon size={18} color={viewMode === 'map' ? '#ffffff' : '#0f766e'} />
+            <MapPinIcon size={18} color={viewMode === 'map' ? Colors.white : Colors.primary} />
             <Text
               style={[
                 styles.toggleButtonText,
@@ -367,7 +367,7 @@ export default function DiscoverScreen() {
               <TextInput
                 style={styles.filterInput}
                 placeholder="Min age"
-                placeholderTextColor="#94a3b8"
+                placeholderTextColor={Colors.lightGrey}
                 value={filters.minAge}
                 onChangeText={(value) =>
                   setFilters({ ...filters, minAge: value.replace(/[^0-9]/g, '') })
@@ -379,7 +379,7 @@ export default function DiscoverScreen() {
               <TextInput
                 style={styles.filterInput}
                 placeholder="Max age"
-                placeholderTextColor="#94a3b8"
+                placeholderTextColor={Colors.lightGrey}
                 value={filters.maxAge}
                 onChangeText={(value) =>
                   setFilters({ ...filters, maxAge: value.replace(/[^0-9]/g, '') })
@@ -396,7 +396,7 @@ export default function DiscoverScreen() {
               <TextInput
                 style={styles.filterInputFull}
                 placeholder="e.g., 25"
-                placeholderTextColor="#94a3b8"
+                placeholderTextColor={Colors.lightGrey}
                 value={filters.maxDistance}
                 onChangeText={(value) =>
                   setFilters({ ...filters, maxDistance: value.replace(/[^0-9.]/g, '') })
@@ -435,18 +435,18 @@ export default function DiscoverScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: Colors.background,
   },
   header: {
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: Colors.textDark,
     marginBottom: 16,
   },
   searchRow: {
@@ -459,7 +459,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f1f5f9',
+    backgroundColor: Colors.inputBackground,
     borderRadius: 12,
     paddingHorizontal: 16,
   },
@@ -470,19 +470,19 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#1e293b',
+    color: Colors.textDark,
   },
   iconButton: {
     width: 44,
     height: 44,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: Colors.inputBackground,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   viewToggle: {
     flexDirection: 'row',
-    backgroundColor: '#f0fdfa',
+    backgroundColor: Colors.successLight,
     borderRadius: 12,
     padding: 4,
   },
@@ -503,22 +503,22 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 8,
   },
   toggleButtonActive: {
-    backgroundColor: '#0f766e',
+    backgroundColor: Colors.primary,
   },
   toggleButtonText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#0f766e',
+    color: Colors.primary,
   },
   toggleButtonTextActive: {
-    color: '#ffffff',
+    color: Colors.white,
   },
   filtersContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
     paddingHorizontal: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: Colors.border,
   },
   filtersHeader: {
     flexDirection: 'row',
@@ -529,7 +529,7 @@ const styles = StyleSheet.create({
   filtersTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: Colors.textDark,
   },
   clearText: {
     fontSize: 14,
@@ -542,7 +542,7 @@ const styles = StyleSheet.create({
   filterLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#64748b',
+    color: Colors.textLight,
     marginBottom: 8,
   },
   filterRow: {
@@ -553,9 +553,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: Colors.inputBackground,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: Colors.border,
   },
   filterChipActive: {
     backgroundColor: Colors.primary,
@@ -564,32 +564,32 @@ const styles = StyleSheet.create({
   filterChipText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#64748b',
+    color: Colors.textLight,
   },
   filterChipTextActive: {
-    color: '#ffffff',
+    color: Colors.white,
   },
   filterInput: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: Colors.inputBackground,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
-    color: '#1e293b',
+    color: Colors.textDark,
   },
   filterSeparator: {
     paddingVertical: 10,
     fontSize: 14,
-    color: '#64748b',
+    color: Colors.textLight,
   },
   filterInputFull: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: Colors.inputBackground,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
-    color: '#1e293b',
+    color: Colors.textDark,
   },
   resultsHeader: {
     paddingHorizontal: 20,
@@ -597,7 +597,7 @@ const styles = StyleSheet.create({
   },
   resultsText: {
     fontSize: 14,
-    color: '#64748b',
+    color: Colors.textLight,
     fontWeight: '600',
   },
   list: {
@@ -616,19 +616,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 40,
-    backgroundColor: '#f8fafc',
+    backgroundColor: Colors.background,
   },
   mapPlaceholderTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: Colors.textDark,
     textAlign: 'center',
     marginTop: 24,
     marginBottom: 8,
   },
   mapPlaceholderText: {
     fontSize: 16,
-    color: '#64748b',
+    color: Colors.textLight,
     textAlign: 'center',
     marginBottom: 32,
   },
@@ -636,7 +636,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0f766e',
+    backgroundColor: Colors.primary,
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 12,
@@ -646,7 +646,7 @@ const styles = StyleSheet.create({
   openMapsButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: Colors.white,
   },
   backToListButton: {
     paddingVertical: 12,
@@ -655,6 +655,6 @@ const styles = StyleSheet.create({
   backToListButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#0f766e',
+    color: Colors.primary,
   },
 });

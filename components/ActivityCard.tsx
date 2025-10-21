@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   tag: {
-    backgroundColor: '#E8D5F2',
+    backgroundColor: Colors.secondaryLight,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
