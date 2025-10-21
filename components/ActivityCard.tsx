@@ -61,7 +61,7 @@ export default function ActivityCard({
           <View style={styles.tags}>
             <View style={styles.tag}>
               <Text style={styles.tagText}>
-                {ageMin}+y
+                {ageMin}+
               </Text>
             </View>
             {isFree ? (
