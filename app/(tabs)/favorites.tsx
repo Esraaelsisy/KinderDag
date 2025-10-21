@@ -78,6 +78,7 @@ export default function FavoritesScreen() {
           isFree={item.is_free}
           ageMin={item.age_min}
           ageMax={item.age_max}
+          layout="horizontal"
         />
       </View>
     );
