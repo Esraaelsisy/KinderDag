@@ -40,6 +40,12 @@ export default function DiscoverScreen() {
   const [viewMode, setViewMode] = useState<'list' | 'map'>('map');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [filters, setFilters] = useState({
+    dateFilter: '',
+    selectedDate: null as Date | null,
+    typeEvent: false,
+    typeVenues: false,
+    typeCourses: false,
+    categoryFilter: '',
     indoor: false,
     outdoor: false,
     free: false,
@@ -160,6 +166,12 @@ export default function DiscoverScreen() {
 
   const clearFilters = () => {
     setFilters({
+      dateFilter: '',
+      selectedDate: null,
+      typeEvent: false,
+      typeVenues: false,
+      typeCourses: false,
+      categoryFilter: '',
       indoor: false,
       outdoor: false,
       free: false,
@@ -480,6 +492,82 @@ export default function DiscoverScreen() {
 
           <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
             <View style={styles.filterSection}>
+              <Text style={styles.sectionTitle}>DATES</Text>
+              <TouchableOpacity
+                style={styles.radioOption}
+                onPress={() => setFilters({ ...filters, dateFilter: filters.dateFilter === 'today' ? '' : 'today' })}
+              >
+                <View style={[styles.radioCircle, filters.dateFilter === 'today' && styles.radioCircleActive]} />
+                <Text style={styles.radioText}>Today</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.radioOption}
+                onPress={() => setFilters({ ...filters, dateFilter: filters.dateFilter === 'tomorrow' ? '' : 'tomorrow' })}
+              >
+                <View style={[styles.radioCircle, filters.dateFilter === 'tomorrow' && styles.radioCircleActive]} />
+                <Text style={styles.radioText}>Tomorrow</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.radioOption}
+                onPress={() => setFilters({ ...filters, dateFilter: filters.dateFilter === 'weekend' ? '' : 'weekend' })}
+              >
+                <View style={[styles.radioCircle, filters.dateFilter === 'weekend' && styles.radioCircleActive]} />
+                <Text style={styles.radioText}>Weekend</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.radioOption}
+                onPress={() => setFilters({ ...filters, dateFilter: filters.dateFilter === 'pickDate' ? '' : 'pickDate' })}
+              >
+                <View style={[styles.radioCircle, filters.dateFilter === 'pickDate' && styles.radioCircleActive]} />
+                <Text style={styles.radioText}>Pick A Date</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.filterSection}>
+              <Text style={styles.sectionTitle}>TYPE</Text>
+              <TouchableOpacity
+                style={styles.checkboxOption}
+                onPress={() => setFilters({ ...filters, typeEvent: !filters.typeEvent })}
+              >
+                <View style={[styles.checkbox, filters.typeEvent && styles.checkboxActive]} />
+                <Text style={styles.checkboxText}>Event</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.checkboxOption}
+                onPress={() => setFilters({ ...filters, typeVenues: !filters.typeVenues })}
+              >
+                <View style={[styles.checkbox, filters.typeVenues && styles.checkboxActive]} />
+                <Text style={styles.checkboxText}>Venues</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.checkboxOption}
+                onPress={() => setFilters({ ...filters, typeCourses: !filters.typeCourses })}
+              >
+                <View style={[styles.checkbox, filters.typeCourses && styles.checkboxActive]} />
+                <Text style={styles.checkboxText}>Courses</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.filterSection}>
+              <Text style={styles.sectionTitle}>CATEGORY</Text>
+              <TouchableOpacity
+                style={styles.selectBox}
+                onPress={() => {}}
+              >
+                <Text style={filters.categoryFilter ? styles.selectBoxTextActive : styles.selectBoxText}>
+                  {filters.categoryFilter || 'Select'}
+                </Text>
+                <Text style={styles.selectBoxArrow}>▼</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.filterSection}>
               <Text style={styles.sectionTitle}>VENUE TYPE</Text>
               <TouchableOpacity
                 style={styles.radioOption}
@@ -550,18 +638,6 @@ export default function DiscoverScreen() {
                 />
               </View>
             </View>
-
-            {filters.free && (
-              <View style={styles.filterSection}>
-                <TouchableOpacity
-                  style={styles.checkboxOption}
-                  onPress={() => setFilters({ ...filters, free: !filters.free })}
-                >
-                  <View style={[styles.checkbox, filters.free && styles.checkboxActive]} />
-                  <Text style={styles.checkboxText}>Free Activities Only</Text>
-                </TouchableOpacity>
-              </View>
-            )}
           </ScrollView>
 
           <View style={styles.modalFooter}>
