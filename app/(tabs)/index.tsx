@@ -9,6 +9,9 @@ import {
   Image,
   TouchableOpacity,
   RefreshControl,
+  Modal,
+  Alert,
+  Platform,
 } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -16,10 +19,12 @@ import { supabase } from '@/lib/supabase';
 import ActivityCard from '@/components/ActivityCard';
 import CategoryButton from '@/components/CategoryButton';
 import { LinearGradient } from 'expo-linear-gradient';
-import { MapPin } from 'lucide-react-native';
+import { MapPin, ChevronDown, Navigation, X } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { Activity } from '@/types';
 import { activitiesService } from '@/services/activities';
+import { citiesService } from '@/services/cities';
+import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
@@ -51,13 +56,21 @@ export default function HomeScreen() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [currentBanner, setCurrentBanner] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [showCityModal, setShowCityModal] = useState(false);
+  const [cities, setCities] = useState<string[]>([]);
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const bannerInterval = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
-  const { profile } = useAuth();
+  const { profile, updateProfile } = useAuth();
   const { t, language } = useLanguage();
   const router = useRouter();
 
   useEffect(() => {
     loadData();
+    loadCities();
+    if (profile?.location_name) {
+      setSelectedCity(profile.location_name);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -169,6 +182,96 @@ export default function HomeScreen() {
     if (data) setBanners(data);
   };
 
+  const loadCities = async () => {
+    try {
+      const data = await citiesService.getAll();
+      setCities(data);
+    } catch (error) {
+      console.error('Failed to load cities:', error);
+    }
+  };
+
+  const requestLocationPermission = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      return status === 'granted';
+    } catch (error) {
+      console.error('Error requesting location permission:', error);
+      return false;
+    }
+  };
+
+  const getCurrentLocation = async () => {
+    setIsLoadingLocation(true);
+    try {
+      const hasPermission = await requestLocationPermission();
+
+      if (!hasPermission) {
+        Alert.alert(
+          'Location Permission Required',
+          'Please enable location permissions in your device settings to use this feature.',
+          [{ text: 'OK' }]
+        );
+        setIsLoadingLocation(false);
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
+      const { latitude, longitude } = location.coords;
+
+      const reverseGeocode = await Location.reverseGeocodeAsync({
+        latitude,
+        longitude,
+      });
+
+      if (reverseGeocode.length > 0) {
+        const city = reverseGeocode[0].city || reverseGeocode[0].subregion || 'Unknown';
+
+        if (profile?.id) {
+          await updateProfile({
+            location_name: city,
+            location_lat: latitude,
+            location_lng: longitude,
+          });
+        }
+
+        setSelectedCity(city);
+        setShowCityModal(false);
+      }
+    } catch (error) {
+      console.error('Error getting location:', error);
+      Alert.alert(
+        'Location Error',
+        'Unable to get your current location. Please try again or select a city manually.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsLoadingLocation(false);
+    }
+  };
+
+  const selectCity = async (city: string) => {
+    setSelectedCity(city);
+
+    try {
+      const coords = await citiesService.getCityCoordinates(city);
+
+      if (profile?.id && coords) {
+        await updateProfile({
+          location_name: city,
+          location_lat: coords.lat,
+          location_lng: coords.lng,
+        });
+      }
+      setShowCityModal(false);
+    } catch (error) {
+      console.error('Failed to update city:', error);
+    }
+  };
+
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
     const R = 6371;
@@ -228,19 +331,89 @@ export default function HomeScreen() {
     >
       <LinearGradient colors={[Colors.primary, Colors.primaryDark]} style={styles.header}>
         <View style={styles.headerContent}>
-          <View>
+          <View style={styles.headerLeft}>
             <Text style={styles.greeting}>
               {language === 'en' ? 'Hello' : 'Hallo'}, {profile?.full_name?.split(' ')[0] || 'there'}!
             </Text>
-            {profile?.location_name && (
-              <View style={styles.locationRow}>
-                <MapPin size={16} color={Colors.white} />
-                <Text style={styles.location}>{profile.location_name}</Text>
-              </View>
-            )}
+            <TouchableOpacity
+              style={styles.citySelector}
+              onPress={() => setShowCityModal(true)}
+            >
+              <MapPin size={16} color={Colors.white} />
+              <Text style={styles.cityText}>
+                {selectedCity || profile?.location_name || (language === 'en' ? 'Select City' : 'Selecteer Stad')}
+              </Text>
+              <ChevronDown size={16} color={Colors.white} />
+            </TouchableOpacity>
           </View>
         </View>
       </LinearGradient>
+
+      <Modal
+        visible={showCityModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowCityModal(false)}
+      >
+        <View style={styles.cityModalOverlay}>
+          <View style={styles.cityModalContent}>
+            <View style={styles.cityModalHeader}>
+              <Text style={styles.cityModalTitle}>
+                {language === 'en' ? 'Select City' : 'Selecteer Stad'}
+              </Text>
+              <TouchableOpacity onPress={() => setShowCityModal(false)}>
+                <X size={24} color={Colors.textDark} />
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              style={styles.currentLocationButton}
+              onPress={getCurrentLocation}
+              disabled={isLoadingLocation}
+            >
+              <View style={styles.currentLocationIcon}>
+                <Navigation size={20} color={Colors.white} />
+              </View>
+              <Text style={styles.currentLocationText}>
+                {isLoadingLocation
+                  ? (language === 'en' ? 'Getting location...' : 'Locatie ophalen...')
+                  : (language === 'en' ? 'Use Current Location' : 'Gebruik Huidige Locatie')}
+              </Text>
+            </TouchableOpacity>
+
+            <View style={styles.cityDivider}>
+              <View style={styles.cityDividerLine} />
+              <Text style={styles.cityDividerText}>
+                {language === 'en' ? 'OR SELECT A CITY' : 'OF SELECTEER EEN STAD'}
+              </Text>
+              <View style={styles.cityDividerLine} />
+            </View>
+
+            <ScrollView style={styles.citiesList} showsVerticalScrollIndicator={false}>
+              {cities.map((city) => (
+                <TouchableOpacity
+                  key={city}
+                  style={[
+                    styles.cityItem,
+                    selectedCity === city && styles.cityItemActive,
+                  ]}
+                  onPress={() => selectCity(city)}
+                >
+                  <Text style={[
+                    styles.cityItemText,
+                    selectedCity === city && styles.cityItemTextActive,
+                  ]}>
+                    {city}
+                  </Text>
+                  {selectedCity === city && (
+                    <Text style={styles.cityCheckmark}>✓</Text>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
 
       {banners.length > 0 && (
         <View style={styles.bannerContainer}>
@@ -477,11 +650,29 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  headerLeft: {
+    flex: 1,
+  },
   greeting: {
     fontSize: 28,
     fontWeight: 'bold',
     color: Colors.white,
-    marginBottom: 4,
+    marginBottom: 8,
+  },
+  citySelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+  },
+  cityText: {
+    fontSize: 14,
+    color: Colors.white,
+    fontWeight: '500',
   },
   locationRow: {
     flexDirection: 'row',
@@ -492,6 +683,100 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.white,
     opacity: 0.9,
+  },
+  cityModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  cityModalContent: {
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '80%',
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+  },
+  cityModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  cityModalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Colors.textDark,
+  },
+  currentLocationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    margin: 20,
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: Colors.secondary,
+    borderRadius: 12,
+    gap: 12,
+  },
+  currentLocationIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  currentLocationText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.white,
+    flex: 1,
+  },
+  cityDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 12,
+  },
+  cityDividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.border,
+  },
+  cityDividerText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.textLight,
+    paddingHorizontal: 12,
+  },
+  citiesList: {
+    maxHeight: 400,
+  },
+  cityItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  cityItemActive: {
+    backgroundColor: Colors.secondaryLight,
+  },
+  cityItemText: {
+    fontSize: 16,
+    color: Colors.textDark,
+  },
+  cityItemTextActive: {
+    fontWeight: '600',
+    color: Colors.secondary,
+  },
+  cityCheckmark: {
+    fontSize: 18,
+    color: Colors.secondary,
+    fontWeight: 'bold',
   },
   bannerContainer: {
     marginHorizontal: 20,
