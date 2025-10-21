@@ -22,8 +22,8 @@ export default function FloatingChatButton() {
         activeOpacity={0.8}
       >
         <MessageCircle
-          size={28}
-          color={isOpen ? Colors.white : Colors.secondary}
+          size={22}
+          color={isOpen ? Colors.white : '#f97316'}
           strokeWidth={2.5}
           fill={isOpen ? Colors.primary : 'none'}
         />
@@ -55,12 +55,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 20,
     bottom: Platform.OS === 'ios' ? 100 : 85,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     backgroundColor: Colors.white,
     borderWidth: 2,
-    borderColor: Colors.secondary,
+    borderColor: '#f97316',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',

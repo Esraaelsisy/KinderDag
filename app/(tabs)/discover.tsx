@@ -14,7 +14,7 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import ActivityCard from '@/components/ActivityCard';
-import { Search, SlidersHorizontal, X, List, MapPin as MapPinIcon } from 'lucide-react-native';
+import { Search, SlidersHorizontal, X, List, MapPin as MapPinIcon, SearchX } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/colors';
 import { Activity } from '@/types';
@@ -869,14 +869,33 @@ export default function DiscoverScreen() {
 
       {viewMode === 'list' ? (
         <>
-          <FlatList
-            data={filteredActivities}
-            renderItem={renderActivity}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.list}
-            showsVerticalScrollIndicator={false}
-            numColumns={1}
-          />
+          {filteredActivities.length === 0 ? (
+            <View style={styles.emptyState}>
+              <View style={styles.emptyStateIconContainer}>
+                <SearchX size={64} color={Colors.secondary} strokeWidth={1.5} />
+              </View>
+              <Text style={styles.emptyStateTitle}>No Search Results Found</Text>
+              <Text style={styles.emptyStateSubtitle}>Wanna try again?</Text>
+              <TouchableOpacity
+                style={styles.emptyStateButton}
+                onPress={() => {
+                  setSearchQuery('');
+                  clearFilters();
+                }}
+              >
+                <Text style={styles.emptyStateButtonText}>Clear Filters</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={filteredActivities}
+              renderItem={renderActivity}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={styles.list}
+              showsVerticalScrollIndicator={false}
+              numColumns={1}
+            />
+          )}
         </>
       ) : (
         renderMapView()
@@ -1267,6 +1286,51 @@ const styles = StyleSheet.create({
   cardWrapper: {
     marginBottom: 16,
     width: '100%',
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+    paddingTop: 80,
+  },
+  emptyStateIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: Colors.secondaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  emptyStateTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: Colors.textDark,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  emptyStateSubtitle: {
+    fontSize: 18,
+    color: Colors.textLight,
+    textAlign: 'center',
+    marginBottom: 32,
+  },
+  emptyStateButton: {
+    backgroundColor: Colors.secondary,
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  emptyStateButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.white,
   },
   map: {
     flex: 1,
