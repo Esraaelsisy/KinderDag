@@ -145,7 +145,7 @@ export const aiChatService = {
         responses.push({
           conversation_id: conversationId,
           role: 'assistant',
-          content: "Hi! I'm KinderDag Assistant 👋 I'll help you find the perfect activity for your child!\n\nLet's start: How old is your child?",
+          content: "Hi! I'm KinderDag Bot 👋 I'll help you find the perfect activity for your child!\n\nLet's start: How old is your child?",
           message_type: 'text',
         });
         quickReplies = [
