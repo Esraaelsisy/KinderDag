@@ -9,6 +9,7 @@ import {
   FlatList,
   Platform,
   Linking,
+  Modal,
 } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -368,117 +369,125 @@ export default function DiscoverScreen() {
         </View>
       )}
 
-      {showFilters && (
-        <View style={styles.filtersContainer}>
-          <View style={styles.filtersHeader}>
-            <Text style={styles.filtersTitle}>Filters</Text>
-            {hasActiveFilters && (
-              <TouchableOpacity onPress={clearFilters}>
-                <Text style={styles.clearText}>Clear All</Text>
-              </TouchableOpacity>
-            )}
+      <Modal
+        visible={showFilters}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowFilters(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Filter</Text>
+            <TouchableOpacity onPress={() => setShowFilters(false)}>
+              <X size={28} color={Colors.textDark} />
+            </TouchableOpacity>
           </View>
 
-          <View style={styles.filterGroup}>
-            <Text style={styles.filterLabel}>Activity Type</Text>
-            <View style={styles.filterRow}>
+          <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+            <View style={styles.filterSection}>
+              <Text style={styles.sectionTitle}>VENUE TYPE</Text>
               <TouchableOpacity
-                style={[
-                  styles.filterChip,
-                  filters.indoor && styles.filterChipActive,
-                ]}
+                style={styles.radioOption}
                 onPress={() => setFilters({ ...filters, indoor: !filters.indoor })}
               >
-                <Text
-                  style={[
-                    styles.filterChipText,
-                    filters.indoor && styles.filterChipTextActive,
-                  ]}
-                >
-                  {t('activity.indoor')}
-                </Text>
+                <View style={[styles.radioCircle, filters.indoor && styles.radioCircleActive]} />
+                <Text style={styles.radioText}>Indoor</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[
-                  styles.filterChip,
-                  filters.outdoor && styles.filterChipActive,
-                ]}
+                style={styles.radioOption}
                 onPress={() => setFilters({ ...filters, outdoor: !filters.outdoor })}
               >
-                <Text
-                  style={[
-                    styles.filterChipText,
-                    filters.outdoor && styles.filterChipTextActive,
-                  ]}
-                >
-                  {t('activity.outdoor')}
-                </Text>
+                <View style={[styles.radioCircle, filters.outdoor && styles.radioCircleActive]} />
+                <Text style={styles.radioText}>Outdoor</Text>
               </TouchableOpacity>
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.filterSection}>
+              <Text style={styles.sectionTitle}>CITY</Text>
               <TouchableOpacity
-                style={[
-                  styles.filterChip,
-                  filters.free && styles.filterChipActive,
-                ]}
-                onPress={() => setFilters({ ...filters, free: !filters.free })}
+                style={styles.selectBox}
+                onPress={() => {
+                  setShowFilters(false);
+                  setTimeout(() => setShowCityPicker(true), 300);
+                }}
               >
-                <Text
-                  style={[
-                    styles.filterChipText,
-                    filters.free && styles.filterChipTextActive,
-                  ]}
-                >
-                  {t('activity.free')}
+                <Text style={selectedCity ? styles.selectBoxTextActive : styles.selectBoxText}>
+                  {selectedCity || 'Select'}
                 </Text>
+                <Text style={styles.selectBoxArrow}>▼</Text>
               </TouchableOpacity>
             </View>
-          </View>
 
-          <View style={styles.filterGroup}>
-            <Text style={styles.filterLabel}>Age Range</Text>
-            <View style={styles.filterRow}>
-              <TextInput
-                style={styles.filterInput}
-                placeholder="Min age"
-                placeholderTextColor={Colors.lightGrey}
-                value={filters.minAge}
-                onChangeText={(value) =>
-                  setFilters({ ...filters, minAge: value.replace(/[^0-9]/g, '') })
-                }
-                keyboardType="number-pad"
-                maxLength={2}
-              />
-              <Text style={styles.filterSeparator}>to</Text>
-              <TextInput
-                style={styles.filterInput}
-                placeholder="Max age"
-                placeholderTextColor={Colors.lightGrey}
-                value={filters.maxAge}
-                onChangeText={(value) =>
-                  setFilters({ ...filters, maxAge: value.replace(/[^0-9]/g, '') })
-                }
-                keyboardType="number-pad"
-                maxLength={2}
-              />
-            </View>
-          </View>
+            <View style={styles.divider} />
 
-          {profile?.location_lat && profile?.location_lng && (
-            <View style={styles.filterGroup}>
-              <Text style={styles.filterLabel}>Max Distance (km)</Text>
-              <TextInput
-                style={styles.filterInputFull}
-                placeholder="e.g., 25"
-                placeholderTextColor={Colors.lightGrey}
-                value={filters.maxDistance}
-                onChangeText={(value) =>
-                  setFilters({ ...filters, maxDistance: value.replace(/[^0-9.]/g, '') })
-                }
-                keyboardType="decimal-pad"
-              />
+            <View style={styles.filterSection}>
+              <View style={styles.ageRangeHeader}>
+                <Text style={styles.sectionTitle}>AGE RANGE</Text>
+                <Text style={styles.ageRangeValue}>
+                  ({filters.minAge || '2'} - {filters.maxAge || 'Adult'})
+                </Text>
+              </View>
+              <View style={styles.ageInputRow}>
+                <TextInput
+                  style={styles.ageInput}
+                  placeholder="Min"
+                  placeholderTextColor={Colors.lightGrey}
+                  value={filters.minAge}
+                  onChangeText={(value) =>
+                    setFilters({ ...filters, minAge: value.replace(/[^0-9]/g, '') })
+                  }
+                  keyboardType="number-pad"
+                  maxLength={2}
+                />
+                <Text style={styles.ageSeparator}>-</Text>
+                <TextInput
+                  style={styles.ageInput}
+                  placeholder="Max"
+                  placeholderTextColor={Colors.lightGrey}
+                  value={filters.maxAge}
+                  onChangeText={(value) =>
+                    setFilters({ ...filters, maxAge: value.replace(/[^0-9]/g, '') })
+                  }
+                  keyboardType="number-pad"
+                  maxLength={2}
+                />
+              </View>
             </View>
-          )}
+
+            {filters.free && (
+              <View style={styles.filterSection}>
+                <TouchableOpacity
+                  style={styles.checkboxOption}
+                  onPress={() => setFilters({ ...filters, free: !filters.free })}
+                >
+                  <View style={[styles.checkbox, filters.free && styles.checkboxActive]} />
+                  <Text style={styles.checkboxText}>Free Activities Only</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </ScrollView>
+
+          <View style={styles.modalFooter}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => {
+                clearFilters();
+                setShowFilters(false);
+              }}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.applyButton}
+              onPress={() => setShowFilters(false)}
+            >
+              <Text style={styles.applyButtonText}>Apply</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      )}
+      </Modal>
 
       {viewMode === 'list' ? (
         <>
@@ -597,83 +606,172 @@ const styles = StyleSheet.create({
   toggleButtonTextActive: {
     color: Colors.white,
   },
-  filtersContainer: {
+  modalContainer: {
+    flex: 1,
     backgroundColor: Colors.white,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingTop: 60,
+    paddingBottom: 20,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
-  filtersHeader: {
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: Colors.textDark,
+  },
+  modalContent: {
+    flex: 1,
+  },
+  filterSection: {
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.textDark,
+    marginBottom: 16,
+    letterSpacing: 0.5,
+  },
+  radioOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  radioCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#FF9F66',
+    marginRight: 12,
+  },
+  radioCircleActive: {
+    borderWidth: 7,
+    borderColor: '#FF9F66',
+  },
+  radioText: {
+    fontSize: 16,
+    color: Colors.textDark,
+  },
+  checkboxOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#FF9F66',
+    marginRight: 12,
+  },
+  checkboxActive: {
+    backgroundColor: '#FF9F66',
+  },
+  checkboxText: {
+    fontSize: 16,
+    color: Colors.textDark,
+  },
+  selectBox: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: Colors.inputBackground,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  selectBoxText: {
+    fontSize: 16,
+    color: Colors.lightGrey,
+  },
+  selectBoxTextActive: {
+    fontSize: 16,
+    color: Colors.textDark,
+  },
+  selectBoxArrow: {
+    fontSize: 12,
+    color: '#4FC3F7',
+  },
+  ageRangeHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
   },
-  filtersTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Colors.textDark,
-  },
-  clearText: {
+  ageRangeValue: {
     fontSize: 14,
-    color: Colors.primary,
-    fontWeight: '600',
-  },
-  filterGroup: {
-    marginBottom: 16,
-  },
-  filterLabel: {
-    fontSize: 14,
-    fontWeight: '600',
     color: Colors.textLight,
-    marginBottom: 8,
   },
-  filterRow: {
+  ageInputRow: {
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'center',
+    gap: 12,
   },
-  filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: Colors.inputBackground,
-    borderWidth: 2,
-    borderColor: Colors.border,
-  },
-  filterChipActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  filterChipText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.textLight,
-  },
-  filterChipTextActive: {
-    color: Colors.white,
-  },
-  filterInput: {
+  ageInput: {
     flex: 1,
     backgroundColor: Colors.inputBackground,
     borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
     color: Colors.textDark,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
-  filterSeparator: {
-    paddingVertical: 10,
-    fontSize: 14,
+  ageSeparator: {
+    fontSize: 18,
     color: Colors.textLight,
   },
-  filterInputFull: {
-    backgroundColor: Colors.inputBackground,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
-    color: Colors.textDark,
+  divider: {
+    height: 1,
+    backgroundColor: Colors.border,
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+    backgroundColor: Colors.white,
+  },
+  cancelButton: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#4FC3F7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#4FC3F7',
+  },
+  applyButton: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 12,
+    backgroundColor: '#4FC3F7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  applyButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.white,
   },
   resultsHeader: {
     paddingHorizontal: 20,
