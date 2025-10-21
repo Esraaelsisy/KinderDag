@@ -33,14 +33,18 @@ export default function TabLayout() {
         name="categories"
         options={{
           title: 'Categories',
-          tabBarIcon: ({ color, size }) => <LayoutGrid color={color} size={size} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <LayoutGrid color={color} size={size} fill={focused ? color : 'none'} />
+          ),
         }}
       />
       <Tabs.Screen
         name="discover"
         options={{
           title: 'Search',
-          tabBarIcon: ({ color, size }) => <Search color={color} size={size} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <Search color={color} size={size} fill={focused ? color : 'none'} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -61,14 +65,18 @@ export default function TabLayout() {
         name="favorites"
         options={{
           title: 'Favorites',
-          tabBarIcon: ({ color, size }) => <Heart color={color} size={size} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <Heart color={color} size={size} fill={focused ? color : 'none'} />
+          ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <User color={color} size={size} fill={focused ? color : 'none'} />
+          ),
         }}
       />
       <Tabs.Screen
