@@ -36,7 +36,7 @@ export default function DiscoverScreen() {
   const [showFilters, setShowFilters] = useState(false);
   const [showCityPicker, setShowCityPicker] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
-  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
+  const [categories, setCategories] = useState<Array<{ id: string; name_en: string; name_nl: string }>>([]);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('map');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -56,7 +56,7 @@ export default function DiscoverScreen() {
   });
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showCityModal, setShowCityModal] = useState(false);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { profile, updateProfile } = useAuth();
 
   useEffect(() => {
@@ -123,9 +123,9 @@ export default function DiscoverScreen() {
   const loadCategories = async () => {
     try {
       const { data, error } = await supabase
-        .from('categories')
-        .select('id, name')
-        .order('name');
+        .from('activity_categories')
+        .select('id, name_en, name_nl')
+        .order('sort_order', { ascending: true });
 
       if (error) throw error;
       setCategories(data || []);
@@ -428,7 +428,9 @@ export default function DiscoverScreen() {
             {filters.categoryFilter && (
               <View style={styles.activeFilterChip}>
                 <Text style={styles.activeFilterChipText}>
-                  {categories.find(c => c.id === filters.categoryFilter)?.name || 'Category'}
+                  {language === 'en'
+                    ? categories.find(c => c.id === filters.categoryFilter)?.name_en
+                    : categories.find(c => c.id === filters.categoryFilter)?.name_nl || 'Category'}
                 </Text>
                 <TouchableOpacity
                   onPress={() => setFilters({ ...filters, categoryFilter: '' })}
@@ -639,7 +641,9 @@ export default function DiscoverScreen() {
               >
                 <Text style={filters.categoryFilter ? styles.selectBoxTextActive : styles.selectBoxText}>
                   {filters.categoryFilter
-                    ? categories.find(c => c.id === filters.categoryFilter)?.name || 'Select'
+                    ? (language === 'en'
+                      ? categories.find(c => c.id === filters.categoryFilter)?.name_en
+                      : categories.find(c => c.id === filters.categoryFilter)?.name_nl) || 'Select'
                     : 'Select'}
                 </Text>
                 <Text style={styles.selectBoxArrow}>▼</Text>
@@ -774,7 +778,7 @@ export default function DiscoverScreen() {
                 }}
               >
                 <Text style={[styles.selectionItemText, filters.categoryFilter === category.id && styles.selectionItemTextActive]}>
-                  {category.name}
+                  {language === 'en' ? category.name_en : category.name_nl}
                 </Text>
               </TouchableOpacity>
             ))}
