@@ -50,8 +50,8 @@ export default function DiscoverScreen() {
     indoor: false,
     outdoor: false,
     free: false,
-    minAge: '',
-    maxAge: '',
+    minAge: '0',
+    maxAge: '12',
     maxDistance: '',
   });
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -193,8 +193,8 @@ export default function DiscoverScreen() {
       indoor: false,
       outdoor: false,
       free: false,
-      minAge: '',
-      maxAge: '',
+      minAge: '0',
+      maxAge: '12',
       maxDistance: '',
     });
   };
@@ -463,13 +463,13 @@ export default function DiscoverScreen() {
                 </TouchableOpacity>
               </View>
             )}
-            {(filters.minAge || filters.maxAge) && (
+            {(filters.minAge !== '0' || filters.maxAge !== '12') && (
               <View style={styles.activeFilterChip}>
                 <Text style={styles.activeFilterChipText}>
-                  Ages {filters.minAge || '2'}-{filters.maxAge || 'Adult'}
+                  Ages {filters.minAge || '0'}-{filters.maxAge || '12'}
                 </Text>
                 <TouchableOpacity
-                  onPress={() => setFilters({ ...filters, minAge: '', maxAge: '' })}
+                  onPress={() => setFilters({ ...filters, minAge: '0', maxAge: '12' })}
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
                   <X size={16} color={Colors.textDark} />
@@ -681,43 +681,62 @@ export default function DiscoverScreen() {
               <View style={styles.ageRangeHeader}>
                 <Text style={styles.sectionTitle}>AGE RANGE</Text>
                 <Text style={styles.ageRangeValue}>
-                  ({filters.minAge || '2'} - {filters.maxAge || '18'})
+                  ({filters.minAge || '0'} - {filters.maxAge || '12'})
                 </Text>
               </View>
-              <Text style={styles.ageRangeDefault}>
-                Default ({filters.minAge || '2'} - {filters.maxAge || '18'})
-              </Text>
               <View style={styles.rangePickerContainer}>
                 <View style={styles.rangeTrack}>
                   <View
                     style={[
                       styles.rangeProgress,
                       {
-                        left: `${((parseInt(filters.minAge) || 2) - 2) / 16 * 100}%`,
-                        right: `${100 - ((parseInt(filters.maxAge) || 18) - 2) / 16 * 100}%`,
+                        left: `${(parseInt(filters.minAge) || 0) / 12 * 100}%`,
+                        right: `${100 - (parseInt(filters.maxAge) || 12) / 12 * 100}%`,
                       },
                     ]}
                   />
-                  <View
+                  <TouchableOpacity
                     style={[
                       styles.rangeThumb,
                       {
-                        left: `${((parseInt(filters.minAge) || 2) - 2) / 16 * 100}%`,
+                        left: `${(parseInt(filters.minAge) || 0) / 12 * 100}%`,
                       },
                     ]}
+                    onPress={() => {
+                      const currentMin = parseInt(filters.minAge) || 0;
+                      const newMin = currentMin > 0 ? currentMin - 1 : 0;
+                      setFilters({ ...filters, minAge: newMin.toString() });
+                    }}
+                    onLongPress={() => {
+                      const currentMin = parseInt(filters.minAge) || 0;
+                      const maxAge = parseInt(filters.maxAge) || 12;
+                      const newMin = currentMin < maxAge ? currentMin + 1 : currentMin;
+                      setFilters({ ...filters, minAge: newMin.toString() });
+                    }}
                   />
-                  <View
+                  <TouchableOpacity
                     style={[
                       styles.rangeThumb,
                       {
-                        left: `${((parseInt(filters.maxAge) || 18) - 2) / 16 * 100}%`,
+                        left: `${(parseInt(filters.maxAge) || 12) / 12 * 100}%`,
                       },
                     ]}
+                    onPress={() => {
+                      const currentMax = parseInt(filters.maxAge) || 12;
+                      const minAge = parseInt(filters.minAge) || 0;
+                      const newMax = currentMax > minAge ? currentMax - 1 : currentMax;
+                      setFilters({ ...filters, maxAge: newMax.toString() });
+                    }}
+                    onLongPress={() => {
+                      const currentMax = parseInt(filters.maxAge) || 12;
+                      const newMax = currentMax < 12 ? currentMax + 1 : 12;
+                      setFilters({ ...filters, maxAge: newMax.toString() });
+                    }}
                   />
                 </View>
                 <View style={styles.rangeLabels}>
                   <Text style={styles.rangeLabelText}>0</Text>
-                  <Text style={styles.rangeLabelText}>Adult</Text>
+                  <Text style={styles.rangeLabelText}>12</Text>
                 </View>
               </View>
             </View>

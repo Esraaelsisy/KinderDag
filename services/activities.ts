@@ -97,11 +97,11 @@ export const activitiesService = {
     }
 
     // Age range filter
-    if (filters.minAge) {
+    if (filters.minAge && filters.minAge !== '0') {
       const minAge = parseInt(filters.minAge);
       filtered = filtered.filter((a) => a.age_max >= minAge);
     }
-    if (filters.maxAge) {
+    if (filters.maxAge && filters.maxAge !== '12') {
       const maxAge = parseInt(filters.maxAge);
       filtered = filtered.filter((a) => a.age_min <= maxAge);
     }
