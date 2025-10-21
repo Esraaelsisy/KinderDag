@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   emoji: {
-    fontSize: 56,
+    fontSize: 32,
     marginBottom: 12,
   },
   categoryName: {
