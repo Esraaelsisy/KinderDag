@@ -35,8 +35,6 @@ export default function DiscoverScreen() {
   const [filteredActivities, setFilteredActivities] = useState<Activity[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [showCityPicker, setShowCityPicker] = useState(false);
-  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
-  const [showFilterCityPicker, setShowFilterCityPicker] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
   const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
@@ -633,18 +631,29 @@ export default function DiscoverScreen() {
 
             <View style={styles.filterSection}>
               <Text style={styles.sectionTitle}>CATEGORY</Text>
-              <TouchableOpacity
-                style={styles.selectBox}
-                onPress={() => {
-                  setShowFilters(false);
-                  setTimeout(() => setShowCategoryPicker(true), 300);
-                }}
-              >
-                <Text style={filters.categoryFilter ? styles.selectBoxTextActive : styles.selectBoxText}>
-                  {categories.find(c => c.id === filters.categoryFilter)?.name || 'Select'}
-                </Text>
-                <Text style={styles.selectBoxArrow}>▼</Text>
-              </TouchableOpacity>
+              <View style={styles.scrollableList}>
+                <TouchableOpacity
+                  style={styles.listItem}
+                  onPress={() => setFilters({ ...filters, categoryFilter: '' })}
+                >
+                  <Text style={[styles.listItemText, !filters.categoryFilter && styles.listItemTextActive]}>
+                    Select
+                  </Text>
+                  {!filters.categoryFilter && <Text style={styles.checkmark}>✓</Text>}
+                </TouchableOpacity>
+                {categories.map((category) => (
+                  <TouchableOpacity
+                    key={category.id}
+                    style={styles.listItem}
+                    onPress={() => setFilters({ ...filters, categoryFilter: category.id })}
+                  >
+                    <Text style={[styles.listItemText, filters.categoryFilter === category.id && styles.listItemTextActive]}>
+                      {category.name}
+                    </Text>
+                    {filters.categoryFilter === category.id && <Text style={styles.checkmark}>✓</Text>}
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
 
             <View style={styles.divider} />
@@ -671,18 +680,50 @@ export default function DiscoverScreen() {
 
             <View style={styles.filterSection}>
               <Text style={styles.sectionTitle}>CITY</Text>
-              <TouchableOpacity
-                style={styles.selectBox}
-                onPress={() => {
-                  setShowFilters(false);
-                  setTimeout(() => setShowFilterCityPicker(true), 300);
-                }}
-              >
-                <Text style={selectedCity ? styles.selectBoxTextActive : styles.selectBoxText}>
-                  {selectedCity || 'Select'}
-                </Text>
-                <Text style={styles.selectBoxArrow}>▼</Text>
-              </TouchableOpacity>
+              <View style={styles.scrollableList}>
+                <TouchableOpacity
+                  style={styles.listItem}
+                  onPress={() => {
+                    setSelectedCity(null);
+                    updateProfile({
+                      location_lat: null,
+                      location_lng: null,
+                      location_name: null,
+                    });
+                  }}
+                >
+                  <Text style={[styles.listItemText, !selectedCity && styles.listItemTextActive]}>
+                    Select
+                  </Text>
+                  {!selectedCity && <Text style={styles.checkmark}>✓</Text>}
+                </TouchableOpacity>
+                {cities.map((city) => (
+                  <TouchableOpacity
+                    key={city}
+                    style={styles.listItem}
+                    onPress={async () => {
+                      setSelectedCity(city);
+                      try {
+                        const coords = await citiesService.getCityCoordinates(city);
+                        if (coords) {
+                          await updateProfile({
+                            location_lat: coords.lat,
+                            location_lng: coords.lng,
+                            location_name: city,
+                          });
+                        }
+                      } catch (error) {
+                        console.error('Failed to update city:', error);
+                      }
+                    }}
+                  >
+                    <Text style={[styles.listItemText, selectedCity === city && styles.listItemTextActive]}>
+                      {city}
+                    </Text>
+                    {selectedCity === city && <Text style={styles.checkmark}>✓</Text>}
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
 
             <View style={styles.divider} />
@@ -739,101 +780,6 @@ export default function DiscoverScreen() {
               <Text style={styles.applyButtonText}>Apply</Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </Modal>
-
-      <Modal
-        visible={showCategoryPicker}
-        animationType="slide"
-        transparent={false}
-        onRequestClose={() => setShowCategoryPicker(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Select Category</Text>
-            <TouchableOpacity onPress={() => {
-              setShowCategoryPicker(false);
-              setTimeout(() => setShowFilters(true), 300);
-            }}>
-              <X size={28} color={Colors.textDark} />
-            </TouchableOpacity>
-          </View>
-
-          <FlatList
-            data={categories}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.cityItem}
-                onPress={() => {
-                  setFilters({ ...filters, categoryFilter: item.id });
-                  setShowCategoryPicker(false);
-                  setTimeout(() => setShowFilters(true), 300);
-                }}
-              >
-                <Text style={styles.cityItemText}>
-                  {item.name}
-                </Text>
-                {filters.categoryFilter === item.id && (
-                  <Text style={styles.checkmark}>✓</Text>
-                )}
-              </TouchableOpacity>
-            )}
-          />
-        </View>
-      </Modal>
-
-      <Modal
-        visible={showFilterCityPicker}
-        animationType="slide"
-        transparent={false}
-        onRequestClose={() => setShowFilterCityPicker(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Select City</Text>
-            <TouchableOpacity onPress={() => {
-              setShowFilterCityPicker(false);
-              setTimeout(() => setShowFilters(true), 300);
-            }}>
-              <X size={28} color={Colors.textDark} />
-            </TouchableOpacity>
-          </View>
-
-          <FlatList
-            data={cities}
-            keyExtractor={(item) => item}
-            renderItem={({ item: city }) => (
-              <TouchableOpacity
-                style={styles.cityItem}
-                onPress={async () => {
-                  setSelectedCity(city);
-                  setShowFilterCityPicker(false);
-                  setTimeout(() => setShowFilters(true), 300);
-
-                  try {
-                    const coords = await citiesService.getCityCoordinates(city);
-                    if (coords) {
-                      await updateProfile({
-                        location_lat: coords.lat,
-                        location_lng: coords.lng,
-                        location_name: city,
-                      });
-                    }
-                  } catch (error) {
-                    console.error('Failed to update city:', error);
-                  }
-                }}
-              >
-                <Text style={styles.cityItemText}>
-                  {city}
-                </Text>
-                {selectedCity === city && (
-                  <Text style={styles.checkmark}>✓</Text>
-                )}
-              </TouchableOpacity>
-            )}
-          />
         </View>
       </Modal>
 
@@ -1077,6 +1023,31 @@ const styles = StyleSheet.create({
   selectBoxArrow: {
     fontSize: 12,
     color: '#4FC3F7',
+  },
+  scrollableList: {
+    maxHeight: 200,
+    backgroundColor: Colors.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    marginTop: 8,
+  },
+  listItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  listItemText: {
+    fontSize: 16,
+    color: '#64748b',
+  },
+  listItemTextActive: {
+    color: Colors.textDark,
+    fontWeight: '500',
   },
   ageRangeHeader: {
     flexDirection: 'row',
