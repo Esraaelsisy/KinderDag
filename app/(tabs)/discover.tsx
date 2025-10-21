@@ -14,6 +14,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import ActivityCard from '@/components/ActivityCard';
 import { Search, SlidersHorizontal, X, List, MapPin as MapPinIcon } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/colors';
 import { Activity } from '@/types';
 import { activitiesService } from '@/services/activities';
@@ -215,7 +216,7 @@ export default function DiscoverScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <LinearGradient colors={[Colors.primary, Colors.primaryDark]} style={styles.header}>
         <Text style={styles.title}>{t('nav.discover')}</Text>
         <View style={styles.searchRow}>
           <View style={styles.searchContainer}>
@@ -283,7 +284,7 @@ export default function DiscoverScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </LinearGradient>
 
       {showCityPicker && (
         <View style={styles.cityPickerModal}>
@@ -466,12 +467,11 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 16,
-    backgroundColor: Colors.white,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: Colors.textDark,
+    color: Colors.white,
     marginBottom: 16,
   },
   searchRow: {

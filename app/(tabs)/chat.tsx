@@ -14,6 +14,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { aiChatService, ChatMessage, QuickReply, ConversationContext } from '@/services/aiChat';
 import { Colors } from '@/constants/colors';
 import { Send, User } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import ActivityCard from '@/components/ActivityCard';
 import { supabase } from '@/lib/supabase';
 
@@ -157,13 +158,13 @@ export default function ChatScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={90}
     >
-      <View style={styles.header}>
+      <LinearGradient colors={[Colors.primary, Colors.primaryDark]} style={styles.header}>
         <Text style={styles.emoji}>🎉</Text>
         <View style={styles.headerText}>
           <Text style={styles.title}>Find perfect activities for your child</Text>
           <Text style={styles.subtitle}>with KinderDag Bot</Text>
         </View>
-      </View>
+      </LinearGradient>
 
       <ScrollView
         ref={scrollViewRef}
@@ -252,12 +253,9 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 16,
-    backgroundColor: Colors.white,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.lightGrey,
   },
   headerText: {
     flex: 1,
@@ -268,11 +266,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: Colors.textDark,
+    color: Colors.white,
   },
   subtitle: {
     fontSize: 13,
-    color: Colors.mutedGrey,
+    color: Colors.white,
+    opacity: 0.9,
   },
   messagesContainer: {
     flex: 1,

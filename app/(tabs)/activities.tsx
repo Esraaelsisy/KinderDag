@@ -12,6 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Calendar as CalendarIcon, Clock, MapPin, Trash2 } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
 
@@ -120,10 +121,10 @@ export default function ActivitiesScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <LinearGradient colors={[Colors.primary, Colors.primaryDark]} style={styles.header}>
         <Text style={styles.title}>{t('nav.activities')}</Text>
         <Text style={styles.subtitle}>Your scheduled activities</Text>
-      </View>
+      </LinearGradient>
 
       {scheduledActivities.length === 0 ? (
         <ScrollView
@@ -159,19 +160,17 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 24,
-    backgroundColor: Colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: Colors.textDark,
+    color: Colors.white,
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
-    color: Colors.textLight,
+    color: Colors.white,
+    opacity: 0.9,
   },
   list: {
     padding: 20,
