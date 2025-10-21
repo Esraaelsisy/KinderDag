@@ -54,8 +54,8 @@ export default function DiscoverScreen() {
     maxAge: '',
     maxDistance: '',
   });
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [showCityModal, setShowCityModal] = useState(false);
   const { t } = useLanguage();
   const { profile, updateProfile } = useAuth();
 
@@ -635,7 +635,7 @@ export default function DiscoverScreen() {
               <Text style={styles.sectionTitle}>CATEGORY</Text>
               <TouchableOpacity
                 style={styles.selectBox}
-                onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                onPress={() => setShowCategoryModal(true)}
               >
                 <Text style={filters.categoryFilter ? styles.selectBoxTextActive : styles.selectBoxText}>
                   {filters.categoryFilter
@@ -644,37 +644,6 @@ export default function DiscoverScreen() {
                 </Text>
                 <Text style={styles.selectBoxArrow}>▼</Text>
               </TouchableOpacity>
-              {showCategoryDropdown && (
-                <View style={styles.scrollableList}>
-                  <TouchableOpacity
-                    style={styles.listItem}
-                    onPress={() => {
-                      setFilters({ ...filters, categoryFilter: '' });
-                      setShowCategoryDropdown(false);
-                    }}
-                  >
-                    <Text style={[styles.listItemText, !filters.categoryFilter && styles.listItemTextActive]}>
-                      Select
-                    </Text>
-                    {!filters.categoryFilter && <Text style={styles.checkmark}>✓</Text>}
-                  </TouchableOpacity>
-                  {categories.map((category) => (
-                    <TouchableOpacity
-                      key={category.id}
-                      style={styles.listItem}
-                      onPress={() => {
-                        setFilters({ ...filters, categoryFilter: category.id });
-                        setShowCategoryDropdown(false);
-                      }}
-                    >
-                      <Text style={[styles.listItemText, filters.categoryFilter === category.id && styles.listItemTextActive]}>
-                        {category.name}
-                      </Text>
-                      {filters.categoryFilter === category.id && <Text style={styles.checkmark}>✓</Text>}
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
             </View>
 
             <View style={styles.divider} />
@@ -703,61 +672,13 @@ export default function DiscoverScreen() {
               <Text style={styles.sectionTitle}>CITY</Text>
               <TouchableOpacity
                 style={styles.selectBox}
-                onPress={() => setShowCityDropdown(!showCityDropdown)}
+                onPress={() => setShowCityModal(true)}
               >
                 <Text style={selectedCity ? styles.selectBoxTextActive : styles.selectBoxText}>
                   {selectedCity || 'Select'}
                 </Text>
                 <Text style={styles.selectBoxArrow}>▼</Text>
               </TouchableOpacity>
-              {showCityDropdown && (
-                <View style={styles.scrollableList}>
-                  <TouchableOpacity
-                    style={styles.listItem}
-                    onPress={() => {
-                      setSelectedCity(null);
-                      updateProfile({
-                        location_lat: null,
-                        location_lng: null,
-                        location_name: null,
-                      });
-                      setShowCityDropdown(false);
-                    }}
-                  >
-                    <Text style={[styles.listItemText, !selectedCity && styles.listItemTextActive]}>
-                      Select
-                    </Text>
-                    {!selectedCity && <Text style={styles.checkmark}>✓</Text>}
-                  </TouchableOpacity>
-                  {cities.map((city) => (
-                    <TouchableOpacity
-                      key={city}
-                      style={styles.listItem}
-                      onPress={async () => {
-                        setSelectedCity(city);
-                        try {
-                          const coords = await citiesService.getCityCoordinates(city);
-                          if (coords) {
-                            await updateProfile({
-                              location_lat: coords.lat,
-                              location_lng: coords.lng,
-                              location_name: city,
-                            });
-                          }
-                        } catch (error) {
-                          console.error('Failed to update city:', error);
-                        }
-                        setShowCityDropdown(false);
-                      }}
-                    >
-                      <Text style={[styles.listItemText, selectedCity === city && styles.listItemTextActive]}>
-                        {city}
-                      </Text>
-                      {selectedCity === city && <Text style={styles.checkmark}>✓</Text>}
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
             </View>
 
             <View style={styles.divider} />
@@ -814,6 +735,111 @@ export default function DiscoverScreen() {
               <Text style={styles.applyButtonText}>Apply</Text>
             </TouchableOpacity>
           </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showCategoryModal}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowCategoryModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Select</Text>
+            <TouchableOpacity onPress={() => setShowCategoryModal(false)}>
+              <X size={28} color={Colors.textDark} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.selectionList} showsVerticalScrollIndicator={false}>
+            <TouchableOpacity
+              style={styles.selectionItem}
+              onPress={() => {
+                setFilters({ ...filters, categoryFilter: '' });
+                setShowCategoryModal(false);
+              }}
+            >
+              <Text style={[styles.selectionItemText, !filters.categoryFilter && styles.selectionItemTextActive]}>
+                Select
+              </Text>
+            </TouchableOpacity>
+            {categories.map((category) => (
+              <TouchableOpacity
+                key={category.id}
+                style={styles.selectionItem}
+                onPress={() => {
+                  setFilters({ ...filters, categoryFilter: category.id });
+                  setShowCategoryModal(false);
+                }}
+              >
+                <Text style={[styles.selectionItemText, filters.categoryFilter === category.id && styles.selectionItemTextActive]}>
+                  {category.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showCityModal}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowCityModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Select</Text>
+            <TouchableOpacity onPress={() => setShowCityModal(false)}>
+              <X size={28} color={Colors.textDark} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.selectionList} showsVerticalScrollIndicator={false}>
+            <TouchableOpacity
+              style={styles.selectionItem}
+              onPress={() => {
+                setSelectedCity(null);
+                updateProfile({
+                  location_lat: null,
+                  location_lng: null,
+                  location_name: null,
+                });
+                setShowCityModal(false);
+              }}
+            >
+              <Text style={[styles.selectionItemText, !selectedCity && styles.selectionItemTextActive]}>
+                Select
+              </Text>
+            </TouchableOpacity>
+            {cities.map((city) => (
+              <TouchableOpacity
+                key={city}
+                style={styles.selectionItem}
+                onPress={async () => {
+                  setSelectedCity(city);
+                  try {
+                    const coords = await citiesService.getCityCoordinates(city);
+                    if (coords) {
+                      await updateProfile({
+                        location_lat: coords.lat,
+                        location_lng: coords.lng,
+                        location_name: city,
+                      });
+                    }
+                  } catch (error) {
+                    console.error('Failed to update city:', error);
+                  }
+                  setShowCityModal(false);
+                }}
+              >
+                <Text style={[styles.selectionItemText, selectedCity === city && styles.selectionItemTextActive]}>
+                  {city}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
       </Modal>
 
@@ -1261,5 +1287,23 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: Colors.primary,
     fontWeight: 'bold',
+  },
+  selectionList: {
+    flex: 1,
+    backgroundColor: Colors.white,
+  },
+  selectionItem: {
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  selectionItemText: {
+    fontSize: 16,
+    color: '#64748b',
+  },
+  selectionItemTextActive: {
+    color: Colors.textDark,
+    fontWeight: '500',
   },
 });
