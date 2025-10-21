@@ -27,13 +27,6 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
-        }}
-      />
-      <Tabs.Screen
         name="categories"
         options={{
           title: 'Categories',
@@ -44,10 +37,17 @@ export default function TabLayout() {
         name="discover"
         options={{
           title: 'Search',
+          tabBarIcon: ({ color, size }) => <Search color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Home',
           tabBarIcon: ({ color, focused }) => (
             <View style={styles.centerIconContainer}>
               <View style={[styles.centerIcon, focused && styles.centerIconActive]}>
-                <Search color="#ffffff" size={28} strokeWidth={2.5} />
+                <Home color="#ffffff" size={28} strokeWidth={2.5} />
               </View>
             </View>
           ),
@@ -57,7 +57,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="favorites"
         options={{
-          title: 'Favorite',
+          title: 'Favorites',
           tabBarIcon: ({ color, size }) => <Heart color={color} size={size} />,
         }}
       />
