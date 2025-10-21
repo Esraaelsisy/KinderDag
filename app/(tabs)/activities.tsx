@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Calendar as CalendarIcon, Clock, MapPin, Trash2 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { Colors } from '@/constants/colors';
 
 interface ScheduledActivity {
   id: string;
@@ -95,12 +96,12 @@ export default function ActivitiesScreen() {
           <Text style={styles.activityName}>{item.activity.name}</Text>
           <View style={styles.activityDetails}>
             <View style={styles.detailRow}>
-              <MapPin size={14} color="#64748b" />
+              <MapPin size={14} color={Colors.textLight} />
               <Text style={styles.detailText}>{item.activity.city}</Text>
             </View>
             {item.scheduled_time && (
               <View style={styles.detailRow}>
-                <Clock size={14} color="#64748b" />
+                <Clock size={14} color={Colors.textLight} />
                 <Text style={styles.detailText}>{item.scheduled_time}</Text>
               </View>
             )}
@@ -112,7 +113,7 @@ export default function ActivitiesScreen() {
         style={styles.deleteButton}
         onPress={() => deleteScheduledActivity(item.id)}
       >
-        <Trash2 size={20} color="#ef4444" />
+        <Trash2 size={20} color={Colors.error} />
       </TouchableOpacity>
     </View>
   );
@@ -129,7 +130,7 @@ export default function ActivitiesScreen() {
           contentContainerStyle={styles.emptyContainer}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
-          <CalendarIcon size={64} color="#cbd5e1" />
+          <CalendarIcon size={64} color={Colors.mutedGrey} />
           <Text style={styles.emptyTitle}>No Scheduled Activities</Text>
           <Text style={styles.emptyText}>
             Add activities to your schedule from the activity details page
@@ -152,32 +153,32 @@ export default function ActivitiesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: Colors.background,
   },
   header: {
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 24,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: Colors.border,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: Colors.textDark,
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
-    color: '#64748b',
+    color: Colors.textLight,
   },
   list: {
     padding: 20,
   },
   activityCard: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
   dateBox: {
     width: 60,
     height: 60,
-    backgroundColor: '#1ABC9C',
+    backgroundColor: Colors.primary,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
@@ -203,12 +204,12 @@ const styles = StyleSheet.create({
   dateDay: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: Colors.white,
   },
   dateMonth: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#ffffff',
+    color: Colors.white,
     textTransform: 'uppercase',
   },
   activityInfo: {
@@ -217,7 +218,7 @@ const styles = StyleSheet.create({
   activityName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    color: Colors.textDark,
     marginBottom: 8,
   },
   activityDetails: {
@@ -230,11 +231,11 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 13,
-    color: '#64748b',
+    color: Colors.textLight,
   },
   notes: {
     fontSize: 13,
-    color: '#64748b',
+    color: Colors.textLight,
     marginTop: 8,
     fontStyle: 'italic',
   },
@@ -251,13 +252,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: Colors.textDark,
     marginTop: 16,
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 14,
-    color: '#64748b',
+    color: Colors.textLight,
     textAlign: 'center',
     lineHeight: 20,
   },

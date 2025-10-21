@@ -29,6 +29,7 @@ import {
   ExternalLink,
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Colors } from '@/constants/colors';
 
 interface Activity {
   id: string;
@@ -179,13 +180,13 @@ export default function ActivityDetailScreen() {
             style={styles.imageOverlay}
           />
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <ArrowLeft size={24} color="#ffffff" />
+            <ArrowLeft size={24} color={Colors.white} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
             <Heart
               size={24}
-              color="#ffffff"
-              fill={isFavorite ? '#ffffff' : 'transparent'}
+              color={Colors.white}
+              fill={isFavorite ? Colors.white : 'transparent'}
             />
           </TouchableOpacity>
         </View>
@@ -194,7 +195,7 @@ export default function ActivityDetailScreen() {
           <View style={styles.header}>
             <Text style={styles.title}>{activity.name}</Text>
             <View style={styles.ratingRow}>
-              <Star size={20} color="#fbbf24" fill="#fbbf24" />
+              <Star size={20} color={Colors.warning} fill={Colors.warning} />
               <Text style={styles.rating}>
                 {activity.average_rating.toFixed(1)} ({activity.total_reviews} {t('activity.reviews')})
               </Text>
@@ -223,7 +224,7 @@ export default function ActivityDetailScreen() {
               </View>
             ) : (
               <View style={styles.priceTag}>
-                <Euro size={16} color="#1ABC9C" />
+                <Euro size={16} color={Colors.primary} />
                 <Text style={styles.priceText}>
                   {activity.price_min === activity.price_max
                     ? activity.price_min
@@ -241,7 +242,7 @@ export default function ActivityDetailScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Location</Text>
             <View style={styles.locationRow}>
-              <MapPin size={20} color="#64748b" />
+              <MapPin size={20} color={Colors.textLight} />
               <View style={styles.locationInfo}>
                 <Text style={styles.locationText}>{activity.address}</Text>
                 <Text style={styles.locationSubtext}>
@@ -259,7 +260,7 @@ export default function ActivityDetailScreen() {
                   style={styles.contactRow}
                   onPress={() => Linking.openURL(`tel:${activity.phone}`)}
                 >
-                  <Phone size={20} color="#64748b" />
+                  <Phone size={20} color={Colors.textLight} />
                   <Text style={styles.contactText}>{activity.phone}</Text>
                 </TouchableOpacity>
               )}
@@ -268,7 +269,7 @@ export default function ActivityDetailScreen() {
                   style={styles.contactRow}
                   onPress={() => openUrl(activity.website)}
                 >
-                  <Globe size={20} color="#64748b" />
+                  <Globe size={20} color={Colors.textLight} />
                   <Text style={styles.contactText}>{activity.website}</Text>
                 </TouchableOpacity>
               )}
@@ -280,7 +281,7 @@ export default function ActivityDetailScreen() {
               style={styles.scheduleButton}
               onPress={() => setShowScheduleModal(true)}
             >
-              <Calendar size={20} color="#1ABC9C" />
+              <Calendar size={20} color={Colors.primary} />
               <Text style={styles.scheduleButtonText}>Add to Schedule</Text>
             </TouchableOpacity>
             {activity.booking_url && (
@@ -289,7 +290,7 @@ export default function ActivityDetailScreen() {
                 onPress={() => openUrl(activity.booking_url)}
               >
                 <Text style={styles.bookButtonText}>{t('activity.book')}</Text>
-                <ExternalLink size={20} color="#ffffff" />
+                <ExternalLink size={20} color={Colors.white} />
               </TouchableOpacity>
             )}
           </View>
@@ -308,21 +309,21 @@ export default function ActivityDetailScreen() {
             <TextInput
               style={styles.input}
               placeholder="Date (YYYY-MM-DD)"
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={Colors.lightGrey}
               value={scheduleDate}
               onChangeText={setScheduleDate}
             />
             <TextInput
               style={styles.input}
               placeholder="Time (HH:MM) - Optional"
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={Colors.lightGrey}
               value={scheduleTime}
               onChangeText={setScheduleTime}
             />
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="Notes - Optional"
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={Colors.lightGrey}
               value={notes}
               onChangeText={setNotes}
               multiline
@@ -349,7 +350,7 @@ export default function ActivityDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
   },
   imageContainer: {
     width: '100%',
@@ -398,7 +399,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: Colors.textDark,
     marginBottom: 8,
   },
   ratingRow: {
@@ -408,7 +409,7 @@ const styles = StyleSheet.create({
   },
   rating: {
     fontSize: 16,
-    color: '#64748b',
+    color: Colors.textLight,
     fontWeight: '600',
   },
   tags: {
@@ -418,28 +419,28 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   tag: {
-    backgroundColor: '#e0f2fe',
+    backgroundColor: Colors.infoLight,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
   },
   tagText: {
     fontSize: 13,
-    color: '#0369a1',
+    color: Colors.info,
     fontWeight: '600',
   },
   tagFree: {
-    backgroundColor: '#d1fae5',
+    backgroundColor: Colors.accent,
   },
   tagTextFree: {
     fontSize: 13,
-    color: '#1ABC9C',
+    color: Colors.text,
     fontWeight: '600',
   },
   priceTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#d1fae5',
+    backgroundColor: Colors.successLight,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
@@ -447,7 +448,7 @@ const styles = StyleSheet.create({
   },
   priceText: {
     fontSize: 13,
-    color: '#1ABC9C',
+    color: Colors.primary,
     fontWeight: '600',
   },
   section: {
@@ -456,12 +457,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: Colors.textDark,
     marginBottom: 12,
   },
   description: {
     fontSize: 15,
-    color: '#475569',
+    color: Colors.textLight,
     lineHeight: 24,
   },
   locationRow: {
@@ -473,13 +474,13 @@ const styles = StyleSheet.create({
   },
   locationText: {
     fontSize: 15,
-    color: '#1e293b',
+    color: Colors.textDark,
     fontWeight: '600',
     marginBottom: 4,
   },
   locationSubtext: {
     fontSize: 14,
-    color: '#64748b',
+    color: Colors.textLight,
   },
   contactRow: {
     flexDirection: 'row',
@@ -489,7 +490,7 @@ const styles = StyleSheet.create({
   },
   contactText: {
     fontSize: 15,
-    color: '#1ABC9C',
+    color: Colors.primary,
     textDecorationLine: 'underline',
   },
   actions: {
@@ -500,9 +501,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
     borderWidth: 2,
-    borderColor: '#1ABC9C',
+    borderColor: Colors.primary,
     borderRadius: 12,
     padding: 16,
     gap: 8,
@@ -510,13 +511,13 @@ const styles = StyleSheet.create({
   scheduleButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1ABC9C',
+    color: Colors.primary,
   },
   bookButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1ABC9C',
+    backgroundColor: Colors.primary,
     borderRadius: 12,
     padding: 16,
     gap: 8,
@@ -524,7 +525,7 @@ const styles = StyleSheet.create({
   bookButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: Colors.white,
   },
   modalOverlay: {
     flex: 1,
@@ -532,7 +533,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
@@ -541,15 +542,15 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: Colors.textDark,
     marginBottom: 20,
   },
   input: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: Colors.inputBackground,
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    color: '#1e293b',
+    color: Colors.textDark,
     marginBottom: 12,
   },
   textArea: {
@@ -563,7 +564,7 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: Colors.inputBackground,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -571,11 +572,11 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#64748b',
+    color: Colors.textLight,
   },
   saveButton: {
     flex: 1,
-    backgroundColor: '#1ABC9C',
+    backgroundColor: Colors.primary,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -583,6 +584,6 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: Colors.white,
   },
 });

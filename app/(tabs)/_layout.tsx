@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import { Home, Search, Heart, LayoutGrid, User } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { View, StyleSheet, Platform } from 'react-native';
+import { Colors } from '@/constants/colors';
 
 export default function TabLayout() {
   const { t } = useLanguage();
@@ -10,12 +11,12 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#1ABC9C',
-        tabBarInactiveTintColor: '#64748b',
+        tabBarActiveTintColor: Colors.primary,
+        tabBarInactiveTintColor: Colors.secondary,
         tabBarStyle: {
-          backgroundColor: '#ffffff',
+          backgroundColor: Colors.white,
           borderTopWidth: 1,
-          borderTopColor: '#e2e8f0',
+          borderTopColor: Colors.border,
           paddingTop: 8,
           paddingBottom: Platform.OS === 'ios' ? 20 : 8,
           height: Platform.OS === 'ios' ? 85 : 70,
@@ -47,7 +48,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <View style={styles.centerIconContainer}>
               <View style={[styles.centerIcon, focused && styles.centerIconActive]}>
-                <Home color="#ffffff" size={28} strokeWidth={2.5} />
+                <Home color={Colors.white} size={28} strokeWidth={2.5} />
               </View>
             </View>
           ),
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#1ABC9C',
+    backgroundColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -101,9 +102,9 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
     borderWidth: 4,
-    borderColor: '#ffffff',
+    borderColor: Colors.white,
   },
   centerIconActive: {
-    backgroundColor: '#16A085',
+    backgroundColor: Colors.primaryDark,
   },
 });

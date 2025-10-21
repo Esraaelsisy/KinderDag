@@ -1,6 +1,7 @@
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { MapPin, Star, Euro } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { Colors } from '@/constants/colors';
 
 interface ActivityCardProps {
   id: string;
@@ -45,7 +46,7 @@ export default function ActivityCard({
           {name}
         </Text>
         <View style={styles.row}>
-          <MapPin size={14} color="#64748b" />
+          <MapPin size={14} color={Colors.textLight} />
           <Text style={styles.location}>
             {city}
             {distance && ` • ${distance.toFixed(1)}km`}
@@ -53,7 +54,7 @@ export default function ActivityCard({
         </View>
         <View style={styles.footer}>
           <View style={styles.row}>
-            <Star size={14} color="#fbbf24" fill="#fbbf24" />
+            <Star size={14} color={Colors.warning} fill={Colors.warning} />
             <Text style={styles.rating}>
               {rating.toFixed(1)} ({reviews})
             </Text>
@@ -70,7 +71,7 @@ export default function ActivityCard({
               </View>
             ) : (
               <View style={styles.priceTag}>
-                <Euro size={12} color="#1ABC9C" />
+                <Euro size={12} color={Colors.primary} />
                 <Text style={styles.priceText}>
                   {priceMin === priceMax ? priceMin : `${priceMin}-${priceMax}`}
                 </Text>
@@ -85,7 +86,7 @@ export default function ActivityCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
     borderRadius: 16,
     overflow: 'hidden',
     marginRight: 16,
@@ -99,7 +100,7 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: 160,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: Colors.border,
   },
   content: {
     padding: 12,
@@ -107,7 +108,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#333333',
+    color: Colors.text,
     marginBottom: 4,
   },
   row: {
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: 13,
-    color: '#64748b',
+    color: Colors.textLight,
   },
   footer: {
     flexDirection: 'row',
@@ -127,7 +128,7 @@ const styles = StyleSheet.create({
   },
   rating: {
     fontSize: 13,
-    color: '#64748b',
+    color: Colors.textLight,
     fontWeight: '600',
   },
   tags: {
@@ -142,21 +143,21 @@ const styles = StyleSheet.create({
   },
   tagText: {
     fontSize: 11,
-    color: '#9B59B6',
+    color: Colors.secondary,
     fontWeight: '600',
   },
   tagFree: {
-    backgroundColor: '#C8F2E5',
+    backgroundColor: Colors.accent,
   },
   tagTextFree: {
     fontSize: 11,
-    color: '#1ABC9C',
+    color: Colors.text,
     fontWeight: '600',
   },
   priceTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#C8F2E5',
+    backgroundColor: Colors.successLight,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -164,7 +165,7 @@ const styles = StyleSheet.create({
   },
   priceText: {
     fontSize: 11,
-    color: '#1ABC9C',
+    color: Colors.primary,
     fontWeight: '600',
   },
 });

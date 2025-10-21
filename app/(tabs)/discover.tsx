@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import ActivityCard from '@/components/ActivityCard';
 import { Search, SlidersHorizontal, X, List, MapPin as MapPinIcon } from 'lucide-react-native';
+import { Colors } from '@/constants/colors';
 
 interface Activity {
   id: string;
@@ -244,7 +245,7 @@ export default function DiscoverScreen() {
           >
             <SlidersHorizontal
               size={20}
-              color={hasActiveFilters ? '#1ABC9C' : '#64748b'}
+              color={hasActiveFilters ? Colors.primary : Colors.textLight}
             />
           </TouchableOpacity>
           <TouchableOpacity
@@ -532,7 +533,7 @@ const styles = StyleSheet.create({
   },
   clearText: {
     fontSize: 14,
-    color: '#1ABC9C',
+    color: Colors.primary,
     fontWeight: '600',
   },
   filterGroup: {
@@ -557,8 +558,8 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   filterChipActive: {
-    backgroundColor: '#1ABC9C',
-    borderColor: '#1ABC9C',
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
   filterChipText: {
     fontSize: 14,

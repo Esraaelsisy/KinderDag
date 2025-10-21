@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Colors } from '@/constants/colors';
 
 interface Category {
   id: string;
@@ -72,7 +73,7 @@ export default function CategoriesScreen() {
   const getCategoryGradient = (index: number): [string, string] => {
     const gradients: Array<[string, string]> = [
       ['#06b6d4', '#0891b2'],
-      ['#1ABC9C', '#16A085'],
+      [Colors.primary, Colors.primaryDark],
       ['#f59e0b', '#d97706'],
       ['#ef4444', '#dc2626'],
       ['#8b5cf6', '#7c3aed'],
@@ -110,7 +111,7 @@ export default function CategoriesScreen() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={['#1ABC9C', '#16A085']} style={styles.header}>
+      <LinearGradient colors={[Colors.primary, Colors.primaryDark]} style={styles.header}>
         <Text style={styles.title}>
           {language === 'en' ? 'Categories' : 'Categorieën'}
         </Text>
@@ -137,7 +138,7 @@ export default function CategoriesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: Colors.background,
   },
   header: {
     paddingTop: 60,
@@ -147,12 +148,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: Colors.white,
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 15,
-    color: '#ffffff',
+    color: Colors.white,
     opacity: 0.9,
   },
   list: {
@@ -185,7 +186,7 @@ const styles = StyleSheet.create({
   categoryName: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#ffffff',
+    color: Colors.white,
     lineHeight: 23,
   },
 });

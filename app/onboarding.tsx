@@ -16,6 +16,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import * as Location from 'expo-location';
 import { supabase } from '@/lib/supabase';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Colors } from '@/constants/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -143,7 +144,7 @@ export default function OnboardingScreen() {
                 <TextInput
                   style={styles.input}
                   placeholder="Child's name (optional)"
-                  placeholderTextColor="#94a3b8"
+                  placeholderTextColor={Colors.lightGrey}
                   value={kid.name}
                   onChangeText={(value) => updateKid(index, 'name', value)}
                 />
@@ -151,7 +152,7 @@ export default function OnboardingScreen() {
                   <TextInput
                     style={[styles.input, styles.inputYear]}
                     placeholder="Birth year"
-                    placeholderTextColor="#94a3b8"
+                    placeholderTextColor={Colors.lightGrey}
                     value={kid.birthYear}
                     onChangeText={(value) => updateKid(index, 'birthYear', value)}
                     keyboardType="number-pad"
@@ -189,7 +190,7 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <LinearGradient colors={['#1ABC9C', '#16A085']} style={styles.container}>
+    <LinearGradient colors={[Colors.primary, Colors.primaryDark]} style={styles.container}>
       <FlatList
         ref={flatListRef}
         data={steps}
@@ -241,13 +242,13 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: Colors.white,
     textAlign: 'center',
     marginBottom: 16,
   },
   stepSubtitle: {
     fontSize: 16,
-    color: '#ffffff',
+    color: Colors.white,
     textAlign: 'center',
     marginBottom: 48,
     opacity: 0.9,
@@ -265,17 +266,17 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   languageButtonActive: {
-    backgroundColor: '#ffffff',
-    borderColor: '#1e293b',
+    backgroundColor: Colors.white,
+    borderColor: Colors.textDark,
   },
   languageText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#ffffff',
+    color: Colors.white,
     textAlign: 'center',
   },
   languageTextActive: {
-    color: '#1e293b',
+    color: Colors.textDark,
   },
   kidsContainer: {
     width: '100%',
@@ -289,7 +290,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   input: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
@@ -299,13 +300,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   removeButton: {
-    backgroundColor: '#ef4444',
+    backgroundColor: Colors.error,
     borderRadius: 12,
     padding: 16,
     justifyContent: 'center',
   },
   removeButtonText: {
-    color: '#ffffff',
+    color: Colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -317,7 +318,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   addButtonText: {
-    color: '#ffffff',
+    color: Colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -327,7 +328,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   locationButton: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
     borderRadius: 12,
     padding: 20,
     width: '100%',
@@ -335,12 +336,12 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   locationButtonText: {
-    color: '#1e293b',
+    color: Colors.textDark,
     fontSize: 18,
     fontWeight: '600',
   },
   skipText: {
-    color: '#ffffff',
+    color: Colors.white,
     fontSize: 16,
     textDecorationLine: 'underline',
   },
@@ -361,17 +362,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.4)',
   },
   paginationDotActive: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.white,
     width: 24,
   },
   nextButton: {
-    backgroundColor: '#1e293b',
+    backgroundColor: Colors.textDark,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
   },
   nextButtonText: {
-    color: '#ffffff',
+    color: Colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
