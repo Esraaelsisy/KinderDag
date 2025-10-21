@@ -13,7 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { aiChatService, ChatMessage, QuickReply, ConversationContext } from '@/services/aiChat';
 import { Colors } from '@/constants/colors';
-import { Send, Bot, User } from 'lucide-react-native';
+import { Send, User } from 'lucide-react-native';
 import ActivityCard from '@/components/ActivityCard';
 import { supabase } from '@/lib/supabase';
 
@@ -138,7 +138,7 @@ export default function ChatScreen() {
         style={[styles.messageContainer, isUser ? styles.userMessage : styles.botMessage]}
       >
         <View style={styles.messageHeader}>
-          {!isUser && <Bot size={20} color={Colors.primary} />}
+          {!isUser && <Text style={styles.messageEmoji}>🤖</Text>}
           {isUser && <User size={20} color="white" />}
           <Text style={[styles.messageRole, isUser && styles.userMessageRole]}>
             {isUser ? 'You' : 'KinderDag Bot'}
@@ -158,7 +158,7 @@ export default function ChatScreen() {
       keyboardVerticalOffset={90}
     >
       <View style={styles.header}>
-        <Bot size={32} color={Colors.primary} />
+        <Text style={styles.emoji}>🎉</Text>
         <View style={styles.headerText}>
           <Text style={styles.title}>Find perfect activities for your child</Text>
           <Text style={styles.subtitle}>with KinderDag Bot</Text>
@@ -262,6 +262,9 @@ const styles = StyleSheet.create({
   headerText: {
     flex: 1,
   },
+  emoji: {
+    fontSize: 32,
+  },
   title: {
     fontSize: 20,
     fontWeight: '700',
@@ -299,6 +302,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     marginBottom: 4,
+  },
+  messageEmoji: {
+    fontSize: 20,
   },
   messageRole: {
     fontSize: 12,
