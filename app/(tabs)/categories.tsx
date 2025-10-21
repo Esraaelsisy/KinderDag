@@ -91,7 +91,7 @@ export default function CategoriesScreen() {
     return (
       <TouchableOpacity
         style={styles.categoryCard}
-        onPress={() => {}}
+        onPress={() => router.push(`/category/${item.id}`)}
         activeOpacity={0.8}
       >
         <LinearGradient
