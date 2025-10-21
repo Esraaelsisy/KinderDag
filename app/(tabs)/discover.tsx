@@ -14,7 +14,7 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import ActivityCard from '@/components/ActivityCard';
-import { Search, SlidersHorizontal, X, List, MapPin as MapPinIcon, SearchX } from 'lucide-react-native';
+import { Search, SlidersHorizontal, X, List, MapPin as MapPinIcon, SearchX, ChevronLeft, ChevronRight, Edit3 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/colors';
 import { Activity } from '@/types';
@@ -56,6 +56,9 @@ export default function DiscoverScreen() {
   });
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showCityModal, setShowCityModal] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [tempSelectedDate, setTempSelectedDate] = useState<Date | null>(null);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const { t, language } = useLanguage();
   const { profile, updateProfile } = useAuth();
 
@@ -202,6 +205,34 @@ export default function DiscoverScreen() {
   const hasActiveFilters = Object.values(filters).some((value) =>
     typeof value === 'boolean' ? value : value !== ''
   );
+
+  const getDaysInMonth = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+
+    return { daysInMonth, startingDayOfWeek, year, month };
+  };
+
+  const formatMonthYear = (date: Date) => {
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  const isSameDay = (date1: Date | null, date2: Date | null) => {
+    if (!date1 || !date2) return false;
+    return date1.getDate() === date2.getDate() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getFullYear() === date2.getFullYear();
+  };
+
+  const changeMonth = (offset: number) => {
+    const newMonth = new Date(currentMonth);
+    newMonth.setMonth(newMonth.getMonth() + offset);
+    setCurrentMonth(newMonth);
+  };
 
   const renderActivity = ({ item }: { item: Activity }) => {
     let distance: number | undefined;
@@ -587,10 +618,18 @@ export default function DiscoverScreen() {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.radioOption}
-                onPress={() => setFilters({ ...filters, dateFilter: filters.dateFilter === 'pickDate' ? '' : 'pickDate' })}
+                onPress={() => {
+                  setShowDatePicker(true);
+                  setTempSelectedDate(filters.selectedDate || new Date());
+                  setCurrentMonth(filters.selectedDate || new Date());
+                }}
               >
                 <View style={[styles.radioCircle, filters.dateFilter === 'pickDate' && styles.radioCircleActive]} />
-                <Text style={styles.radioText}>Pick A Date</Text>
+                <Text style={styles.radioText}>
+                  {filters.dateFilter === 'pickDate' && filters.selectedDate
+                    ? `Pick A Date (${filters.selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`
+                    : 'Pick A Date'}
+                </Text>
               </TouchableOpacity>
             </View>
 
@@ -864,6 +903,118 @@ export default function DiscoverScreen() {
               </TouchableOpacity>
             ))}
           </ScrollView>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showDatePicker}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowDatePicker(false)}
+      >
+        <View style={styles.datePickerOverlay}>
+          <View style={styles.datePickerModal}>
+            <View style={styles.datePickerHeader}>
+              <Text style={styles.datePickerTitle}>Select date</Text>
+            </View>
+
+            <View style={styles.datePickerSelectedContainer}>
+              <Text style={styles.datePickerSelectedDate}>
+                {tempSelectedDate
+                  ? tempSelectedDate.toLocaleDateString('en-US', {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric',
+                    })
+                  : 'No date selected'}
+              </Text>
+              <Edit3 size={20} color={Colors.textDark} />
+            </View>
+
+            <View style={styles.calendarContainer}>
+              <View style={styles.calendarHeader}>
+                <TouchableOpacity
+                  onPress={() => changeMonth(-1)}
+                  style={styles.monthNavButton}
+                >
+                  <ChevronLeft size={24} color={Colors.textDark} />
+                </TouchableOpacity>
+                <Text style={styles.monthYearText}>{formatMonthYear(currentMonth)}</Text>
+                <TouchableOpacity
+                  onPress={() => changeMonth(1)}
+                  style={styles.monthNavButton}
+                >
+                  <ChevronRight size={24} color={Colors.textDark} />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.weekDaysContainer}>
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+                  <Text key={index} style={styles.weekDayText}>
+                    {day}
+                  </Text>
+                ))}
+              </View>
+
+              <View style={styles.daysContainer}>
+                {(() => {
+                  const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentMonth);
+                  const days = [];
+
+                  for (let i = 0; i < startingDayOfWeek; i++) {
+                    days.push(<View key={`empty-${i}`} style={styles.dayCell} />);
+                  }
+
+                  for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(year, month, day);
+                    const isSelected = isSameDay(date, tempSelectedDate);
+                    days.push(
+                      <TouchableOpacity
+                        key={day}
+                        style={styles.dayCell}
+                        onPress={() => setTempSelectedDate(date)}
+                      >
+                        <View style={[styles.dayButton, isSelected && styles.dayButtonSelected]}>
+                          <Text style={[styles.dayText, isSelected && styles.dayTextSelected]}>
+                            {day}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  }
+
+                  return days;
+                })()}
+              </View>
+            </View>
+
+            <View style={styles.datePickerFooter}>
+              <TouchableOpacity
+                onPress={() => {
+                  setTempSelectedDate(null);
+                  setShowDatePicker(false);
+                }}
+                style={styles.datePickerCancelButton}
+              >
+                <Text style={styles.datePickerCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  if (tempSelectedDate) {
+                    setFilters({
+                      ...filters,
+                      dateFilter: 'pickDate',
+                      selectedDate: tempSelectedDate,
+                    });
+                  }
+                  setShowDatePicker(false);
+                }}
+                style={styles.datePickerOkButton}
+              >
+                <Text style={styles.datePickerOkText}>OK</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </Modal>
 
@@ -1444,5 +1595,120 @@ const styles = StyleSheet.create({
   selectionItemTextActive: {
     color: Colors.textDark,
     fontWeight: '500',
+  },
+  datePickerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  datePickerModal: {
+    backgroundColor: Colors.white,
+    borderRadius: 20,
+    width: '100%',
+    maxWidth: 400,
+    overflow: 'hidden',
+  },
+  datePickerHeader: {
+    padding: 20,
+    paddingBottom: 16,
+  },
+  datePickerTitle: {
+    fontSize: 16,
+    color: Colors.textLight,
+    fontWeight: '500',
+  },
+  datePickerSelectedContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  datePickerSelectedDate: {
+    fontSize: 32,
+    fontWeight: '400',
+    color: Colors.textDark,
+  },
+  calendarContainer: {
+    padding: 20,
+  },
+  calendarHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  monthNavButton: {
+    padding: 8,
+  },
+  monthYearText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: Colors.textDark,
+  },
+  weekDaysContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 12,
+  },
+  weekDayText: {
+    width: 40,
+    textAlign: 'center',
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.textLight,
+  },
+  daysContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  dayCell: {
+    width: '14.28%',
+    aspectRatio: 1,
+    padding: 2,
+  },
+  dayButton: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 50,
+  },
+  dayButtonSelected: {
+    backgroundColor: '#0891b2',
+  },
+  dayText: {
+    fontSize: 16,
+    color: Colors.textDark,
+  },
+  dayTextSelected: {
+    color: Colors.white,
+    fontWeight: '600',
+  },
+  datePickerFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    padding: 20,
+    paddingTop: 12,
+    gap: 16,
+  },
+  datePickerCancelButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  datePickerCancelText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0891b2',
+  },
+  datePickerOkButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  datePickerOkText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0891b2',
   },
 });
