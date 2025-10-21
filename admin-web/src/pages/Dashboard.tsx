@@ -17,13 +17,31 @@ interface Activity {
 
 export default function Dashboard() {
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [filteredActivities, setFilteredActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkEdit, setShowBulkEdit] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [filterAgeRange, setFilterAgeRange] = useState('');
+  const [filterIndoor, setFilterIndoor] = useState('');
   const navigate = useNavigate();
+
+  const [bulkEditData, setBulkEditData] = useState({
+    category: '',
+    age_range: '',
+    indoor: '',
+    duration: '',
+  });
 
   useEffect(() => {
     fetchActivities();
   }, []);
+
+  useEffect(() => {
+    filterActivities();
+  }, [activities, searchTerm, filterCategory, filterAgeRange, filterIndoor]);
 
   const fetchActivities = async () => {
     setLoading(true);
@@ -38,6 +56,35 @@ export default function Dashboard() {
       setActivities(data || []);
     }
     setLoading(false);
+  };
+
+  const filterActivities = () => {
+    let filtered = activities;
+
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(activity =>
+        activity.title.toLowerCase().includes(term) ||
+        activity.description.toLowerCase().includes(term) ||
+        activity.category.toLowerCase().includes(term) ||
+        activity.materials.some(m => m.toLowerCase().includes(term))
+      );
+    }
+
+    if (filterCategory) {
+      filtered = filtered.filter(activity => activity.category === filterCategory);
+    }
+
+    if (filterAgeRange) {
+      filtered = filtered.filter(activity => activity.age_range === filterAgeRange);
+    }
+
+    if (filterIndoor !== '') {
+      const isIndoor = filterIndoor === 'true';
+      filtered = filtered.filter(activity => activity.indoor === isIndoor);
+    }
+
+    setFilteredActivities(filtered);
   };
 
   const handleDelete = async (id: string) => {
@@ -81,7 +128,6 @@ export default function Dashboard() {
           return;
         }
 
-        // Validate and insert activities
         const validActivities = activitiesData.map(activity => ({
           title: activity.title || '',
           description: activity.description || '',
@@ -109,7 +155,6 @@ export default function Dashboard() {
         alert('Error parsing file: ' + (error as Error).message);
       } finally {
         setImporting(false);
-        // Reset file input
         event.target.value = '';
       }
     };
@@ -167,6 +212,85 @@ export default function Dashboard() {
     }
   };
 
+  const exportActivities = (format: 'json' | 'csv') => {
+    const exportData = filteredActivities.map(({ id, created_at, ...rest }) => rest);
+
+    if (format === 'json') {
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'activities_export.json';
+      a.click();
+    } else {
+      const headers = 'title,description,category,age_range,duration,materials,indoor,image_url\n';
+      const rows = exportData.map(activity =>
+        `"${activity.title}","${activity.description}","${activity.category}","${activity.age_range}",${activity.duration},"${activity.materials.join(',')}",${activity.indoor},"${activity.image_url || ''}"`
+      ).join('\n');
+      const csv = headers + rows;
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'activities_export.csv';
+      a.click();
+    }
+  };
+
+  const toggleSelection = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredActivities.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredActivities.map(a => a.id)));
+    }
+  };
+
+  const handleBulkEdit = async () => {
+    if (selectedIds.size === 0) {
+      alert('Please select activities to edit');
+      return;
+    }
+
+    const updates: any = {};
+    if (bulkEditData.category) updates.category = bulkEditData.category;
+    if (bulkEditData.age_range) updates.age_range = bulkEditData.age_range;
+    if (bulkEditData.indoor !== '') updates.indoor = bulkEditData.indoor === 'true';
+    if (bulkEditData.duration) updates.duration = parseInt(bulkEditData.duration);
+
+    if (Object.keys(updates).length === 0) {
+      alert('Please select at least one field to update');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('activities')
+      .update(updates)
+      .in('id', Array.from(selectedIds));
+
+    if (error) {
+      alert('Error updating activities: ' + error.message);
+    } else {
+      alert(`Successfully updated ${selectedIds.size} activities!`);
+      setShowBulkEdit(false);
+      setSelectedIds(new Set());
+      setBulkEditData({ category: '', age_range: '', indoor: '', duration: '' });
+      fetchActivities();
+    }
+  };
+
+  const categories = Array.from(new Set(activities.map(a => a.category)));
+  const ageRanges = Array.from(new Set(activities.map(a => a.age_range)));
+
   if (loading) {
     return (
       <div style={styles.container}>
@@ -193,21 +317,20 @@ export default function Dashboard() {
               disabled={importing}
             />
             <label htmlFor="file-import" style={importing ? styles.importButtonDisabled : styles.importButton}>
-              {importing ? 'Importing...' : '📁 Bulk Import'}
+              {importing ? 'Importing...' : 'Import'}
             </label>
+            <button onClick={() => exportActivities('json')} style={styles.exportButton}>
+              Export JSON
+            </button>
+            <button onClick={() => exportActivities('csv')} style={styles.exportButton}>
+              Export CSV
+            </button>
             <button
               onClick={() => downloadTemplate('json')}
               style={styles.templateButton}
               title="Download JSON template"
             >
-              JSON
-            </button>
-            <button
-              onClick={() => downloadTemplate('csv')}
-              style={styles.templateButton}
-              title="Download CSV template"
-            >
-              CSV
+              Template
             </button>
           </div>
           <button onClick={handleLogout} style={styles.logoutButton}>
@@ -217,46 +340,201 @@ export default function Dashboard() {
       </div>
 
       <div style={styles.content}>
-        {activities.length === 0 ? (
-          <div style={styles.emptyState}>
-            <p style={styles.emptyText}>No activities yet. Create your first one!</p>
-          </div>
-        ) : (
-          <div style={styles.grid}>
-            {activities.map((activity) => (
-              <div key={activity.id} style={styles.card}>
-                {activity.image_url && (
-                  <img src={activity.image_url} alt={activity.title} style={styles.image} />
-                )}
-                <div style={styles.cardContent}>
-                  <h3 style={styles.cardTitle}>{activity.title}</h3>
-                  <p style={styles.cardDescription}>{activity.description}</p>
-                  <div style={styles.cardMeta}>
-                    <span style={styles.badge}>{activity.category}</span>
-                    <span style={styles.badge}>{activity.age_range}</span>
-                    <span style={styles.badge}>{activity.duration} min</span>
-                    <span style={styles.badge}>{activity.indoor ? 'Indoor' : 'Outdoor'}</span>
-                  </div>
-                  <div style={styles.cardActions}>
-                    <button
-                      onClick={() => navigate(`/edit/${activity.id}`)}
-                      style={styles.editButton}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(activity.id)}
-                      style={styles.deleteButton}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
+        <div style={styles.filterBar}>
+          <input
+            type="text"
+            placeholder="Search activities..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={styles.searchInput}
+          />
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            style={styles.filterSelect}
+          >
+            <option value="">All Categories</option>
+            {categories.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
             ))}
+          </select>
+          <select
+            value={filterAgeRange}
+            onChange={(e) => setFilterAgeRange(e.target.value)}
+            style={styles.filterSelect}
+          >
+            <option value="">All Ages</option>
+            {ageRanges.map(age => (
+              <option key={age} value={age}>{age}</option>
+            ))}
+          </select>
+          <select
+            value={filterIndoor}
+            onChange={(e) => setFilterIndoor(e.target.value)}
+            style={styles.filterSelect}
+          >
+            <option value="">Indoor/Outdoor</option>
+            <option value="true">Indoor</option>
+            <option value="false">Outdoor</option>
+          </select>
+          <button onClick={() => {
+            setSearchTerm('');
+            setFilterCategory('');
+            setFilterAgeRange('');
+            setFilterIndoor('');
+          }} style={styles.clearButton}>
+            Clear
+          </button>
+        </div>
+
+        {selectedIds.size > 0 && (
+          <div style={styles.bulkActions}>
+            <span style={styles.bulkText}>{selectedIds.size} selected</span>
+            <button onClick={() => setShowBulkEdit(true)} style={styles.bulkEditButton}>
+              Bulk Edit
+            </button>
+            <button onClick={() => setSelectedIds(new Set())} style={styles.clearSelectionButton}>
+              Clear Selection
+            </button>
           </div>
         )}
+
+        {filteredActivities.length === 0 ? (
+          <div style={styles.emptyState}>
+            <p style={styles.emptyText}>No activities found matching your filters.</p>
+          </div>
+        ) : (
+          <>
+            <div style={styles.selectAllBar}>
+              <label style={styles.checkbox}>
+                <input
+                  type="checkbox"
+                  checked={selectedIds.size === filteredActivities.length && filteredActivities.length > 0}
+                  onChange={toggleSelectAll}
+                />
+                <span style={styles.checkboxLabel}>Select All ({filteredActivities.length})</span>
+              </label>
+            </div>
+            <div style={styles.grid}>
+              {filteredActivities.map((activity) => (
+                <div
+                  key={activity.id}
+                  style={{
+                    ...styles.card,
+                    ...(selectedIds.has(activity.id) ? styles.cardSelected : {})
+                  }}
+                >
+                  <div style={styles.cardCheckbox}>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(activity.id)}
+                      onChange={() => toggleSelection(activity.id)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                  {activity.image_url && (
+                    <img src={activity.image_url} alt={activity.title} style={styles.image} />
+                  )}
+                  <div style={styles.cardContent}>
+                    <h3 style={styles.cardTitle}>{activity.title}</h3>
+                    <p style={styles.cardDescription}>{activity.description}</p>
+                    <div style={styles.cardMeta}>
+                      <span style={styles.badge}>{activity.category}</span>
+                      <span style={styles.badge}>{activity.age_range}</span>
+                      <span style={styles.badge}>{activity.duration} min</span>
+                      <span style={styles.badge}>{activity.indoor ? 'Indoor' : 'Outdoor'}</span>
+                    </div>
+                    <div style={styles.cardActions}>
+                      <button
+                        onClick={() => navigate(`/edit/${activity.id}`)}
+                        style={styles.editButton}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(activity.id)}
+                        style={styles.deleteButton}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
+
+      {showBulkEdit && (
+        <div style={styles.modal} onClick={() => setShowBulkEdit(false)}>
+          <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <h2 style={styles.modalTitle}>Bulk Edit {selectedIds.size} Activities</h2>
+            <p style={styles.modalSubtitle}>Only filled fields will be updated</p>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Category</label>
+              <select
+                value={bulkEditData.category}
+                onChange={(e) => setBulkEditData({...bulkEditData, category: e.target.value})}
+                style={styles.input}
+              >
+                <option value="">Don't change</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Age Range</label>
+              <select
+                value={bulkEditData.age_range}
+                onChange={(e) => setBulkEditData({...bulkEditData, age_range: e.target.value})}
+                style={styles.input}
+              >
+                <option value="">Don't change</option>
+                {ageRanges.map(age => (
+                  <option key={age} value={age}>{age}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Indoor/Outdoor</label>
+              <select
+                value={bulkEditData.indoor}
+                onChange={(e) => setBulkEditData({...bulkEditData, indoor: e.target.value})}
+                style={styles.input}
+              >
+                <option value="">Don't change</option>
+                <option value="true">Indoor</option>
+                <option value="false">Outdoor</option>
+              </select>
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Duration (minutes)</label>
+              <input
+                type="number"
+                value={bulkEditData.duration}
+                onChange={(e) => setBulkEditData({...bulkEditData, duration: e.target.value})}
+                placeholder="Leave empty to not change"
+                style={styles.input}
+              />
+            </div>
+
+            <div style={styles.modalActions}>
+              <button onClick={handleBulkEdit} style={styles.saveButton}>
+                Update Activities
+              </button>
+              <button onClick={() => setShowBulkEdit(false)} style={styles.cancelButton}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -312,6 +590,17 @@ const styles = {
     fontWeight: '600',
     cursor: 'not-allowed',
   },
+  exportButton: {
+    padding: '12px 20px',
+    background: '#4299e1',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'background 0.2s',
+  },
   templateButton: {
     padding: '8px 12px',
     background: 'rgba(255, 255, 255, 0.2)',
@@ -349,6 +638,94 @@ const styles = {
     maxWidth: '1200px',
     margin: '0 auto',
   },
+  filterBar: {
+    background: 'white',
+    padding: '20px',
+    borderRadius: '12px',
+    marginBottom: '20px',
+    display: 'flex',
+    gap: '12px',
+    flexWrap: 'wrap' as const,
+  },
+  searchInput: {
+    flex: '2',
+    minWidth: '200px',
+    padding: '10px 16px',
+    border: '2px solid #e2e8f0',
+    borderRadius: '8px',
+    fontSize: '14px',
+  },
+  filterSelect: {
+    flex: '1',
+    minWidth: '150px',
+    padding: '10px 16px',
+    border: '2px solid #e2e8f0',
+    borderRadius: '8px',
+    fontSize: '14px',
+    cursor: 'pointer',
+  },
+  clearButton: {
+    padding: '10px 20px',
+    background: '#e2e8f0',
+    color: '#4a5568',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+  bulkActions: {
+    background: 'white',
+    padding: '16px 20px',
+    borderRadius: '12px',
+    marginBottom: '20px',
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'center',
+  },
+  bulkText: {
+    fontSize: '16px',
+    fontWeight: '600',
+    color: '#4a5568',
+    flex: 1,
+  },
+  bulkEditButton: {
+    padding: '10px 20px',
+    background: '#667eea',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+  clearSelectionButton: {
+    padding: '10px 20px',
+    background: '#e2e8f0',
+    color: '#4a5568',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+  selectAllBar: {
+    background: 'white',
+    padding: '12px 20px',
+    borderRadius: '12px',
+    marginBottom: '20px',
+  },
+  checkbox: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    cursor: 'pointer',
+  },
+  checkboxLabel: {
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#4a5568',
+  },
   emptyState: {
     background: 'white',
     borderRadius: '12px',
@@ -369,7 +746,21 @@ const styles = {
     borderRadius: '12px',
     overflow: 'hidden',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    transition: 'transform 0.2s',
+    transition: 'all 0.2s',
+    position: 'relative' as const,
+  },
+  cardSelected: {
+    boxShadow: '0 0 0 3px #667eea',
+  },
+  cardCheckbox: {
+    position: 'absolute' as const,
+    top: '12px',
+    left: '12px',
+    zIndex: 10,
+    background: 'white',
+    borderRadius: '4px',
+    padding: '4px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   },
   image: {
     width: '100%',
@@ -431,6 +822,83 @@ const styles = {
     border: 'none',
     borderRadius: '6px',
     fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+  modal: {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0, 0, 0, 0.5)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  modalContent: {
+    background: 'white',
+    borderRadius: '12px',
+    padding: '32px',
+    maxWidth: '500px',
+    width: '90%',
+    maxHeight: '90vh',
+    overflow: 'auto',
+  },
+  modalTitle: {
+    fontSize: '24px',
+    fontWeight: 'bold',
+    color: '#1a202c',
+    marginBottom: '8px',
+  },
+  modalSubtitle: {
+    fontSize: '14px',
+    color: '#718096',
+    marginBottom: '24px',
+  },
+  formGroup: {
+    marginBottom: '20px',
+  },
+  label: {
+    display: 'block',
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#4a5568',
+    marginBottom: '8px',
+  },
+  input: {
+    width: '100%',
+    padding: '10px 16px',
+    border: '2px solid #e2e8f0',
+    borderRadius: '8px',
+    fontSize: '14px',
+    boxSizing: 'border-box' as const,
+  },
+  modalActions: {
+    display: 'flex',
+    gap: '12px',
+    marginTop: '24px',
+  },
+  saveButton: {
+    flex: 1,
+    padding: '12px',
+    background: '#667eea',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '16px',
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+  cancelButton: {
+    flex: 1,
+    padding: '12px',
+    background: '#e2e8f0',
+    color: '#4a5568',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '16px',
     fontWeight: '600',
     cursor: 'pointer',
   },
