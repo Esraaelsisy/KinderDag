@@ -560,9 +560,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: Colors.textDark,
   },
   seeAllLink: {
     fontSize: 14,
