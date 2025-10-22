@@ -598,13 +598,9 @@ export default function HomeScreen() {
 
         {selectedCategoryId && (
         <View style={styles.categoryActivitiesContainer}>
-          <View style={styles.categoryActivitiesHeader}>
-            <Text style={styles.categoryActivitiesTitle}>
-              {language === 'en'
-                ? categories.find(c => c.id === selectedCategoryId)?.name_en
-                : categories.find(c => c.id === selectedCategoryId)?.name_nl}
-            </Text>
-            {categoryActivities.length > 0 && (
+          <View style={styles.bubblePointer} />
+          {categoryActivities.length > 0 && (
+            <View style={styles.categoryActivitiesHeader}>
               <TouchableOpacity
                 onPress={() => {
                   const selectedCategory = categories.find(c => c.id === selectedCategoryId);
@@ -623,8 +619,8 @@ export default function HomeScreen() {
                   {language === 'en' ? 'See More' : 'Bekijk Meer'}
                 </Text>
               </TouchableOpacity>
-            )}
-          </View>
+            </View>
+          )}
           {categoryActivities.length > 0 ? (
             <FlatList
               data={categoryActivities}
@@ -802,7 +798,6 @@ export default function HomeScreen() {
         </View>
       )}
 
-      <View style={styles.bottomPadding} />
     </ScrollView>
   );
 }
@@ -1023,22 +1018,35 @@ const styles = StyleSheet.create({
   categoryActivitiesContainer: {
     backgroundColor: 'rgba(253, 216, 53, 0.08)',
     paddingVertical: 16,
-    marginTop: 12,
+    marginTop: 8,
+    marginHorizontal: 20,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: 'rgba(253, 216, 53, 0.3)',
+    position: 'relative',
+  },
+  bubblePointer: {
+    position: 'absolute',
+    top: -8,
+    left: 30,
+    width: 16,
+    height: 16,
+    backgroundColor: 'rgba(253, 216, 53, 0.08)',
+    borderLeftWidth: 2,
+    borderTopWidth: 2,
+    borderLeftColor: 'rgba(253, 216, 53, 0.3)',
+    borderTopColor: 'rgba(253, 216, 53, 0.3)',
+    transform: [{ rotate: '45deg' }],
   },
   categoryActivitiesHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     marginBottom: 12,
   },
-  categoryActivitiesTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.textDark,
-  },
   categoryActivitiesList: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
   },
   section: {
     marginBottom: 24,
@@ -1047,12 +1055,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   emptyState: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingVertical: 40,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: Colors.white,
-    marginHorizontal: 20,
+    marginHorizontal: 16,
     borderRadius: 12,
   },
   emptyStateText: {
@@ -1060,8 +1068,5 @@ const styles = StyleSheet.create({
     color: Colors.textLight,
     textAlign: 'center',
     lineHeight: 20,
-  },
-  bottomPadding: {
-    height: 100,
   },
 });
