@@ -145,23 +145,28 @@ export default function SignInScreen() {
 
             <View style={styles.socialButtons}>
               <TouchableOpacity
-                style={[styles.socialButton, oauthLoading && styles.buttonDisabled]}
+                style={[styles.googleButton, oauthLoading && styles.buttonDisabled]}
                 onPress={handleGoogleSignIn}
                 disabled={oauthLoading}
               >
-                <View style={styles.googleIcon}>
-                  <Text style={styles.googleIconText}>G</Text>
+                <View style={styles.googleIconContainer}>
+                  <View style={styles.googleIcon}>
+                    <View style={styles.googleIconBlue} />
+                    <View style={styles.googleIconRed} />
+                    <View style={styles.googleIconYellow} />
+                    <View style={styles.googleIconGreen} />
+                  </View>
                 </View>
-                <Text style={styles.socialButtonText}>Google</Text>
+                <Text style={styles.googleButtonText}>Google</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.socialButton, oauthLoading && styles.buttonDisabled]}
+                style={[styles.appleButton, oauthLoading && styles.buttonDisabled]}
                 onPress={handleAppleSignIn}
                 disabled={oauthLoading}
               >
-                <Apple size={20} color={Colors.text} />
-                <Text style={styles.socialButtonText}>Apple</Text>
+                <Apple size={18} color="#FFFFFF" strokeWidth={2.5} />
+                <Text style={styles.appleButtonText}>Apple</Text>
               </TouchableOpacity>
             </View>
 
@@ -290,33 +295,102 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 8,
   },
-  socialButton: {
+  googleButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.white,
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    padding: 14,
-    gap: 8,
+    padding: 16,
+    gap: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.08)',
   },
-  socialButtonText: {
-    color: Colors.text,
+  googleButtonText: {
+    color: '#1F1F1F',
     fontSize: 15,
     fontWeight: '600',
+    letterSpacing: 0.25,
   },
-  googleIcon: {
+  appleButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#000000',
+    borderRadius: 12,
+    padding: 16,
+    gap: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  appleButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '600',
+    letterSpacing: 0.25,
+  },
+  googleIconContainer: {
     width: 20,
     height: 20,
-    borderRadius: 10,
-    backgroundColor: '#4285F4',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  googleIconText: {
-    color: Colors.white,
-    fontSize: 14,
-    fontWeight: 'bold',
+  googleIcon: {
+    width: 18,
+    height: 18,
+    position: 'relative',
+  },
+  googleIconBlue: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 9,
+    height: 9,
+    backgroundColor: '#4285F4',
+    borderTopRightRadius: 9,
+  },
+  googleIconRed: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 9,
+    height: 9,
+    backgroundColor: '#EA4335',
+    borderTopLeftRadius: 9,
+  },
+  googleIconYellow: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    width: 9,
+    height: 9,
+    backgroundColor: '#FBBC04',
+    borderBottomLeftRadius: 9,
+  },
+  googleIconGreen: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 9,
+    height: 9,
+    backgroundColor: '#34A853',
+    borderBottomRightRadius: 9,
   },
   footer: {
     flexDirection: 'row',
