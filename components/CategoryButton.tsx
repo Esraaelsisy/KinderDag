@@ -26,7 +26,7 @@ export default function CategoryButton({
     <TouchableOpacity
       style={[
         styles.button,
-        { borderColor: color },
+        { borderColor: Colors.accent, backgroundColor: Colors.accent },
         isActive && { backgroundColor: color },
       ]}
       onPress={onPress}
@@ -34,7 +34,7 @@ export default function CategoryButton({
     >
       <View style={styles.content}>
         {emoji && <Text style={styles.emoji}>{emoji}</Text>}
-        <Text style={[styles.text, { color: isActive ? Colors.white : color }]}>{name}</Text>
+        <Text style={[styles.text, { color: isActive ? Colors.white : Colors.textDark }]}>{name}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -47,7 +47,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 2,
     marginRight: 12,
-    backgroundColor: Colors.white,
   },
   content: {
     flexDirection: 'row',
