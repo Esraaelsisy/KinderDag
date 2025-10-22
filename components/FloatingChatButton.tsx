@@ -23,7 +23,7 @@ export default function FloatingChatButton() {
       >
         <MessageCircle
           size={22}
-          color={isOpen ? Colors.white : '#f97316'}
+          color={isOpen ? Colors.white : Colors.primary}
           strokeWidth={2.5}
           fill={isOpen ? Colors.primary : 'none'}
         />
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     backgroundColor: Colors.white,
     borderWidth: 2,
-    borderColor: '#f97316',
+    borderColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
