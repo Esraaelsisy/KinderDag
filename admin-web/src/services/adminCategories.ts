@@ -16,7 +16,7 @@ export const adminCategoriesService = {
   async getAll() {
     const { data: categories, error } = await supabase
       .from('activity_categories')
-      .select('*')
+      .select('id, name_en, name_nl, icon, color, sort_order, created_at')
       .order('sort_order');
 
     if (error) throw error;
@@ -53,7 +53,7 @@ export const adminCategoriesService = {
   async getById(id: string) {
     const { data: category, error } = await supabase
       .from('activity_categories')
-      .select('*')
+      .select('id, name_en, name_nl, icon, color, sort_order, created_at')
       .eq('id', id)
       .maybeSingle();
 
@@ -93,7 +93,7 @@ export const adminCategoriesService = {
     const { data, error } = await supabase
       .from('activity_categories')
       .insert([category])
-      .select()
+      .select('id, name_en, name_nl, icon, color, sort_order, created_at')
       .single();
 
     if (error) throw error;
@@ -113,7 +113,7 @@ export const adminCategoriesService = {
     const { data, error } = await supabase
       .from('activity_categories')
       .insert(categories)
-      .select();
+      .select('id, name_en, name_nl, icon, color, sort_order, created_at');
 
     if (error) throw error;
     return data;
@@ -127,7 +127,7 @@ export const adminCategoriesService = {
       .from('activity_categories')
       .update(category)
       .eq('id', id)
-      .select()
+      .select('id, name_en, name_nl, icon, color, sort_order, created_at')
       .single();
 
     if (error) throw error;
@@ -151,7 +151,7 @@ export const adminCategoriesService = {
       .from('activity_categories')
       .update(updates)
       .in('id', ids)
-      .select();
+      .select('id, name_en, name_nl, icon, color, sort_order, created_at');
 
     if (error) throw error;
     return data;
