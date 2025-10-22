@@ -23,9 +23,9 @@ export default function FloatingChatButton() {
       >
         <MessageCircle
           size={22}
-          color={isOpen ? Colors.white : Colors.primary}
+          color={isOpen ? Colors.white : Colors.secondary}
           strokeWidth={2.5}
-          fill={isOpen ? Colors.primary : 'none'}
+          fill={isOpen ? Colors.secondary : 'none'}
         />
       </TouchableOpacity>
 
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     backgroundColor: Colors.white,
     borderWidth: 2,
-    borderColor: Colors.primary,
+    borderColor: Colors.secondary,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -74,8 +74,8 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   fabActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+    backgroundColor: Colors.secondary,
+    borderColor: Colors.secondary,
   },
   modalContainer: {
     flex: 1,
