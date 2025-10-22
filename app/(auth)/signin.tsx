@@ -5,13 +5,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/colors';
+import { Apple } from 'lucide-react-native';
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
   const [errors, setErrors] = useState({ email: '', password: '', auth: '' });
-  const { signIn } = useAuth();
+  const { signIn, signInWithGoogle, signInWithApple } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
 
@@ -46,6 +48,24 @@ export default function SignInScreen() {
       setErrors({ email: '', password: '', auth: 'Invalid email or password. Please try again.' });
     } else {
       router.replace('/(tabs)');
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setOauthLoading(true);
+    const { error } = await signInWithGoogle();
+    if (error) {
+      setErrors({ email: '', password: '', auth: 'Failed to sign in with Google. Please try again.' });
+      setOauthLoading(false);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    setOauthLoading(true);
+    const { error } = await signInWithApple();
+    if (error) {
+      setErrors({ email: '', password: '', auth: 'Failed to sign in with Apple. Please try again.' });
+      setOauthLoading(false);
     }
   };
 
@@ -116,6 +136,34 @@ export default function SignInScreen() {
             >
               <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </TouchableOpacity>
+
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or continue with</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <View style={styles.socialButtons}>
+              <TouchableOpacity
+                style={[styles.socialButton, oauthLoading && styles.buttonDisabled]}
+                onPress={handleGoogleSignIn}
+                disabled={oauthLoading}
+              >
+                <View style={styles.googleIcon}>
+                  <Text style={styles.googleIconText}>G</Text>
+                </View>
+                <Text style={styles.socialButtonText}>Google</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.socialButton, oauthLoading && styles.buttonDisabled]}
+                onPress={handleAppleSignIn}
+                disabled={oauthLoading}
+              >
+                <Apple size={20} color={Colors.text} />
+                <Text style={styles.socialButtonText}>Apple</Text>
+              </TouchableOpacity>
+            </View>
 
             <View style={styles.footer}>
               <Text style={styles.footerText}>Don't have an account? </Text>
@@ -219,6 +267,56 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     textDecorationLine: 'underline',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 16,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  dividerText: {
+    color: Colors.white,
+    fontSize: 14,
+    marginHorizontal: 12,
+    opacity: 0.8,
+  },
+  socialButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 8,
+  },
+  socialButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.white,
+    borderRadius: 12,
+    padding: 14,
+    gap: 8,
+  },
+  socialButtonText: {
+    color: Colors.text,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  googleIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#4285F4',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  googleIconText: {
+    color: Colors.white,
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   footer: {
     flexDirection: 'row',
