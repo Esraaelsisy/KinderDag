@@ -18,7 +18,9 @@ export const adminCategoriesService = {
       .from('activity_categories')
       .select(`
         *,
-        activities:activity_category_links(activity:activities(*))
+        activity_category_links(
+          activity:activities(*)
+        )
       `)
       .order('sort_order');
 
@@ -27,7 +29,8 @@ export const adminCategoriesService = {
     // Transform data to include activity count
     return data?.map(cat => ({
       ...cat,
-      activityCount: cat.activities?.length || 0,
+      activities: cat.activity_category_links,
+      activityCount: cat.activity_category_links?.length || 0,
     }));
   },
 
@@ -39,13 +42,21 @@ export const adminCategoriesService = {
       .from('activity_categories')
       .select(`
         *,
-        activities:activity_category_links(activity:activities(*))
+        activity_category_links(
+          activity:activities(*)
+        )
       `)
       .eq('id', id)
       .maybeSingle();
 
     if (error) throw error;
-    return data;
+
+    if (!data) return null;
+
+    return {
+      ...data,
+      activities: data.activity_category_links,
+    };
   },
 
   /**

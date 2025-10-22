@@ -21,7 +21,9 @@ export const adminTagsService = {
       .from('tags')
       .select(`
         *,
-        activities:activity_tag_links(activity:activities(*))
+        activity_tag_links(
+          activity:activities(*)
+        )
       `)
       .order('sort_order');
 
@@ -30,7 +32,8 @@ export const adminTagsService = {
     // Transform data to include activity count
     return data?.map(tag => ({
       ...tag,
-      activityCount: tag.activities?.length || 0,
+      activities: tag.activity_tag_links,
+      activityCount: tag.activity_tag_links?.length || 0,
     }));
   },
 
@@ -42,13 +45,21 @@ export const adminTagsService = {
       .from('tags')
       .select(`
         *,
-        activities:activity_tag_links(activity:activities(*))
+        activity_tag_links(
+          activity:activities(*)
+        )
       `)
       .eq('id', id)
       .maybeSingle();
 
     if (error) throw error;
-    return data;
+
+    if (!data) return null;
+
+    return {
+      ...data,
+      activities: data.activity_tag_links,
+    };
   },
 
   /**
