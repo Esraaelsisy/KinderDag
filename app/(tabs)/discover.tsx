@@ -37,6 +37,7 @@ export default function DiscoverScreen() {
   const [showCityPicker, setShowCityPicker] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
   const [categories, setCategories] = useState<Array<{ id: string; name_en: string; name_nl: string }>>([]);
+  const [tags, setTags] = useState<Array<{ id: string; name: string; slug: string; color: string }>>([]);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('map');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -53,9 +54,11 @@ export default function DiscoverScreen() {
     minAge: '0',
     maxAge: '12',
     maxDistance: '',
+    selectedTags: [] as string[],
   });
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showCityModal, setShowCityModal] = useState(false);
+  const [showTagsModal, setShowTagsModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [tempSelectedDate, setTempSelectedDate] = useState<Date | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -72,6 +75,7 @@ export default function DiscoverScreen() {
     }
     loadCities();
     loadCategories();
+    loadTags();
     if (profile?.location_name) {
       setSelectedCity(profile.location_name);
     }
@@ -137,6 +141,21 @@ export default function DiscoverScreen() {
     }
   };
 
+  const loadTags = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('tags')
+        .select('id, name, slug, color')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+
+      if (error) throw error;
+      setTags(data || []);
+    } catch (error) {
+      console.error('Failed to load tags:', error);
+    }
+  };
+
   const selectCity = async (city: string) => {
     setSelectedCity(city);
     setShowCityPicker(false);
@@ -155,7 +174,7 @@ export default function DiscoverScreen() {
     }
   };
 
-  const applyFilters = () => {
+  const applyFilters = async () => {
     let filtered = [...activities];
 
     // Apply search query
@@ -165,6 +184,19 @@ export default function DiscoverScreen() {
           activity.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           activity.city.toLowerCase().includes(searchQuery.toLowerCase())
       );
+    }
+
+    // Apply tag filters (OR logic)
+    if (filters.selectedTags.length > 0) {
+      const { data: taggedActivityIds } = await supabase
+        .from('activity_tag_links')
+        .select('activity_id')
+        .in('tag_id', filters.selectedTags);
+
+      if (taggedActivityIds) {
+        const activityIds = new Set(taggedActivityIds.map(item => item.activity_id));
+        filtered = filtered.filter(activity => activityIds.has(activity.id));
+      }
     }
 
     // Apply all other filters using the service
@@ -199,11 +231,12 @@ export default function DiscoverScreen() {
       minAge: '0',
       maxAge: '12',
       maxDistance: '',
+      selectedTags: [],
     });
   };
 
   const hasActiveFilters = Object.values(filters).some((value) =>
-    typeof value === 'boolean' ? value : value !== ''
+    typeof value === 'boolean' ? value : Array.isArray(value) ? value.length > 0 : value !== ''
   );
 
   const getDaysInMonth = (date: Date) => {
@@ -538,6 +571,25 @@ export default function DiscoverScreen() {
                 </TouchableOpacity>
               </View>
             )}
+            {filters.selectedTags.map((tagId) => {
+              const tag = tags.find(t => t.id === tagId);
+              if (!tag) return null;
+              return (
+                <View key={tagId} style={styles.activeFilterChip}>
+                  <View style={[styles.tagColorDot, { backgroundColor: tag.color }]} />
+                  <Text style={styles.activeFilterChipText}>{tag.name}</Text>
+                  <TouchableOpacity
+                    onPress={() => setFilters({
+                      ...filters,
+                      selectedTags: filters.selectedTags.filter(id => id !== tagId)
+                    })}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <X size={16} color={Colors.textDark} />
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
           </View>
         </View>
       )}
@@ -674,6 +726,23 @@ export default function DiscoverScreen() {
                       ? categories.find(c => c.id === filters.categoryFilter)?.name_en
                       : categories.find(c => c.id === filters.categoryFilter)?.name_nl) || 'Select'
                     : 'Select'}
+                </Text>
+                <Text style={styles.selectBoxArrow}>▼</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.filterSection}>
+              <Text style={styles.sectionTitle}>TAGS</Text>
+              <TouchableOpacity
+                style={styles.selectBox}
+                onPress={() => setShowTagsModal(true)}
+              >
+                <Text style={filters.selectedTags.length > 0 ? styles.selectBoxTextActive : styles.selectBoxText}>
+                  {filters.selectedTags.length > 0
+                    ? `${filters.selectedTags.length} tag${filters.selectedTags.length > 1 ? 's' : ''} selected`
+                    : 'Select tags'}
                 </Text>
                 <Text style={styles.selectBoxArrow}>▼</Text>
               </TouchableOpacity>
@@ -903,6 +972,66 @@ export default function DiscoverScreen() {
               </TouchableOpacity>
             ))}
           </ScrollView>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showTagsModal}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowTagsModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Select Tags</Text>
+            <TouchableOpacity onPress={() => setShowTagsModal(false)}>
+              <X size={28} color={Colors.textDark} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.selectionList} showsVerticalScrollIndicator={false}>
+            {tags.map((tag) => {
+              const isSelected = filters.selectedTags.includes(tag.id);
+              return (
+                <TouchableOpacity
+                  key={tag.id}
+                  style={styles.selectionItem}
+                  onPress={() => {
+                    const newSelectedTags = isSelected
+                      ? filters.selectedTags.filter(id => id !== tag.id)
+                      : [...filters.selectedTags, tag.id];
+                    setFilters({ ...filters, selectedTags: newSelectedTags });
+                  }}
+                >
+                  <View style={styles.tagRow}>
+                    <View style={[styles.checkbox, isSelected && styles.checkboxActive]} />
+                    <View style={[styles.tagColorDot, { backgroundColor: tag.color }]} />
+                    <Text style={[styles.selectionItemText, isSelected && styles.selectionItemTextActive]}>
+                      {tag.name}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
+          <View style={styles.modalFooter}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => {
+                setFilters({ ...filters, selectedTags: [] });
+                setShowTagsModal(false);
+              }}
+            >
+              <Text style={styles.cancelButtonText}>Clear All</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.applyButton}
+              onPress={() => setShowTagsModal(false)}
+            >
+              <Text style={styles.applyButtonText}>Done</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </Modal>
 
@@ -1595,6 +1724,16 @@ const styles = StyleSheet.create({
   selectionItemTextActive: {
     color: Colors.textDark,
     fontWeight: '500',
+  },
+  tagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  tagColorDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
   datePickerOverlay: {
     flex: 1,
