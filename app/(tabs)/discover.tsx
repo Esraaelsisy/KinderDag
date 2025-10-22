@@ -29,6 +29,8 @@ export default function DiscoverScreen() {
   const router = useRouter();
   const categoryId = params.categoryId as string | undefined;
   const categoryName = params.categoryName as string | undefined;
+  const tagId = params.tagId as string | undefined;
+  const tagName = params.tagName as string | undefined;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -71,6 +73,10 @@ export default function DiscoverScreen() {
       setSelectedCategory(categoryId);
       setViewMode('list');
       loadCategoryActivities(categoryId);
+    } else if (tagId) {
+      setFilters(prev => ({ ...prev, selectedTags: [tagId] }));
+      setViewMode('list');
+      loadActivities();
     } else {
       loadActivities();
     }
@@ -80,7 +86,7 @@ export default function DiscoverScreen() {
     if (profile?.location_name) {
       setSelectedCity(profile.location_name);
     }
-  }, [categoryId]);
+  }, [categoryId, tagId]);
 
   useEffect(() => {
     if (profile?.location_name) {

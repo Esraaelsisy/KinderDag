@@ -56,6 +56,7 @@ export default function HomeScreen() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [currentBanner, setCurrentBanner] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [tags, setTags] = useState<Array<{ id: string; name: string; slug: string }>>([]);
   const [showCityModal, setShowCityModal] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
@@ -68,6 +69,7 @@ export default function HomeScreen() {
   useEffect(() => {
     loadData();
     loadCities();
+    loadTags();
     if (profile?.location_name) {
       setSelectedCity(profile.location_name);
     }
@@ -220,6 +222,20 @@ export default function HomeScreen() {
       setCities(data);
     } catch (error) {
       console.error('Failed to load cities:', error);
+    }
+  };
+
+  const loadTags = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('tags')
+        .select('id, name, slug')
+        .eq('is_active', true);
+
+      if (error) throw error;
+      setTags(data || []);
+    } catch (error) {
+      console.error('Failed to load tags:', error);
     }
   };
 
@@ -557,7 +573,17 @@ export default function HomeScreen() {
             <Text style={styles.sectionTitle}>
               {language === 'en' ? "Don't miss this week" : 'Mis deze week niet'}
             </Text>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                const tag = tags.find(t => t.slug === 'dont-miss');
+                if (tag) {
+                  router.push({
+                    pathname: '/(tabs)/discover',
+                    params: { tagId: tag.id, tagName: tag.name }
+                  });
+                }
+              }}
+            >
               <Text style={styles.seeAllLink}>
                 {language === 'en' ? 'See All' : 'Bekijk Alles'}
               </Text>
@@ -580,7 +606,17 @@ export default function HomeScreen() {
             <Text style={styles.sectionTitle}>
               {language === 'en' ? 'Catch it before it Ends' : 'Grijp het voordat het eindigt'}
             </Text>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                const tag = tags.find(t => t.slug === 'ending-soon');
+                if (tag) {
+                  router.push({
+                    pathname: '/(tabs)/discover',
+                    params: { tagId: tag.id, tagName: tag.name }
+                  });
+                }
+              }}
+            >
               <Text style={styles.seeAllLink}>
                 {language === 'en' ? 'See All' : 'Bekijk Alles'}
               </Text>
@@ -603,7 +639,17 @@ export default function HomeScreen() {
             <Text style={styles.sectionTitle}>
               {language === 'en' ? 'Hot Picks' : 'Populaire keuzes'}
             </Text>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                const tag = tags.find(t => t.slug === 'hot-pick');
+                if (tag) {
+                  router.push({
+                    pathname: '/(tabs)/discover',
+                    params: { tagId: tag.id, tagName: tag.name }
+                  });
+                }
+              }}
+            >
               <Text style={styles.seeAllLink}>
                 {language === 'en' ? 'See All' : 'Bekijk Alles'}
               </Text>
@@ -624,7 +670,11 @@ export default function HomeScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t('home.featured')}</Text>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                router.push('/(tabs)/discover');
+              }}
+            >
               <Text style={styles.seeAllLink}>
                 {language === 'en' ? 'See All' : 'Bekijk Alles'}
               </Text>
@@ -645,7 +695,17 @@ export default function HomeScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t('home.seasonal')}</Text>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                const tag = tags.find(t => t.slug === 'seasonal');
+                if (tag) {
+                  router.push({
+                    pathname: '/(tabs)/discover',
+                    params: { tagId: tag.id, tagName: tag.name }
+                  });
+                }
+              }}
+            >
               <Text style={styles.seeAllLink}>
                 {language === 'en' ? 'See All' : 'Bekijk Alles'}
               </Text>
