@@ -204,7 +204,13 @@ export default function HomeScreen() {
       .order('sort_order', { ascending: true })
       .limit(8);
 
-    if (data) setCategories(data);
+    if (data) {
+      setCategories(data);
+      if (data.length > 0 && !selectedCategoryId) {
+        setSelectedCategoryId(data[0].id);
+        loadCategoryActivities(data[0].id);
+      }
+    }
   };
 
   const loadBanners = async () => {
@@ -589,12 +595,11 @@ export default function HomeScreen() {
             );
           })}
         </ScrollView>
-      </View>
 
-      {selectedCategoryId && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
+        {selectedCategoryId && (
+        <View style={styles.categoryActivitiesContainer}>
+          <View style={styles.categoryActivitiesHeader}>
+            <Text style={styles.categoryActivitiesTitle}>
               {language === 'en'
                 ? categories.find(c => c.id === selectedCategoryId)?.name_en
                 : categories.find(c => c.id === selectedCategoryId)?.name_nl}
@@ -627,7 +632,7 @@ export default function HomeScreen() {
               keyExtractor={(item) => item.id}
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.activitiesList}
+              contentContainerStyle={styles.categoryActivitiesList}
             />
           ) : (
             <View style={styles.emptyState}>
@@ -639,7 +644,8 @@ export default function HomeScreen() {
             </View>
           )}
         </View>
-      )}
+        )}
+      </View>
 
       {dontMiss.length > 0 && (
         <View style={styles.section}>
@@ -1012,6 +1018,27 @@ const styles = StyleSheet.create({
   },
   categoriesList: {
     paddingHorizontal: 20,
+    marginBottom: 0,
+  },
+  categoryActivitiesContainer: {
+    backgroundColor: 'rgba(253, 216, 53, 0.08)',
+    paddingVertical: 16,
+    marginTop: 12,
+  },
+  categoryActivitiesHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 12,
+  },
+  categoryActivitiesTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.textDark,
+  },
+  categoryActivitiesList: {
+    paddingHorizontal: 20,
   },
   section: {
     marginBottom: 24,
@@ -1024,6 +1051,9 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: Colors.white,
+    marginHorizontal: 20,
+    borderRadius: 12,
   },
   emptyStateText: {
     fontSize: 14,
