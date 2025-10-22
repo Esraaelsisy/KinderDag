@@ -10,13 +10,13 @@ export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({ email: '', password: '' });
+  const [errors, setErrors] = useState({ email: '', password: '', auth: '' });
   const { signIn } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
 
   const handleSignIn = async () => {
-    const newErrors = { email: '', password: '' };
+    const newErrors = { email: '', password: '', auth: '' };
     let hasErrors = false;
 
     if (!email.trim()) {
@@ -43,7 +43,7 @@ export default function SignInScreen() {
     setLoading(false);
 
     if (error) {
-      Alert.alert('Error', error.message);
+      setErrors({ email: '', password: '', auth: 'Invalid email or password. Please try again.' });
     } else {
       router.replace('/(tabs)');
     }
@@ -63,6 +63,12 @@ export default function SignInScreen() {
           <Text style={styles.subtitle}>{t('welcome.subtitle')}</Text>
 
           <View style={styles.form}>
+            {errors.auth ? (
+              <View style={styles.authErrorContainer}>
+                <Text style={styles.authErrorText}>{errors.auth}</Text>
+              </View>
+            ) : null}
+
             <View style={styles.inputContainer}>
               <TextInput
                 style={[styles.input, errors.email && styles.inputError]}
@@ -71,7 +77,7 @@ export default function SignInScreen() {
                 value={email}
                 onChangeText={(text) => {
                   setEmail(text);
-                  if (errors.email) setErrors({ ...errors, email: '' });
+                  if (errors.email || errors.auth) setErrors({ ...errors, email: '', auth: '' });
                 }}
                 autoCapitalize="none"
                 keyboardType="email-address"
@@ -87,7 +93,7 @@ export default function SignInScreen() {
                 value={password}
                 onChangeText={(text) => {
                   setPassword(text);
-                  if (errors.password) setErrors({ ...errors, password: '' });
+                  if (errors.password || errors.auth) setErrors({ ...errors, password: '', auth: '' });
                 }}
                 secureTextEntry
               />
@@ -166,6 +172,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
     marginLeft: 4,
+    fontWeight: '500',
+  },
+  authErrorContainer: {
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+  },
+  authErrorText: {
+    color: Colors.white,
+    fontSize: 14,
+    textAlign: 'center',
     fontWeight: '500',
   },
   button: {
