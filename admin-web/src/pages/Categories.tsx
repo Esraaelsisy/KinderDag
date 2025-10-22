@@ -252,7 +252,13 @@ interface CategoryModalProps {
 
 function CategoryModal({ mode, category, selectedIds, activities, onClose, onSave }: CategoryModalProps) {
   const [formData, setFormData] = useState<any>(
-    category || {
+    category ? {
+      name_en: category.name_en,
+      name_nl: category.name_nl,
+      icon: category.icon,
+      color: category.color,
+      sort_order: category.sort_order,
+    } : {
       name_en: '',
       name_nl: '',
       icon: 'activity',
