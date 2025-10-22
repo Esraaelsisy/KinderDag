@@ -161,7 +161,7 @@ export default function SignInScreen() {
                 disabled={oauthLoading}
               >
                 <View style={styles.socialIconCircle}>
-                  <Apple size={16} color={Colors.white} strokeWidth={2.5} />
+                  <Apple size={16} color={Colors.text} strokeWidth={2.5} fill={Colors.text} />
                 </View>
                 <Text style={styles.socialButtonText}>Apple</Text>
               </TouchableOpacity>
