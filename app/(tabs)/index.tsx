@@ -591,7 +591,7 @@ export default function HomeScreen() {
         </ScrollView>
       </View>
 
-      {selectedCategoryId && categoryActivities.length > 0 && (
+      {selectedCategoryId && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>
@@ -599,33 +599,45 @@ export default function HomeScreen() {
                 ? categories.find(c => c.id === selectedCategoryId)?.name_en
                 : categories.find(c => c.id === selectedCategoryId)?.name_nl}
             </Text>
-            <TouchableOpacity
-              onPress={() => {
-                const selectedCategory = categories.find(c => c.id === selectedCategoryId);
-                if (selectedCategory) {
-                  router.push({
-                    pathname: '/(tabs)/discover',
-                    params: {
-                      categoryId: selectedCategory.id,
-                      categoryName: language === 'en' ? selectedCategory.name_en : selectedCategory.name_nl
-                    }
-                  });
-                }
-              }}
-            >
-              <Text style={styles.seeAllLink}>
-                {language === 'en' ? 'See More' : 'Bekijk Meer'}
-              </Text>
-            </TouchableOpacity>
+            {categoryActivities.length > 0 && (
+              <TouchableOpacity
+                onPress={() => {
+                  const selectedCategory = categories.find(c => c.id === selectedCategoryId);
+                  if (selectedCategory) {
+                    router.push({
+                      pathname: '/(tabs)/discover',
+                      params: {
+                        categoryId: selectedCategory.id,
+                        categoryName: language === 'en' ? selectedCategory.name_en : selectedCategory.name_nl
+                      }
+                    });
+                  }
+                }}
+              >
+                <Text style={styles.seeAllLink}>
+                  {language === 'en' ? 'See More' : 'Bekijk Meer'}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
-          <FlatList
-            data={categoryActivities}
-            renderItem={({ item }) => renderActivity(item)}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.activitiesList}
-          />
+          {categoryActivities.length > 0 ? (
+            <FlatList
+              data={categoryActivities}
+              renderItem={({ item }) => renderActivity(item)}
+              keyExtractor={(item) => item.id}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.activitiesList}
+            />
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateText}>
+                {language === 'en'
+                  ? 'No activities for your city added yet. Stay tuned!'
+                  : 'Nog geen activiteiten voor jouw stad toegevoegd. Blijf op de hoogte!'}
+              </Text>
+            </View>
+          )}
         </View>
       )}
 
@@ -1006,6 +1018,18 @@ const styles = StyleSheet.create({
   },
   activitiesList: {
     paddingHorizontal: 20,
+  },
+  emptyState: {
+    paddingHorizontal: 20,
+    paddingVertical: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: Colors.textLight,
+    textAlign: 'center',
+    lineHeight: 20,
   },
   bottomPadding: {
     height: 100,
