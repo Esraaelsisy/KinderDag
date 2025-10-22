@@ -59,7 +59,7 @@ export default function ProfileScreen() {
         </View>
 
         <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
-          <LogOut size={20} color={Colors.error} />
+          <LogOut size={20} color={Colors.secondary} />
           <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -141,11 +141,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     gap: 8,
     borderWidth: 1,
-    borderColor: '#fee2e2',
+    borderColor: Colors.secondaryLight,
   },
   signOutText: {
     fontSize: 16,
     fontWeight: '600',
-    color: Colors.error,
+    color: Colors.secondary,
   },
 });
