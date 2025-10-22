@@ -14,48 +14,52 @@ export const adminCategoriesService = {
    * Get all categories with activity count
    */
   async getAll() {
-    const { data, error } = await supabase
+    const { data: categories, error } = await supabase
       .from('activity_categories')
-      .select(`
-        *,
-        activity_category_links(
-          activity:activities(*)
-        )
-      `)
+      .select('*')
       .order('sort_order');
 
     if (error) throw error;
+    if (!categories) return [];
+
+    // Fetch activity links
+    const { data: activityLinks } = await supabase
+      .from('activity_category_links')
+      .select('category_id, activity:activities(*)');
 
     // Transform data to include activity count
-    return data?.map(cat => ({
-      ...cat,
-      activities: cat.activity_category_links,
-      activityCount: cat.activity_category_links?.length || 0,
-    }));
+    return categories.map(cat => {
+      const links = activityLinks?.filter(link => link.category_id === cat.id) || [];
+      return {
+        ...cat,
+        activities: links,
+        activityCount: links.length,
+      };
+    });
   },
 
   /**
    * Get single category by ID
    */
   async getById(id: string) {
-    const { data, error } = await supabase
+    const { data: category, error } = await supabase
       .from('activity_categories')
-      .select(`
-        *,
-        activity_category_links(
-          activity:activities(*)
-        )
-      `)
+      .select('*')
       .eq('id', id)
       .maybeSingle();
 
     if (error) throw error;
+    if (!category) return null;
 
-    if (!data) return null;
+    // Fetch activity links
+    const { data: activityLinks } = await supabase
+      .from('activity_category_links')
+      .select('category_id, activity:activities(*)')
+      .eq('category_id', id);
 
     return {
-      ...data,
-      activities: data.activity_category_links,
+      ...category,
+      activities: activityLinks || [],
     };
   },
 

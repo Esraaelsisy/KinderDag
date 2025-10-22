@@ -17,48 +17,52 @@ export const adminTagsService = {
    * Get all tags with activity count
    */
   async getAll() {
-    const { data, error } = await supabase
+    const { data: tags, error } = await supabase
       .from('tags')
-      .select(`
-        *,
-        activity_tag_links(
-          activity:activities(*)
-        )
-      `)
+      .select('*')
       .order('sort_order');
 
     if (error) throw error;
+    if (!tags) return [];
+
+    // Fetch activity links
+    const { data: activityLinks } = await supabase
+      .from('activity_tag_links')
+      .select('tag_id, activity:activities(*)');
 
     // Transform data to include activity count
-    return data?.map(tag => ({
-      ...tag,
-      activities: tag.activity_tag_links,
-      activityCount: tag.activity_tag_links?.length || 0,
-    }));
+    return tags.map(tag => {
+      const links = activityLinks?.filter(link => link.tag_id === tag.id) || [];
+      return {
+        ...tag,
+        activities: links,
+        activityCount: links.length,
+      };
+    });
   },
 
   /**
    * Get single tag by ID
    */
   async getById(id: string) {
-    const { data, error } = await supabase
+    const { data: tag, error } = await supabase
       .from('tags')
-      .select(`
-        *,
-        activity_tag_links(
-          activity:activities(*)
-        )
-      `)
+      .select('*')
       .eq('id', id)
       .maybeSingle();
 
     if (error) throw error;
+    if (!tag) return null;
 
-    if (!data) return null;
+    // Fetch activity links
+    const { data: activityLinks } = await supabase
+      .from('activity_tag_links')
+      .select('tag_id, activity:activities(*)')
+      .eq('tag_id', id);
 
     return {
-      ...data,
-      activities: data.activity_tag_links,
+      ...tag,
+      activities: activityLinks || [],
     };
   },
 

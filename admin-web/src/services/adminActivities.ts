@@ -41,25 +41,29 @@ export const adminActivitiesService = {
    * Get all activities with their categories and tags
    */
   async getAll() {
-    const { data, error } = await supabase
+    const { data: activities, error } = await supabase
       .from('activities')
-      .select(`
-        *,
-        activity_category_links(
-          category:activity_categories(*)
-        ),
-        activity_tag_links(
-          tag:tags(*)
-        )
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
+    if (!activities) return [];
 
-    return data?.map(activity => ({
+    // Fetch category links
+    const { data: categoryLinks } = await supabase
+      .from('activity_category_links')
+      .select('activity_id, category:activity_categories(*)');
+
+    // Fetch tag links
+    const { data: tagLinks } = await supabase
+      .from('activity_tag_links')
+      .select('activity_id, tag:tags(*)');
+
+    // Combine data
+    return activities.map(activity => ({
       ...activity,
-      categories: activity.activity_category_links,
-      tags: activity.activity_tag_links,
+      categories: categoryLinks?.filter(link => link.activity_id === activity.id) || [],
+      tags: tagLinks?.filter(link => link.activity_id === activity.id) || [],
     }));
   },
 
@@ -67,28 +71,31 @@ export const adminActivitiesService = {
    * Get single activity by ID
    */
   async getById(id: string) {
-    const { data, error } = await supabase
+    const { data: activity, error } = await supabase
       .from('activities')
-      .select(`
-        *,
-        activity_category_links(
-          category:activity_categories(*)
-        ),
-        activity_tag_links(
-          tag:tags(*)
-        )
-      `)
+      .select('*')
       .eq('id', id)
       .maybeSingle();
 
     if (error) throw error;
+    if (!activity) return null;
 
-    if (!data) return null;
+    // Fetch category links
+    const { data: categoryLinks } = await supabase
+      .from('activity_category_links')
+      .select('activity_id, category:activity_categories(*)')
+      .eq('activity_id', id);
+
+    // Fetch tag links
+    const { data: tagLinks } = await supabase
+      .from('activity_tag_links')
+      .select('activity_id, tag:tags(*)')
+      .eq('activity_id', id);
 
     return {
-      ...data,
-      categories: data.activity_category_links,
-      tags: data.activity_tag_links,
+      ...activity,
+      categories: categoryLinks || [],
+      tags: tagLinks || [],
     };
   },
 
