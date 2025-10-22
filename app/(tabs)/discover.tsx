@@ -48,6 +48,7 @@ export default function DiscoverScreen() {
     typeVenues: false,
     typeCourses: false,
     categoryFilter: '',
+    selectedCategories: [] as string[],
     indoor: false,
     outdoor: false,
     free: false,
@@ -186,6 +187,19 @@ export default function DiscoverScreen() {
       );
     }
 
+    // Apply category filters (OR logic)
+    if (filters.selectedCategories.length > 0) {
+      const { data: categorizedActivityIds } = await supabase
+        .from('activity_category_links')
+        .select('activity_id')
+        .in('category_id', filters.selectedCategories);
+
+      if (categorizedActivityIds) {
+        const activityIds = new Set(categorizedActivityIds.map(item => item.activity_id));
+        filtered = filtered.filter(activity => activityIds.has(activity.id));
+      }
+    }
+
     // Apply tag filters (OR logic)
     if (filters.selectedTags.length > 0) {
       const { data: taggedActivityIds } = await supabase
@@ -225,6 +239,7 @@ export default function DiscoverScreen() {
       typeVenues: false,
       typeCourses: false,
       categoryFilter: '',
+      selectedCategories: [],
       indoor: false,
       outdoor: false,
       free: false,
@@ -571,6 +586,26 @@ export default function DiscoverScreen() {
                 </TouchableOpacity>
               </View>
             )}
+            {filters.selectedCategories.map((categoryId) => {
+              const category = categories.find(c => c.id === categoryId);
+              if (!category) return null;
+              return (
+                <View key={categoryId} style={styles.activeFilterChip}>
+                  <Text style={styles.activeFilterChipText}>
+                    {language === 'en' ? category.name_en : category.name_nl}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setFilters({
+                      ...filters,
+                      selectedCategories: filters.selectedCategories.filter(id => id !== categoryId)
+                    })}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <X size={16} color={Colors.textDark} />
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
             {filters.selectedTags.map((tagId) => {
               const tag = tags.find(t => t.id === tagId);
               if (!tag) return null;
@@ -720,12 +755,10 @@ export default function DiscoverScreen() {
                 style={styles.selectBox}
                 onPress={() => setShowCategoryModal(true)}
               >
-                <Text style={filters.categoryFilter ? styles.selectBoxTextActive : styles.selectBoxText}>
-                  {filters.categoryFilter
-                    ? (language === 'en'
-                      ? categories.find(c => c.id === filters.categoryFilter)?.name_en
-                      : categories.find(c => c.id === filters.categoryFilter)?.name_nl) || 'Select'
-                    : 'Select'}
+                <Text style={filters.selectedCategories.length > 0 ? styles.selectBoxTextActive : styles.selectBoxText}>
+                  {filters.selectedCategories.length > 0
+                    ? `${filters.selectedCategories.length} categor${filters.selectedCategories.length > 1 ? 'ies' : 'y'} selected`
+                    : 'Select categories'}
                 </Text>
                 <Text style={styles.selectBoxArrow}>▼</Text>
               </TouchableOpacity>
@@ -885,32 +918,47 @@ export default function DiscoverScreen() {
           </View>
 
           <ScrollView style={styles.selectionList} showsVerticalScrollIndicator={false}>
+            {categories.map((category) => {
+              const isSelected = filters.selectedCategories.includes(category.id);
+              return (
+                <TouchableOpacity
+                  key={category.id}
+                  style={styles.selectionItem}
+                  onPress={() => {
+                    const newSelectedCategories = isSelected
+                      ? filters.selectedCategories.filter(id => id !== category.id)
+                      : [...filters.selectedCategories, category.id];
+                    setFilters({ ...filters, selectedCategories: newSelectedCategories });
+                  }}
+                >
+                  <View style={styles.tagRow}>
+                    <View style={[styles.checkbox, isSelected && styles.checkboxActive]} />
+                    <Text style={[styles.selectionItemText, isSelected && styles.selectionItemTextActive]}>
+                      {language === 'en' ? category.name_en : category.name_nl}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
+          <View style={styles.modalFooter}>
             <TouchableOpacity
-              style={styles.selectionItem}
+              style={styles.cancelButton}
               onPress={() => {
-                setFilters({ ...filters, categoryFilter: '' });
+                setFilters({ ...filters, selectedCategories: [] });
                 setShowCategoryModal(false);
               }}
             >
-              <Text style={[styles.selectionItemText, !filters.categoryFilter && styles.selectionItemTextActive]}>
-                Select
-              </Text>
+              <Text style={styles.cancelButtonText}>Clear All</Text>
             </TouchableOpacity>
-            {categories.map((category) => (
-              <TouchableOpacity
-                key={category.id}
-                style={styles.selectionItem}
-                onPress={() => {
-                  setFilters({ ...filters, categoryFilter: category.id });
-                  setShowCategoryModal(false);
-                }}
-              >
-                <Text style={[styles.selectionItemText, filters.categoryFilter === category.id && styles.selectionItemTextActive]}>
-                  {language === 'en' ? category.name_en : category.name_nl}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+            <TouchableOpacity
+              style={styles.applyButton}
+              onPress={() => setShowCategoryModal(false)}
+            >
+              <Text style={styles.applyButtonText}>Done</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </Modal>
 
