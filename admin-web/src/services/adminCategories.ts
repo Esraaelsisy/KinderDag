@@ -25,11 +25,20 @@ export const adminCategoriesService = {
     // Fetch activity links
     const { data: activityLinks } = await supabase
       .from('activity_category_links')
-      .select('category_id, activity:activities(*)');
+      .select('*');
+
+    const { data: allActivities } = await supabase
+      .from('activities')
+      .select('*');
 
     // Transform data to include activity count
     return categories.map(cat => {
-      const links = activityLinks?.filter(link => link.category_id === cat.id) || [];
+      const links = activityLinks
+        ?.filter(link => link.category_id === cat.id)
+        .map(link => ({
+          ...link,
+          activity: allActivities?.find(act => act.id === link.activity_id)
+        })) || [];
       return {
         ...cat,
         activities: links,
@@ -54,12 +63,26 @@ export const adminCategoriesService = {
     // Fetch activity links
     const { data: activityLinks } = await supabase
       .from('activity_category_links')
-      .select('category_id, activity:activities(*)')
+      .select('*')
       .eq('category_id', id);
+
+    let activities = [];
+    if (activityLinks && activityLinks.length > 0) {
+      const activityIds = activityLinks.map(link => link.activity_id);
+      const { data: acts } = await supabase
+        .from('activities')
+        .select('*')
+        .in('id', activityIds);
+
+      activities = activityLinks.map(link => ({
+        ...link,
+        activity: acts?.find(act => act.id === link.activity_id)
+      }));
+    }
 
     return {
       ...category,
-      activities: activityLinks || [],
+      activities,
     };
   },
 

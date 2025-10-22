@@ -49,21 +49,38 @@ export const adminActivitiesService = {
     if (error) throw error;
     if (!activities) return [];
 
-    // Fetch category links
+    // Fetch all links and related data separately
     const { data: categoryLinks } = await supabase
       .from('activity_category_links')
-      .select('activity_id, category:activity_categories(*)');
+      .select('*');
 
-    // Fetch tag links
+    const { data: allCategories } = await supabase
+      .from('activity_categories')
+      .select('*');
+
     const { data: tagLinks } = await supabase
       .from('activity_tag_links')
-      .select('activity_id, tag:tags(*)');
+      .select('*');
+
+    const { data: allTags } = await supabase
+      .from('tags')
+      .select('*');
 
     // Combine data
     return activities.map(activity => ({
       ...activity,
-      categories: categoryLinks?.filter(link => link.activity_id === activity.id) || [],
-      tags: tagLinks?.filter(link => link.activity_id === activity.id) || [],
+      categories: categoryLinks
+        ?.filter(link => link.activity_id === activity.id)
+        .map(link => ({
+          ...link,
+          category: allCategories?.find(cat => cat.id === link.category_id)
+        })) || [],
+      tags: tagLinks
+        ?.filter(link => link.activity_id === activity.id)
+        .map(link => ({
+          ...link,
+          tag: allTags?.find(tag => tag.id === link.tag_id)
+        })) || [],
     }));
   },
 
@@ -80,22 +97,50 @@ export const adminActivitiesService = {
     if (error) throw error;
     if (!activity) return null;
 
-    // Fetch category links
+    // Fetch links separately
     const { data: categoryLinks } = await supabase
       .from('activity_category_links')
-      .select('activity_id, category:activity_categories(*)')
+      .select('*')
       .eq('activity_id', id);
 
-    // Fetch tag links
     const { data: tagLinks } = await supabase
       .from('activity_tag_links')
-      .select('activity_id, tag:tags(*)')
+      .select('*')
       .eq('activity_id', id);
+
+    // Fetch the actual categories and tags
+    let categories = [];
+    if (categoryLinks && categoryLinks.length > 0) {
+      const categoryIds = categoryLinks.map(link => link.category_id);
+      const { data: cats } = await supabase
+        .from('activity_categories')
+        .select('*')
+        .in('id', categoryIds);
+
+      categories = categoryLinks.map(link => ({
+        ...link,
+        category: cats?.find(cat => cat.id === link.category_id)
+      }));
+    }
+
+    let tags = [];
+    if (tagLinks && tagLinks.length > 0) {
+      const tagIds = tagLinks.map(link => link.tag_id);
+      const { data: tgs } = await supabase
+        .from('tags')
+        .select('*')
+        .in('id', tagIds);
+
+      tags = tagLinks.map(link => ({
+        ...link,
+        tag: tgs?.find(tag => tag.id === link.tag_id)
+      }));
+    }
 
     return {
       ...activity,
-      categories: categoryLinks || [],
-      tags: tagLinks || [],
+      categories,
+      tags,
     };
   },
 

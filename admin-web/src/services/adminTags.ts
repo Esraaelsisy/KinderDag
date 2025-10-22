@@ -28,11 +28,20 @@ export const adminTagsService = {
     // Fetch activity links
     const { data: activityLinks } = await supabase
       .from('activity_tag_links')
-      .select('tag_id, activity:activities(*)');
+      .select('*');
+
+    const { data: allActivities } = await supabase
+      .from('activities')
+      .select('*');
 
     // Transform data to include activity count
     return tags.map(tag => {
-      const links = activityLinks?.filter(link => link.tag_id === tag.id) || [];
+      const links = activityLinks
+        ?.filter(link => link.tag_id === tag.id)
+        .map(link => ({
+          ...link,
+          activity: allActivities?.find(act => act.id === link.activity_id)
+        })) || [];
       return {
         ...tag,
         activities: links,
@@ -57,12 +66,26 @@ export const adminTagsService = {
     // Fetch activity links
     const { data: activityLinks } = await supabase
       .from('activity_tag_links')
-      .select('tag_id, activity:activities(*)')
+      .select('*')
       .eq('tag_id', id);
+
+    let activities = [];
+    if (activityLinks && activityLinks.length > 0) {
+      const activityIds = activityLinks.map(link => link.activity_id);
+      const { data: acts } = await supabase
+        .from('activities')
+        .select('*')
+        .in('id', activityIds);
+
+      activities = activityLinks.map(link => ({
+        ...link,
+        activity: acts?.find(act => act.id === link.activity_id)
+      }));
+    }
 
     return {
       ...tag,
-      activities: activityLinks || [],
+      activities,
     };
   },
 
