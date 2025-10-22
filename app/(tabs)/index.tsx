@@ -1013,15 +1013,13 @@ const styles = StyleSheet.create({
   },
   categoriesList: {
     paddingHorizontal: 20,
-    marginBottom: 16,
+    marginBottom: 8,
   },
   categoryActivitiesContainer: {
-    paddingVertical: 20,
-    paddingLeft: 40,
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.primary,
-    marginLeft: 48,
-    marginRight: 20,
+    backgroundColor: '#FFF9E6',
+    paddingTop: 16,
+    paddingBottom: 20,
+    marginBottom: 8,
   },
   bubblePointer: {
     display: 'none',
@@ -1030,10 +1028,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginBottom: 16,
+    paddingHorizontal: 20,
+    marginBottom: 12,
   },
   categoryActivitiesList: {
-    paddingLeft: 0,
+    paddingLeft: 20,
   },
   section: {
     marginBottom: 24,
@@ -1043,13 +1042,14 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     paddingVertical: 40,
-    alignItems: 'flex-start',
+    paddingHorizontal: 20,
+    alignItems: 'center',
     justifyContent: 'center',
   },
   emptyStateText: {
     fontSize: 14,
     color: Colors.textLight,
-    textAlign: 'left',
+    textAlign: 'center',
     lineHeight: 20,
   },
 });
