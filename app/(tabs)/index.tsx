@@ -75,6 +75,11 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCity]);
+
+  useEffect(() => {
     if (banners.length > 1) {
       bannerInterval.current = setInterval(() => {
         setCurrentBanner((prev) => (prev + 1) % banners.length);
@@ -102,7 +107,10 @@ export default function HomeScreen() {
 
   const loadFeatured = async () => {
     try {
-      const data = await activitiesService.getFeatured(10);
+      let data = await activitiesService.getFeatured(10);
+      if (selectedCity) {
+        data = data.filter(activity => activity.city === selectedCity);
+      }
       setFeatured(data);
     } catch (error) {
       console.error('Failed to load featured activities:', error);
@@ -111,12 +119,18 @@ export default function HomeScreen() {
 
   const loadSeasonal = async () => {
     const today = new Date().toISOString().split('T')[0];
-    const { data } = await supabase
+    let query = supabase
       .from('activities')
       .select('*')
       .eq('is_seasonal', true)
       .lte('season_start', today)
-      .gte('season_end', today)
+      .gte('season_end', today);
+
+    if (selectedCity) {
+      query = query.eq('city', selectedCity);
+    }
+
+    const { data } = await query
       .order('average_rating', { ascending: false })
       .limit(10);
 
@@ -124,10 +138,16 @@ export default function HomeScreen() {
   };
 
   const loadDontMiss = async () => {
-    const { data } = await supabase
+    let query = supabase
       .from('activities')
       .select('*')
-      .eq('is_featured', true)
+      .eq('is_featured', true);
+
+    if (selectedCity) {
+      query = query.eq('city', selectedCity);
+    }
+
+    const { data } = await query
       .order('average_rating', { ascending: false })
       .limit(5);
 
@@ -138,12 +158,18 @@ export default function HomeScreen() {
     const today = new Date();
     const nextWeek = new Date();
     nextWeek.setDate(today.getDate() + 7);
-    const { data } = await supabase
+    let query = supabase
       .from('activities')
       .select('*')
       .eq('is_seasonal', true)
       .lte('season_end', nextWeek.toISOString().split('T')[0])
-      .gte('season_end', today.toISOString().split('T')[0])
+      .gte('season_end', today.toISOString().split('T')[0]);
+
+    if (selectedCity) {
+      query = query.eq('city', selectedCity);
+    }
+
+    const { data } = await query
       .order('season_end', { ascending: true })
       .limit(10);
 
@@ -151,10 +177,16 @@ export default function HomeScreen() {
   };
 
   const loadHotPicks = async () => {
-    const { data } = await supabase
+    let query = supabase
       .from('activities')
       .select('*')
-      .gte('average_rating', 4.0)
+      .gte('average_rating', 4.0);
+
+    if (selectedCity) {
+      query = query.eq('city', selectedCity);
+    }
+
+    const { data } = await query
       .order('total_reviews', { ascending: false })
       .limit(10);
 
