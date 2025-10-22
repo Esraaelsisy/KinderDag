@@ -45,13 +45,22 @@ export const adminActivitiesService = {
       .from('activities')
       .select(`
         *,
-        categories:activity_category_links(category:activity_categories(*)),
-        tags:activity_tag_links(tag:tags(*))
+        activity_category_links(
+          category:activity_categories(*)
+        ),
+        activity_tag_links(
+          tag:tags(*)
+        )
       `)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data;
+
+    return data?.map(activity => ({
+      ...activity,
+      categories: activity.activity_category_links,
+      tags: activity.activity_tag_links,
+    }));
   },
 
   /**
@@ -62,14 +71,25 @@ export const adminActivitiesService = {
       .from('activities')
       .select(`
         *,
-        categories:activity_category_links(category:activity_categories(*)),
-        tags:activity_tag_links(tag:tags(*))
+        activity_category_links(
+          category:activity_categories(*)
+        ),
+        activity_tag_links(
+          tag:tags(*)
+        )
       `)
       .eq('id', id)
       .maybeSingle();
 
     if (error) throw error;
-    return data;
+
+    if (!data) return null;
+
+    return {
+      ...data,
+      categories: data.activity_category_links,
+      tags: data.activity_tag_links,
+    };
   },
 
   /**
