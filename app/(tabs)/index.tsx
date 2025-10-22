@@ -64,6 +64,8 @@ export default function HomeScreen() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [categoryActivities, setCategoryActivities] = useState<Activity[]>([]);
   const bannerInterval = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  const categoriesScrollRef = useRef<ScrollView>(null);
+  const categoryButtonRefs = useRef<{ [key: string]: View | null }>({});
   const { profile, updateProfile } = useAuth();
   const { t, language } = useLanguage();
   const router = useRouter();
@@ -539,11 +541,12 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
         <ScrollView
+          ref={categoriesScrollRef}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoriesList}
         >
-          {categories.map((category) => {
+          {categories.map((category, index) => {
             const categoryEmojis: Record<string, string> = {
               'spring fun': '🌸',
               'autumn fun': '🍂',
@@ -575,23 +578,45 @@ export default function HomeScreen() {
             const emoji = categoryEmojis[category.name_en.toLowerCase()] || '🎯';
 
             return (
-              <CategoryButton
+              <View
                 key={category.id}
-                nameEn={category.name_en}
-                nameNl={category.name_nl}
-                color={category.color}
-                emoji={emoji}
-                isActive={selectedCategoryId === category.id}
-                onPress={() => {
-                  if (selectedCategoryId === category.id) {
-                    setSelectedCategoryId(null);
-                    setCategoryActivities([]);
-                  } else {
-                    setSelectedCategoryId(category.id);
-                    loadCategoryActivities(category.id);
-                  }
-                }}
-              />
+                ref={(ref) => { categoryButtonRefs.current[category.id] = ref; }}
+                collapsable={false}
+              >
+                <CategoryButton
+                  nameEn={category.name_en}
+                  nameNl={category.name_nl}
+                  color={category.color}
+                  emoji={emoji}
+                  isActive={selectedCategoryId === category.id}
+                  onPress={() => {
+                    if (selectedCategoryId === category.id) {
+                      setSelectedCategoryId(null);
+                      setCategoryActivities([]);
+                    } else {
+                      setSelectedCategoryId(category.id);
+                      loadCategoryActivities(category.id);
+
+                      // Scroll to show the selected category
+                      setTimeout(() => {
+                        const categoryRef = categoryButtonRefs.current[category.id];
+                        if (categoryRef && categoriesScrollRef.current) {
+                          categoryRef.measureLayout(
+                            categoriesScrollRef.current as any,
+                            (x) => {
+                              categoriesScrollRef.current?.scrollTo({
+                                x: x - 20, // Offset to show with some padding
+                                animated: true,
+                              });
+                            },
+                            () => {}
+                          );
+                        }
+                      }, 100);
+                    }
+                  }}
+                />
+              </View>
             );
           })}
         </ScrollView>
