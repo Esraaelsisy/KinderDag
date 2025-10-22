@@ -51,7 +51,10 @@ export default function ForgotPasswordScreen() {
           <View style={styles.successContainer}>
             <Text style={styles.successTitle}>Check Your Email</Text>
             <Text style={styles.successMessage}>
-              We've sent a password reset link to {email}. Please check your inbox and follow the instructions to reset your password.
+              If an account exists for <Text style={styles.emailHighlight}>{email}</Text>, you'll receive a password reset link shortly.
+            </Text>
+            <Text style={styles.successNote}>
+              Please check your inbox and spam folder. The link will expire in 24 hours for security purposes.
             </Text>
             <TouchableOpacity
               style={styles.button}
@@ -226,8 +229,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.white,
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: 16,
     opacity: 0.9,
     lineHeight: 24,
+  },
+  emailHighlight: {
+    fontWeight: '600',
+    opacity: 1,
+  },
+  successNote: {
+    fontSize: 14,
+    color: Colors.white,
+    textAlign: 'center',
+    marginBottom: 32,
+    opacity: 0.8,
+    lineHeight: 20,
+    fontStyle: 'italic',
   },
 });
