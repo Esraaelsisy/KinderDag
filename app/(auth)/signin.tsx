@@ -149,15 +149,10 @@ export default function SignInScreen() {
                 onPress={handleGoogleSignIn}
                 disabled={oauthLoading}
               >
-                <View style={styles.googleIconContainer}>
-                  <View style={styles.googleIcon}>
-                    <View style={styles.googleIconBlue} />
-                    <View style={styles.googleIconRed} />
-                    <View style={styles.googleIconYellow} />
-                    <View style={styles.googleIconGreen} />
-                  </View>
+                <View style={styles.socialIconCircle}>
+                  <Text style={styles.googleIconText}>G</Text>
                 </View>
-                <Text style={styles.googleButtonText}>Google</Text>
+                <Text style={styles.socialButtonText}>Google</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -165,8 +160,10 @@ export default function SignInScreen() {
                 onPress={handleAppleSignIn}
                 disabled={oauthLoading}
               >
-                <Apple size={18} color="#FFFFFF" strokeWidth={2.5} />
-                <Text style={styles.appleButtonText}>Apple</Text>
+                <View style={styles.socialIconCircle}>
+                  <Apple size={16} color={Colors.white} strokeWidth={2.5} />
+                </View>
+                <Text style={styles.socialButtonText}>Apple</Text>
               </TouchableOpacity>
             </View>
 
@@ -300,97 +297,50 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     borderRadius: 12,
-    padding: 16,
+    padding: 14,
     gap: 10,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.08)',
-  },
-  googleButtonText: {
-    color: '#1F1F1F',
-    fontSize: 15,
-    fontWeight: '600',
-    letterSpacing: 0.25,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   appleButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#000000',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     borderRadius: 12,
-    padding: 16,
+    padding: 14,
     gap: 10,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  socialIconCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: Colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  appleButtonText: {
-    color: '#FFFFFF',
+  googleIconText: {
+    color: Colors.primary,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  socialButtonText: {
+    color: Colors.white,
     fontSize: 15,
     fontWeight: '600',
-    letterSpacing: 0.25,
-  },
-  googleIconContainer: {
-    width: 20,
-    height: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  googleIcon: {
-    width: 18,
-    height: 18,
-    position: 'relative',
-  },
-  googleIconBlue: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    width: 9,
-    height: 9,
-    backgroundColor: '#4285F4',
-    borderTopRightRadius: 9,
-  },
-  googleIconRed: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: 9,
-    height: 9,
-    backgroundColor: '#EA4335',
-    borderTopLeftRadius: 9,
-  },
-  googleIconYellow: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    width: 9,
-    height: 9,
-    backgroundColor: '#FBBC04',
-    borderBottomLeftRadius: 9,
-  },
-  googleIconGreen: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 9,
-    height: 9,
-    backgroundColor: '#34A853',
-    borderBottomRightRadius: 9,
   },
   footer: {
     flexDirection: 'row',
