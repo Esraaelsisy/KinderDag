@@ -60,6 +60,20 @@ export const activitiesService = {
   },
 
   /**
+   * Get activities by multiple IDs
+   */
+  getByIds: async (ids: string[]): Promise<Activity[]> => {
+    const { data, error } = await supabase
+      .from('activities')
+      .select('*')
+      .in('id', ids)
+      .order('average_rating', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  /**
    * Search activities by query
    */
   search: async (query: string): Promise<Activity[]> => {

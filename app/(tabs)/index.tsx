@@ -61,6 +61,8 @@ export default function HomeScreen() {
   const [cities, setCities] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [categoryActivities, setCategoryActivities] = useState<Activity[]>([]);
   const bannerInterval = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const { profile, updateProfile } = useAuth();
   const { t, language } = useLanguage();
@@ -236,6 +238,29 @@ export default function HomeScreen() {
       setTags(data || []);
     } catch (error) {
       console.error('Failed to load tags:', error);
+    }
+  };
+
+  const loadCategoryActivities = async (categoryId: string) => {
+    try {
+      const { data: activityLinks, error } = await supabase
+        .from('activity_category_links')
+        .select('activity_id')
+        .eq('category_id', categoryId)
+        .limit(5);
+
+      if (error) throw error;
+
+      if (activityLinks && activityLinks.length > 0) {
+        const activityIds = activityLinks.map(link => link.activity_id);
+        const activities = await activitiesService.getByIds(activityIds);
+        setCategoryActivities(activities.slice(0, 5));
+      } else {
+        setCategoryActivities([]);
+      }
+    } catch (error) {
+      console.error('Failed to load category activities:', error);
+      setCategoryActivities([]);
     }
   };
 
@@ -550,15 +575,15 @@ export default function HomeScreen() {
                 nameNl={category.name_nl}
                 color={category.color}
                 emoji={emoji}
-                isActive={false}
+                isActive={selectedCategoryId === category.id}
                 onPress={() => {
-                  router.push({
-                    pathname: '/(tabs)/discover',
-                    params: {
-                      categoryId: category.id,
-                      categoryName: language === 'en' ? category.name_en : category.name_nl
-                    }
-                  });
+                  if (selectedCategoryId === category.id) {
+                    setSelectedCategoryId(null);
+                    setCategoryActivities([]);
+                  } else {
+                    setSelectedCategoryId(category.id);
+                    loadCategoryActivities(category.id);
+                  }
                 }}
               />
             );
@@ -566,6 +591,43 @@ export default function HomeScreen() {
         </ScrollView>
       </View>
 
+      {selectedCategoryId && categoryActivities.length > 0 && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {language === 'en'
+                ? categories.find(c => c.id === selectedCategoryId)?.name_en
+                : categories.find(c => c.id === selectedCategoryId)?.name_nl}
+            </Text>
+            <TouchableOpacity
+              onPress={() => {
+                const selectedCategory = categories.find(c => c.id === selectedCategoryId);
+                if (selectedCategory) {
+                  router.push({
+                    pathname: '/(tabs)/discover',
+                    params: {
+                      categoryId: selectedCategory.id,
+                      categoryName: language === 'en' ? selectedCategory.name_en : selectedCategory.name_nl
+                    }
+                  });
+                }
+              }}
+            >
+              <Text style={styles.seeAllLink}>
+                {language === 'en' ? 'See More' : 'Bekijk Meer'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            data={categoryActivities}
+            renderItem={({ item }) => renderActivity(item)}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.activitiesList}
+          />
+        </View>
+      )}
 
       {dontMiss.length > 0 && (
         <View style={styles.section}>

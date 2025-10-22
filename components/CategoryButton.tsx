@@ -26,8 +26,10 @@ export default function CategoryButton({
     <TouchableOpacity
       style={[
         styles.button,
-        { borderColor: Colors.accent, backgroundColor: Colors.accent },
-        isActive && { backgroundColor: color },
+        {
+          borderColor: isActive ? color : Colors.accent,
+          backgroundColor: isActive ? color : Colors.accent
+        },
       ]}
       onPress={onPress}
       activeOpacity={0.7}
