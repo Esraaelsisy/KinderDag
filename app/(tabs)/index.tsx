@@ -64,8 +64,7 @@ export default function HomeScreen() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [categoryActivities, setCategoryActivities] = useState<Activity[]>([]);
   const bannerInterval = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
-  const categoriesScrollRef = useRef<ScrollView>(null);
-  const categoryButtonRefs = useRef<{ [key: string]: View | null }>({});
+  const categoriesFlatListRef = useRef<FlatList>(null);
   const { profile, updateProfile } = useAuth();
   const { t, language } = useLanguage();
   const router = useRouter();
@@ -540,13 +539,14 @@ export default function HomeScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-        <ScrollView
-          ref={categoriesScrollRef}
+        <FlatList
+          ref={categoriesFlatListRef}
+          data={categories}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoriesList}
-        >
-          {categories.map((category, index) => {
+          keyExtractor={(item) => item.id}
+          renderItem={({ item: category, index }) => {
             const categoryEmojis: Record<string, string> = {
               'spring fun': '🌸',
               'autumn fun': '🍂',
@@ -578,48 +578,42 @@ export default function HomeScreen() {
             const emoji = categoryEmojis[category.name_en.toLowerCase()] || '🎯';
 
             return (
-              <View
-                key={category.id}
-                ref={(ref) => { categoryButtonRefs.current[category.id] = ref; }}
-                collapsable={false}
-              >
-                <CategoryButton
-                  nameEn={category.name_en}
-                  nameNl={category.name_nl}
-                  color={category.color}
-                  emoji={emoji}
-                  isActive={selectedCategoryId === category.id}
-                  onPress={() => {
-                    if (selectedCategoryId === category.id) {
-                      setSelectedCategoryId(null);
-                      setCategoryActivities([]);
-                    } else {
-                      setSelectedCategoryId(category.id);
-                      loadCategoryActivities(category.id);
+              <CategoryButton
+                nameEn={category.name_en}
+                nameNl={category.name_nl}
+                color={category.color}
+                emoji={emoji}
+                isActive={selectedCategoryId === category.id}
+                onPress={() => {
+                  if (selectedCategoryId === category.id) {
+                    setSelectedCategoryId(null);
+                    setCategoryActivities([]);
+                  } else {
+                    setSelectedCategoryId(category.id);
+                    loadCategoryActivities(category.id);
 
-                      // Scroll to show the selected category
-                      setTimeout(() => {
-                        const categoryRef = categoryButtonRefs.current[category.id];
-                        if (categoryRef && categoriesScrollRef.current) {
-                          categoryRef.measureLayout(
-                            categoriesScrollRef.current as any,
-                            (x) => {
-                              categoriesScrollRef.current?.scrollTo({
-                                x: x - 20, // Offset to show with some padding
-                                animated: true,
-                              });
-                            },
-                            () => {}
-                          );
-                        }
-                      }, 100);
-                    }
-                  }}
-                />
-              </View>
+                    // Scroll to selected category
+                    setTimeout(() => {
+                      categoriesFlatListRef.current?.scrollToIndex({
+                        index,
+                        animated: true,
+                        viewPosition: 0.5,
+                      });
+                    }, 100);
+                  }
+                }}
+              />
             );
-          })}
-        </ScrollView>
+          }}
+          onScrollToIndexFailed={(info) => {
+            setTimeout(() => {
+              categoriesFlatListRef.current?.scrollToOffset({
+                offset: info.averageItemLength * info.index,
+                animated: true,
+              });
+            }, 100);
+          }}
+        />
 
         {selectedCategoryId && (
         <View style={styles.categoryActivitiesContainer}>
