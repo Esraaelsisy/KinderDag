@@ -1048,6 +1048,7 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 14,
+    fontWeight: '700',
     color: Colors.textLight,
     textAlign: 'center',
     lineHeight: 20,
