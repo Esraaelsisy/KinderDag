@@ -10,13 +10,31 @@ export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({ email: '', password: '' });
   const { signIn } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
 
   const handleSignIn = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+    const newErrors = { email: '', password: '' };
+    let hasErrors = false;
+
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+      hasErrors = true;
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Please enter a valid email';
+      hasErrors = true;
+    }
+
+    if (!password) {
+      newErrors.password = 'Password is required';
+      hasErrors = true;
+    }
+
+    setErrors(newErrors);
+
+    if (hasErrors) {
       return;
     }
 
@@ -45,23 +63,36 @@ export default function SignInScreen() {
           <Text style={styles.subtitle}>{t('welcome.subtitle')}</Text>
 
           <View style={styles.form}>
-            <TextInput
-              style={styles.input}
-              placeholder={t('auth.email')}
-              placeholderTextColor={Colors.lightGrey}
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
-            <TextInput
-              style={styles.input}
-              placeholder={t('auth.password')}
-              placeholderTextColor={Colors.lightGrey}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={[styles.input, errors.email && styles.inputError]}
+                placeholder={t('auth.email')}
+                placeholderTextColor={Colors.lightGrey}
+                value={email}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  if (errors.email) setErrors({ ...errors, email: '' });
+                }}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+              {errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
+            </View>
+
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={[styles.input, errors.password && styles.inputError]}
+                placeholder={t('auth.password')}
+                placeholderTextColor={Colors.lightGrey}
+                value={password}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (errors.password) setErrors({ ...errors, password: '' });
+                }}
+                secureTextEntry
+              />
+              {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
+            </View>
 
             <TouchableOpacity
               style={[styles.button, loading && styles.buttonDisabled]}
@@ -116,12 +147,26 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400,
   },
+  inputContainer: {
+    marginBottom: 16,
+  },
   input: {
     backgroundColor: Colors.white,
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  inputError: {
+    borderColor: Colors.error,
+  },
+  errorText: {
+    color: Colors.white,
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
+    fontWeight: '500',
   },
   button: {
     backgroundColor: Colors.primary,
