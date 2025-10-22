@@ -19,6 +19,12 @@ export interface Activity {
   address?: string;
   category_id?: string;
   is_featured?: boolean;
+  type?: 'event' | 'venue';
+  event_start_datetime?: string;
+  event_end_datetime?: string;
+  venue_opening_hours?: {
+    [day: string]: { open: string; close: string; closed?: boolean };
+  };
 }
 
 export interface Category {

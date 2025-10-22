@@ -337,6 +337,18 @@ function ActivityModal({ mode, activity, selectedIds, categories, tags, cities, 
       is_seasonal: false,
       season_start: '',
       season_end: '',
+      type: 'venue',
+      event_start_datetime: '',
+      event_end_datetime: '',
+      venue_opening_hours: {
+        monday: { open: '09:00', close: '17:00', closed: false },
+        tuesday: { open: '09:00', close: '17:00', closed: false },
+        wednesday: { open: '09:00', close: '17:00', closed: false },
+        thursday: { open: '09:00', close: '17:00', closed: false },
+        friday: { open: '09:00', close: '17:00', closed: false },
+        saturday: { open: '10:00', close: '16:00', closed: false },
+        sunday: { open: '10:00', close: '16:00', closed: false },
+      },
     }
   );
 
@@ -493,6 +505,132 @@ function ActivityModal({ mode, activity, selectedIds, categories, tags, cities, 
                   />
                 </div>
               </div>
+
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ color: 'white', display: 'block', marginBottom: '8px' }}>Type *</label>
+                <select
+                  value={formData.type || 'venue'}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #334155',
+                    backgroundColor: '#0f172a',
+                    color: 'white',
+                  }}
+                >
+                  <option value="venue">Venue</option>
+                  <option value="event">Event</option>
+                </select>
+              </div>
+
+              {formData.type === 'event' && (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                    <div>
+                      <label style={{ color: 'white', display: 'block', marginBottom: '8px' }}>Event Start *</label>
+                      <input
+                        type="datetime-local"
+                        value={formData.event_start_datetime || ''}
+                        onChange={(e) => setFormData({ ...formData, event_start_datetime: e.target.value })}
+                        required={formData.type === 'event'}
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: '1px solid #334155',
+                          backgroundColor: '#0f172a',
+                          color: 'white',
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ color: 'white', display: 'block', marginBottom: '8px' }}>Event End *</label>
+                      <input
+                        type="datetime-local"
+                        value={formData.event_end_datetime || ''}
+                        onChange={(e) => setFormData({ ...formData, event_end_datetime: e.target.value })}
+                        required={formData.type === 'event'}
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: '1px solid #334155',
+                          backgroundColor: '#0f172a',
+                          color: 'white',
+                        }}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {formData.type === 'venue' && (
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ color: 'white', display: 'block', marginBottom: '12px' }}>Venue Opening Hours</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => (
+                      <div key={day} style={{ display: 'grid', gridTemplateColumns: '120px 1fr 1fr auto', gap: '12px', alignItems: 'center' }}>
+                        <label style={{ color: 'white', textTransform: 'capitalize' }}>{day}</label>
+                        <input
+                          type="time"
+                          value={formData.venue_opening_hours?.[day]?.open || '09:00'}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            venue_opening_hours: {
+                              ...formData.venue_opening_hours,
+                              [day]: { ...formData.venue_opening_hours?.[day], open: e.target.value }
+                            }
+                          })}
+                          disabled={formData.venue_opening_hours?.[day]?.closed}
+                          style={{
+                            padding: '8px',
+                            borderRadius: '8px',
+                            border: '1px solid #334155',
+                            backgroundColor: formData.venue_opening_hours?.[day]?.closed ? '#1e293b' : '#0f172a',
+                            color: 'white',
+                          }}
+                        />
+                        <input
+                          type="time"
+                          value={formData.venue_opening_hours?.[day]?.close || '17:00'}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            venue_opening_hours: {
+                              ...formData.venue_opening_hours,
+                              [day]: { ...formData.venue_opening_hours?.[day], close: e.target.value }
+                            }
+                          })}
+                          disabled={formData.venue_opening_hours?.[day]?.closed}
+                          style={{
+                            padding: '8px',
+                            borderRadius: '8px',
+                            border: '1px solid #334155',
+                            backgroundColor: formData.venue_opening_hours?.[day]?.closed ? '#1e293b' : '#0f172a',
+                            color: 'white',
+                          }}
+                        />
+                        <label style={{ color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <input
+                            type="checkbox"
+                            checked={formData.venue_opening_hours?.[day]?.closed || false}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              venue_opening_hours: {
+                                ...formData.venue_opening_hours,
+                                [day]: { ...formData.venue_opening_hours?.[day], closed: e.target.checked }
+                              }
+                            })}
+                          />
+                          Closed
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           )}
 
