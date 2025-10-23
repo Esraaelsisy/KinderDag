@@ -1,10 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
-  FlatList,
   Dimensions,
   TextInput,
   Alert,
@@ -41,7 +40,6 @@ export default function OnboardingScreen() {
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [showCityPicker, setShowCityPicker] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const flatListRef = useRef<FlatList>(null);
   const { user, updateProfile, refreshProfile } = useAuth();
   const { t, setLanguage } = useLanguage();
   const router = useRouter();
@@ -89,7 +87,6 @@ export default function OnboardingScreen() {
       if (currentIndex < steps.length - 1) {
         console.log('Moving to next step:', currentIndex + 1);
         setCurrentIndex(currentIndex + 1);
-        flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
       } else {
         console.log('Last step, finishing onboarding');
         await handleFinish();
@@ -330,17 +327,9 @@ export default function OnboardingScreen() {
 
   return (
     <LinearGradient colors={[Colors.primary, Colors.primaryDark]} style={styles.container}>
-      <FlatList
-        ref={flatListRef}
-        data={steps}
-        renderItem={renderStep}
-        keyExtractor={(item) => item.id}
-        horizontal
-        pagingEnabled
-        scrollEnabled={false}
-        showsHorizontalScrollIndicator={false}
-        style={styles.flatList}
-      />
+      <View style={styles.flatList}>
+        {renderStep({ item: steps[currentIndex] })}
+      </View>
 
       <View style={styles.footer}>
         <View style={styles.pagination}>
