@@ -18,6 +18,7 @@ import { supabase } from '@/lib/supabase';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/colors';
 import { citiesService } from '@/services/cities';
+import { ChevronLeft } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -96,6 +97,12 @@ export default function OnboardingScreen() {
       console.error('Error in handleNext:', error);
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
     }
   };
 
@@ -314,10 +321,6 @@ export default function OnboardingScreen() {
             <TouchableOpacity style={styles.locationButton} onPress={requestLocation}>
               <Text style={styles.locationButtonText}>Use My Location</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity style={styles.skipButton} onPress={handleFinish}>
-              <Text style={styles.skipText}>{t('onboarding.skip')}</Text>
-            </TouchableOpacity>
           </View>
         )}
       </View>
@@ -326,6 +329,12 @@ export default function OnboardingScreen() {
 
   return (
     <LinearGradient colors={[Colors.primary, Colors.primaryDark]} style={styles.container}>
+      {currentIndex > 0 && (
+        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+          <ChevronLeft size={24} color={Colors.white} />
+        </TouchableOpacity>
+      )}
+
       <View style={styles.flatList}>
         {renderStep({ item: steps[currentIndex] })}
       </View>
@@ -340,17 +349,15 @@ export default function OnboardingScreen() {
           ))}
         </View>
 
-        {steps[currentIndex].id !== 'location' && (
-          <TouchableOpacity
-            style={[styles.nextButton, isProcessing && styles.nextButtonDisabled]}
-            onPress={handleNext}
-            disabled={isProcessing}
-          >
-            <Text style={styles.nextButtonText}>
-              {isProcessing ? t('common.loading') : (currentIndex === steps.length - 1 ? t('onboarding.finish') : t('onboarding.next'))}
-            </Text>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={[styles.nextButton, isProcessing && styles.nextButtonDisabled]}
+          onPress={currentIndex === steps.length - 1 ? handleFinish : handleNext}
+          disabled={isProcessing}
+        >
+          <Text style={styles.nextButtonText}>
+            {isProcessing ? t('common.loading') : (currentIndex === steps.length - 1 ? t('onboarding.finish') : t('onboarding.next'))}
+          </Text>
+        </TouchableOpacity>
       </View>
     </LinearGradient>
   );
@@ -359,6 +366,15 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    zIndex: 10,
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
   flatList: {
     flex: 1,
@@ -527,16 +543,6 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: 18,
     fontWeight: '600',
-  },
-  skipButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-  },
-  skipText: {
-    color: Colors.white,
-    fontSize: 16,
-    textDecorationLine: 'underline',
-    textAlign: 'center',
   },
   footer: {
     padding: 24,
