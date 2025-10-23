@@ -1,7 +1,0 @@
-name,slug,description,color,icon,show_on_home,sort_order,is_active
-Popular,popular,Most loved by families,#FF6B6B,heart,true,1,true
-New,new,Recently added activities,#4ECDC4,sparkles,true,2,true
-Budget Friendly,budget-friendly,Free or low-cost activities,#95E1D3,piggy-bank,true,3,true
-Rainy Day,rainy-day,Perfect for bad weather,#5DADE2,cloud-rain,true,4,true
-Weekend Fun,weekend-fun,Great weekend activities,#F9A826,calendar,true,5,true
-Birthday Party,birthday-party,Perfect for celebrations,#E74C3C,cake,true,6,true
