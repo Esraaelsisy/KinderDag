@@ -4,10 +4,17 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { MapPin, LogOut } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/colors';
+import { useRouter } from 'expo-router';
 
 export default function ProfileScreen() {
   const { profile, signOut } = useAuth();
   const { language } = useLanguage();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.replace('/(auth)/signin');
+  };
 
   return (
     <View style={styles.container}>
@@ -58,7 +65,7 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
+        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
           <LogOut size={20} color={Colors.secondary} />
           <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
