@@ -8,6 +8,7 @@ import {
   TextInput,
   Alert,
   Platform,
+  ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
@@ -290,19 +291,17 @@ export default function OnboardingScreen() {
 
             {showCityPicker && (
               <View style={styles.cityPickerDropdown}>
-                <FlatList
-                  data={cities}
-                  keyExtractor={(city) => city}
-                  renderItem={({ item: city }) => (
+                <ScrollView style={styles.cityList}>
+                  {cities.map((city) => (
                     <TouchableOpacity
+                      key={city}
                       style={styles.cityOption}
                       onPress={() => selectCity(city)}
                     >
                       <Text style={styles.cityOptionText}>{city}</Text>
                     </TouchableOpacity>
-                  )}
-                  style={styles.cityList}
-                />
+                  ))}
+                </ScrollView>
               </View>
             )}
 
