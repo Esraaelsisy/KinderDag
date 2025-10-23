@@ -115,24 +115,27 @@ export default function OnboardingScreen() {
 
       const validKids = kids.filter(kid => kid.birthYear && parseInt(kid.birthYear) > 1900);
 
+      const operations = [
+        supabase
+          .from('profiles')
+          .update({ onboarding_completed: true })
+          .eq('id', user.id),
+        setLanguage(localLanguage)
+      ];
+
       if (validKids.length > 0) {
-        for (const kid of validKids) {
-          await supabase.from('kids').insert({
-            profile_id: user.id,
-            name: kid.name || null,
-            birth_year: parseInt(kid.birthYear),
-          });
-        }
+        const kidsData = validKids.map(kid => ({
+          profile_id: user.id,
+          name: kid.name || null,
+          birth_year: parseInt(kid.birthYear),
+        }));
+        operations.push(supabase.from('kids').insert(kidsData));
       }
 
-      await supabase
-        .from('profiles')
-        .update({ onboarding_completed: true })
-        .eq('id', user.id);
+      await Promise.all(operations);
 
-      await setLanguage(localLanguage);
-      await refreshProfile();
       router.replace('/(tabs)');
+      refreshProfile();
     } catch (error) {
       console.error('Error finishing onboarding:', error);
       setIsProcessing(false);
