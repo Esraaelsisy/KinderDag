@@ -115,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -124,6 +124,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       },
     });
+
+    if (!error && data.user) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      await loadProfile(data.user.id);
+    }
 
     return { error };
   };
