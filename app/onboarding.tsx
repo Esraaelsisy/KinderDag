@@ -89,12 +89,15 @@ export default function OnboardingScreen() {
 
     try {
       const coords = await citiesService.getCityCoordinates(city);
-      if (coords) {
-        await updateProfile({
-          location_lat: coords.lat,
-          location_lng: coords.lng,
-          location_name: city,
-        });
+      if (coords && user) {
+        await supabase
+          .from('profiles')
+          .update({
+            location_lat: coords.lat,
+            location_lng: coords.lng,
+            location_name: city,
+          })
+          .eq('id', user.id);
       }
     } catch (error) {
       console.error('Failed to select city:', error);
@@ -105,7 +108,11 @@ export default function OnboardingScreen() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'Location permission is required to find activities near you');
+        if (Platform.OS === 'web') {
+          console.log('Location permission denied');
+        } else {
+          Alert.alert('Permission Denied', 'Location permission is required to find activities near you');
+        }
         return;
       }
 
@@ -118,15 +125,25 @@ export default function OnboardingScreen() {
       const locationName = geocode[0]?.city || geocode[0]?.region || 'Unknown';
       setSelectedCity(locationName);
 
-      await updateProfile({
-        location_lat: location.coords.latitude,
-        location_lng: location.coords.longitude,
-        location_name: locationName,
-      });
+      if (user) {
+        await supabase
+          .from('profiles')
+          .update({
+            location_lat: location.coords.latitude,
+            location_lng: location.coords.longitude,
+            location_name: locationName,
+          })
+          .eq('id', user.id);
+      }
 
-      Alert.alert('Success', `Location set to ${locationName}`);
+      if (Platform.OS !== 'web') {
+        Alert.alert('Success', `Location set to ${locationName}`);
+      }
     } catch (error) {
-      Alert.alert('Error', 'Failed to get location');
+      console.error('Location error:', error);
+      if (Platform.OS !== 'web') {
+        Alert.alert('Error', 'Failed to get location');
+      }
     }
   };
 
@@ -251,7 +268,7 @@ export default function OnboardingScreen() {
               <Text style={styles.locationButtonText}>Use My Location</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={handleNext}>
+            <TouchableOpacity style={styles.skipButton} onPress={handleFinish}>
               <Text style={styles.skipText}>{t('onboarding.skip')}</Text>
             </TouchableOpacity>
           </View>
@@ -468,10 +485,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
   },
+  skipButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+  },
   skipText: {
     color: Colors.white,
     fontSize: 16,
     textDecorationLine: 'underline',
+    textAlign: 'center',
   },
   footer: {
     padding: 24,
