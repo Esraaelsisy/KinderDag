@@ -68,7 +68,6 @@ export default function OnboardingScreen() {
           .from('profiles')
           .update({ language })
           .eq('id', user.id);
-        await refreshProfile();
       }
 
       if (currentIndex < steps.length - 1) {
