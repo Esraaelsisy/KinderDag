@@ -49,16 +49,17 @@ export default function SignUpScreen() {
 
     setLoading(true);
 
-    const signUpPromise = signUp(email, password, fullName);
-
-    router.replace('/onboarding');
-
-    const { error } = await signUpPromise;
+    const { error } = await signUp(email, password, fullName);
 
     if (error) {
       setLoading(false);
       Alert.alert('Error', error.message);
+      return;
     }
+
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    router.replace('/');
   };
 
   return (
