@@ -39,6 +39,7 @@ export default function OnboardingScreen() {
   const [cities, setCities] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [showCityPicker, setShowCityPicker] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const flatListRef = useRef<FlatList>(null);
   const { user, updateProfile, refreshProfile } = useAuth();
   const { t, language, setLanguage } = useLanguage();
@@ -57,30 +58,55 @@ export default function OnboardingScreen() {
     }
   };
 
-  const handleNext = () => {
-    if (currentIndex < steps.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
-    } else {
-      handleFinish();
+  const handleNext = async () => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+
+    try {
+      if (currentIndex === 0 && user) {
+        await supabase
+          .from('profiles')
+          .update({ language })
+          .eq('id', user.id);
+        await refreshProfile();
+      }
+
+      if (currentIndex < steps.length - 1) {
+        setCurrentIndex(currentIndex + 1);
+        flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
+      } else {
+        await handleFinish();
+      }
+    } catch (error) {
+      console.error('Error in handleNext:', error);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const handleFinish = async () => {
-    const validKids = kids.filter(kid => kid.birthYear && parseInt(kid.birthYear) > 1900);
+    if (isProcessing) return;
+    setIsProcessing(true);
 
-    if (validKids.length > 0 && user) {
-      for (const kid of validKids) {
-        await supabase.from('kids').insert({
-          profile_id: user.id,
-          name: kid.name || null,
-          birth_year: parseInt(kid.birthYear),
-        });
+    try {
+      const validKids = kids.filter(kid => kid.birthYear && parseInt(kid.birthYear) > 1900);
+
+      if (validKids.length > 0 && user) {
+        for (const kid of validKids) {
+          await supabase.from('kids').insert({
+            profile_id: user.id,
+            name: kid.name || null,
+            birth_year: parseInt(kid.birthYear),
+          });
+        }
       }
-    }
 
-    await refreshProfile();
-    router.replace('/(tabs)');
+      await refreshProfile();
+      router.replace('/(tabs)');
+    } catch (error) {
+      console.error('Error finishing onboarding:', error);
+      setIsProcessing(false);
+    }
   };
 
   const selectCity = async (city: string) => {
@@ -302,9 +328,13 @@ export default function OnboardingScreen() {
         </View>
 
         {steps[currentIndex].id !== 'location' && (
-          <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+          <TouchableOpacity
+            style={[styles.nextButton, isProcessing && styles.nextButtonDisabled]}
+            onPress={handleNext}
+            disabled={isProcessing}
+          >
             <Text style={styles.nextButtonText}>
-              {currentIndex === steps.length - 1 ? t('onboarding.finish') : t('onboarding.next')}
+              {isProcessing ? t('common.loading') : (currentIndex === steps.length - 1 ? t('onboarding.finish') : t('onboarding.next'))}
             </Text>
           </TouchableOpacity>
         )}
@@ -520,6 +550,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
+  },
+  nextButtonDisabled: {
+    opacity: 0.5,
   },
   nextButtonText: {
     color: Colors.white,
