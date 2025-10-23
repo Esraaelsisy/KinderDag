@@ -35,6 +35,7 @@ const steps: OnboardingStep[] = [
 
 export default function OnboardingScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [localLanguage, setLocalLanguage] = useState<'en' | 'nl'>('en');
   const [kids, setKids] = useState<{ name: string; birthYear: string }[]>([{ name: '', birthYear: '' }]);
   const [cities, setCities] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
@@ -42,12 +43,20 @@ export default function OnboardingScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
   const flatListRef = useRef<FlatList>(null);
   const { user, updateProfile, refreshProfile } = useAuth();
-  const { t, language, setLanguage } = useLanguage();
+  const { t, setLanguage } = useLanguage();
   const router = useRouter();
 
   useEffect(() => {
+    console.log('OnboardingScreen mounted');
     loadCities();
+    return () => {
+      console.log('OnboardingScreen unmounted');
+    };
   }, []);
+
+  useEffect(() => {
+    console.log('currentIndex changed to:', currentIndex);
+  }, [currentIndex]);
 
   const loadCities = async () => {
     try {
@@ -59,21 +68,30 @@ export default function OnboardingScreen() {
   };
 
   const handleNext = async () => {
+    console.log('handleNext called, currentIndex:', currentIndex, 'isProcessing:', isProcessing);
     if (isProcessing) return;
     setIsProcessing(true);
 
     try {
       if (currentIndex === 0 && user) {
-        await supabase
+        console.log('Updating language to:', localLanguage);
+        const { error } = await supabase
           .from('profiles')
-          .update({ language })
+          .update({ language: localLanguage })
           .eq('id', user.id);
+        if (error) {
+          console.error('Error updating language:', error);
+        } else {
+          console.log('Language updated successfully');
+        }
       }
 
       if (currentIndex < steps.length - 1) {
+        console.log('Moving to next step:', currentIndex + 1);
         setCurrentIndex(currentIndex + 1);
         flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
       } else {
+        console.log('Last step, finishing onboarding');
         await handleFinish();
       }
     } catch (error) {
@@ -107,6 +125,7 @@ export default function OnboardingScreen() {
         .update({ onboarding_completed: true })
         .eq('id', user.id);
 
+      await setLanguage(localLanguage);
       await refreshProfile();
       router.replace('/(tabs)');
     } catch (error) {
@@ -204,18 +223,18 @@ export default function OnboardingScreen() {
         {item.id === 'language' && (
           <View style={styles.languageContainer}>
             <TouchableOpacity
-              style={[styles.languageButton, language === 'en' && styles.languageButtonActive]}
-              onPress={() => setLanguage('en')}
+              style={[styles.languageButton, localLanguage === 'en' && styles.languageButtonActive]}
+              onPress={() => setLocalLanguage('en')}
             >
-              <Text style={[styles.languageText, language === 'en' && styles.languageTextActive]}>
+              <Text style={[styles.languageText, localLanguage === 'en' && styles.languageTextActive]}>
                 English
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.languageButton, language === 'nl' && styles.languageButtonActive]}
-              onPress={() => setLanguage('nl')}
+              style={[styles.languageButton, localLanguage === 'nl' && styles.languageButtonActive]}
+              onPress={() => setLocalLanguage('nl')}
             >
-              <Text style={[styles.languageText, language === 'nl' && styles.languageTextActive]}>
+              <Text style={[styles.languageText, localLanguage === 'nl' && styles.languageTextActive]}>
                 Nederlands
               </Text>
             </TouchableOpacity>
