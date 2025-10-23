@@ -10,6 +10,7 @@ interface Profile {
   location_lng?: number;
   location_name?: string;
   push_notifications_enabled: boolean;
+  onboarding_completed: boolean;
 }
 
 interface AuthContextType {
@@ -125,6 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         full_name: fullName,
         language: 'en',
         push_notifications_enabled: true,
+        onboarding_completed: false,
       });
     }
 

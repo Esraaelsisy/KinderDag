@@ -89,9 +89,11 @@ export default function OnboardingScreen() {
     setIsProcessing(true);
 
     try {
+      if (!user) return;
+
       const validKids = kids.filter(kid => kid.birthYear && parseInt(kid.birthYear) > 1900);
 
-      if (validKids.length > 0 && user) {
+      if (validKids.length > 0) {
         for (const kid of validKids) {
           await supabase.from('kids').insert({
             profile_id: user.id,
@@ -100,6 +102,11 @@ export default function OnboardingScreen() {
           });
         }
       }
+
+      await supabase
+        .from('profiles')
+        .update({ onboarding_completed: true })
+        .eq('id', user.id);
 
       await refreshProfile();
       router.replace('/(tabs)');
