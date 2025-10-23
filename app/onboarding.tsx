@@ -111,16 +111,21 @@ export default function OnboardingScreen() {
     setIsProcessing(true);
 
     try {
-      if (!user) return;
+      if (!user) {
+        setIsProcessing(false);
+        return;
+      }
 
       const validKids = kids.filter(kid => kid.birthYear && parseInt(kid.birthYear) > 1900);
 
       const operations = [
         supabase
           .from('profiles')
-          .update({ onboarding_completed: true })
-          .eq('id', user.id),
-        setLanguage(localLanguage)
+          .update({
+            onboarding_completed: true,
+            language: localLanguage
+          })
+          .eq('id', user.id)
       ];
 
       if (validKids.length > 0) {
@@ -135,7 +140,6 @@ export default function OnboardingScreen() {
       await Promise.all(operations);
 
       router.replace('/(tabs)');
-      refreshProfile();
     } catch (error) {
       console.error('Error finishing onboarding:', error);
       setIsProcessing(false);
