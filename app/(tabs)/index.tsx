@@ -19,7 +19,7 @@ import { supabase } from '@/lib/supabase';
 import ActivityCard from '@/components/ActivityCard';
 import CategoryButton from '@/components/CategoryButton';
 import { LinearGradient } from 'expo-linear-gradient';
-import { MapPin, ChevronDown, Navigation, X } from 'lucide-react-native';
+import { MapPin, ChevronDown, Navigation, X, ArrowRight } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { Activity } from '@/types';
 import { activitiesService } from '@/services/activities';
@@ -618,9 +618,18 @@ export default function HomeScreen() {
         {selectedCategoryId && (
         <View style={styles.categoryActivitiesContainer}>
           <View style={styles.bubblePointer} />
-          {categoryActivities.length > 0 && (
-            <View style={styles.categoryActivitiesHeader}>
+          {categoryActivities.length > 0 ? (
+            <>
+              <FlatList
+                data={categoryActivities}
+                renderItem={({ item }) => renderActivity(item)}
+                keyExtractor={(item) => item.id}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.categoryActivitiesList}
+              />
               <TouchableOpacity
+                style={styles.seeMoreButton}
                 onPress={() => {
                   const selectedCategory = categories.find(c => c.id === selectedCategoryId);
                   if (selectedCategory) {
@@ -634,21 +643,12 @@ export default function HomeScreen() {
                   }
                 }}
               >
-                <Text style={styles.seeAllLink}>
+                <Text style={styles.seeMoreText}>
                   {language === 'en' ? 'See More' : 'Bekijk Meer'}
                 </Text>
+                <ArrowRight size={18} color={Colors.secondary} strokeWidth={2.5} />
               </TouchableOpacity>
-            </View>
-          )}
-          {categoryActivities.length > 0 ? (
-            <FlatList
-              data={categoryActivities}
-              renderItem={({ item }) => renderActivity(item)}
-              keyExtractor={(item) => item.id}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.categoryActivitiesList}
-            />
+            </>
           ) : (
             <View style={styles.emptyState}>
               <Text style={styles.emptyStateText}>
@@ -1043,15 +1043,22 @@ const styles = StyleSheet.create({
   bubblePointer: {
     display: 'none',
   },
-  categoryActivitiesHeader: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 12,
-  },
   categoryActivitiesList: {
     paddingLeft: 20,
+    marginBottom: 16,
+  },
+  seeMoreButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    gap: 6,
+  },
+  seeMoreText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.secondary,
   },
   section: {
     marginBottom: 24,
