@@ -15,15 +15,8 @@ export default function Index() {
     );
   }
 
-  if (session && profile) {
-    if (!profile.onboarding_completed) {
-      return <Redirect href="/onboarding" />;
-    }
+  if (session && profile && profile.onboarding_completed) {
     return <Redirect href="/(tabs)" />;
-  }
-
-  if (session && !profile) {
-    return <Redirect href="/onboarding" />;
   }
 
   return <Redirect href="/(auth)/signin" />;
