@@ -44,6 +44,8 @@ interface Banner {
   subtitle_en: string;
   subtitle_nl: string;
   image_url: string;
+  action_type: string | null;
+  action_value: string | null;
 }
 
 export default function HomeScreen() {
@@ -552,7 +554,33 @@ export default function HomeScreen() {
       </Modal>
 
       {banners.length > 0 && (
-        <View style={styles.bannerContainer}>
+        <TouchableOpacity
+          style={styles.bannerContainer}
+          activeOpacity={0.9}
+          onPress={() => {
+            const banner = banners[currentBanner];
+            if (banner.action_type && banner.action_value) {
+              if (banner.action_type === 'activity') {
+                router.push(`/activity/${banner.action_value}`);
+              } else if (banner.action_type === 'category') {
+                const category = categories.find(c => c.id === banner.action_value);
+                if (category) {
+                  router.push({
+                    pathname: '/(tabs)/discover',
+                    params: {
+                      categoryId: category.id,
+                      categoryName: language === 'en' ? category.name_en : category.name_nl
+                    }
+                  });
+                }
+              } else if (banner.action_type === 'url' && banner.action_value) {
+                // For external URLs, you might want to use Linking.openURL
+                // For now, just navigate to discover page
+                router.push('/(tabs)/discover');
+              }
+            }
+          }}
+        >
           <Image
             source={{ uri: banners[currentBanner].image_url }}
             style={styles.banner}
@@ -583,7 +611,7 @@ export default function HomeScreen() {
               />
             ))}
           </View>
-        </View>
+        </TouchableOpacity>
       )}
 
       <View style={styles.categoriesSection}>
