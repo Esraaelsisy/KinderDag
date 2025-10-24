@@ -9,7 +9,7 @@ import {
   FlatList,
   RefreshControl,
 } from 'react-native';
-import { Search, Plus } from 'lucide-react-native';
+import { Search } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -299,10 +299,6 @@ export default function EventsScreen() {
           </View>
         )}
       </ScrollView>
-
-      <TouchableOpacity style={styles.fab}>
-        <Plus size={24} color={Colors.white} strokeWidth={2.5} />
-      </TouchableOpacity>
     </View>
   );
 }
@@ -370,21 +366,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.textLight,
     textAlign: 'center',
-  },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: Colors.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
   },
 });
