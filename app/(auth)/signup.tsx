@@ -5,8 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/colors';
-import { ChevronLeft } from 'lucide-react-native';
+import { ChevronLeft, Calendar as CalendarIcon } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 type SignUpStep = 'credentials' | 'kids' | 'language';
 
@@ -24,6 +25,7 @@ export default function SignUpScreen() {
   const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'nl'>('en');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({ fullName: '', email: '', password: '' });
+  const [showDatePicker, setShowDatePicker] = useState<number | null>(null);
   const { setLanguage } = useLanguage();
   const router = useRouter();
 
@@ -148,6 +150,27 @@ export default function SignUpScreen() {
     }
   };
 
+  const handleDateChange = (index: number, event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(null);
+    }
+
+    if (selectedDate) {
+      const dateString = selectedDate.toISOString().split('T')[0];
+      updateKid(index, 'birthDate', dateString);
+    }
+
+    if (Platform.OS === 'ios' && event.type === 'dismissed') {
+      setShowDatePicker(null);
+    }
+  };
+
+  const formatDateDisplay = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
   const renderCredentialsStep = () => (
     <View style={styles.stepContainer}>
       <Text style={styles.title}>Create Account</Text>
@@ -229,15 +252,15 @@ export default function SignUpScreen() {
               onChangeText={(value) => updateKid(index, 'name', value)}
             />
             <View style={styles.kidRow}>
-              <TextInput
-                style={[styles.input, styles.inputBirthDate]}
-                placeholder="Birth date (YYYY-MM-DD)"
-                placeholderTextColor={Colors.lightGrey}
-                value={kid.birthDate}
-                onChangeText={(value) => updateKid(index, 'birthDate', value)}
-                keyboardType="numbers-and-punctuation"
-                maxLength={10}
-              />
+              <TouchableOpacity
+                style={[styles.datePickerButton, styles.inputBirthDate]}
+                onPress={() => setShowDatePicker(index)}
+              >
+                <Text style={[styles.datePickerText, !kid.birthDate && styles.datePickerPlaceholder]}>
+                  {kid.birthDate ? formatDateDisplay(kid.birthDate) : 'Select birth date'}
+                </Text>
+                <CalendarIcon size={20} color={kid.birthDate ? Colors.textDark : Colors.lightGrey} />
+              </TouchableOpacity>
               {kids.length > 1 && (
                 <TouchableOpacity
                   style={styles.removeButton}
@@ -247,6 +270,16 @@ export default function SignUpScreen() {
                 </TouchableOpacity>
               )}
             </View>
+            {showDatePicker === index && (
+              <DateTimePicker
+                value={kid.birthDate ? new Date(kid.birthDate) : new Date()}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={(event, selectedDate) => handleDateChange(index, event, selectedDate)}
+                maximumDate={new Date()}
+                textColor={Colors.white}
+              />
+            )}
           </View>
         ))}
 
@@ -443,6 +476,24 @@ const styles = StyleSheet.create({
   },
   inputBirthDate: {
     flex: 1,
+  },
+  datePickerButton: {
+    backgroundColor: Colors.white,
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
+    marginBottom: 12,
+  },
+  datePickerText: {
+    fontSize: 16,
+    color: Colors.textDark,
+  },
+  datePickerPlaceholder: {
+    color: Colors.lightGrey,
   },
   removeButton: {
     backgroundColor: Colors.error,
