@@ -2,7 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
 import Login from './pages/Login';
-import Activities from './pages/Activities';
+import Venues from './pages/Venues';
+import Events from './pages/Events';
 import Categories from './pages/Categories';
 import Tags from './pages/Tags';
 import Banners from './pages/Banners';
@@ -37,9 +38,10 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={!session ? <Login /> : <Navigate to="/activities" />} />
-        <Route path="/" element={session ? <Navigate to="/activities" /> : <Navigate to="/login" />} />
-        <Route path="/activities" element={session ? <Activities /> : <Navigate to="/login" />} />
+        <Route path="/login" element={!session ? <Login /> : <Navigate to="/venues" />} />
+        <Route path="/" element={session ? <Navigate to="/venues" /> : <Navigate to="/login" />} />
+        <Route path="/venues" element={session ? <Venues /> : <Navigate to="/login" />} />
+        <Route path="/events" element={session ? <Events /> : <Navigate to="/login" />} />
         <Route path="/categories" element={session ? <Categories /> : <Navigate to="/login" />} />
         <Route path="/tags" element={session ? <Tags /> : <Navigate to="/login" />} />
         <Route path="/banners" element={session ? <Banners /> : <Navigate to="/login" />} />

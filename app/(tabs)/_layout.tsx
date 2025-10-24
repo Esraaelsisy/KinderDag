@@ -47,7 +47,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="events"
         options={{
-          title: 'Events',
+          title: "What's On",
           tabBarIcon: ({ color, size }) => (
             <Calendar color={color} size={size} strokeWidth={2.5} />
           ),
@@ -74,7 +74,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="venues"
         options={{
-          title: 'Venues',
+          title: 'Play Spots',
           tabBarIcon: ({ color, size }) => (
             <MapPinned color={color} size={size} strokeWidth={2.5} />
           ),
