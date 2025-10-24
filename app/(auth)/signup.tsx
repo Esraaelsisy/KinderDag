@@ -1,13 +1,12 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/colors';
-import { ChevronLeft, Calendar as CalendarIcon } from 'lucide-react-native';
+import { ChevronLeft, Calendar as CalendarIcon, Edit3, ChevronRight } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
-import DateTimePicker from '@react-native-community/datetimepicker';
 
 type SignUpStep = 'credentials' | 'kids' | 'language';
 
@@ -26,6 +25,8 @@ export default function SignUpScreen() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({ fullName: '', email: '', password: '' });
   const [showDatePicker, setShowDatePicker] = useState<number | null>(null);
+  const [tempSelectedDate, setTempSelectedDate] = useState<Date | null>(null);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const { setLanguage } = useLanguage();
   const router = useRouter();
 
@@ -150,19 +151,32 @@ export default function SignUpScreen() {
     }
   };
 
-  const handleDateChange = (index: number, event: any, selectedDate?: Date) => {
-    if (Platform.OS === 'android') {
-      setShowDatePicker(null);
-    }
+  const getDaysInMonth = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
 
-    if (selectedDate) {
-      const dateString = selectedDate.toISOString().split('T')[0];
-      updateKid(index, 'birthDate', dateString);
-    }
+    return { daysInMonth, startingDayOfWeek, year, month };
+  };
 
-    if (Platform.OS === 'ios' && event.type === 'dismissed') {
-      setShowDatePicker(null);
-    }
+  const formatMonthYear = (date: Date) => {
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  const isSameDay = (date1: Date | null, date2: Date | null) => {
+    if (!date1 || !date2) return false;
+    return date1.getDate() === date2.getDate() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getFullYear() === date2.getFullYear();
+  };
+
+  const changeMonth = (offset: number) => {
+    const newMonth = new Date(currentMonth);
+    newMonth.setMonth(newMonth.getMonth() + offset);
+    setCurrentMonth(newMonth);
   };
 
   const formatDateDisplay = (dateString: string) => {
@@ -171,10 +185,33 @@ export default function SignUpScreen() {
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
+  const openDatePicker = (index: number) => {
+    const kid = kids[index];
+    if (kid.birthDate) {
+      const date = new Date(kid.birthDate);
+      setTempSelectedDate(date);
+      setCurrentMonth(date);
+    } else {
+      const today = new Date();
+      setTempSelectedDate(today);
+      setCurrentMonth(today);
+    }
+    setShowDatePicker(index);
+  };
+
+  const confirmDateSelection = (index: number) => {
+    if (tempSelectedDate) {
+      const dateString = tempSelectedDate.toISOString().split('T')[0];
+      updateKid(index, 'birthDate', dateString);
+    }
+    setShowDatePicker(null);
+    setTempSelectedDate(null);
+  };
+
   const renderCredentialsStep = () => (
     <View style={styles.stepContainer}>
-      <Text style={styles.title}>Create Account</Text>
-      <Text style={styles.subtitle}>Join KinderDag to discover amazing activities</Text>
+      <Text style={styles.title}>Welcome!</Text>
+      <Text style={styles.subtitle}>Let's create your account</Text>
 
       <View style={styles.form}>
         <View style={styles.inputContainer}>
@@ -238,8 +275,8 @@ export default function SignUpScreen() {
 
   const renderKidsStep = () => (
     <View style={styles.stepContainer}>
-      <Text style={styles.title}>Tell us about your children</Text>
-      <Text style={styles.subtitle}>This helps us recommend age-appropriate activities</Text>
+      <Text style={styles.title}>Your Children</Text>
+      <Text style={styles.subtitle}>Help us personalize activities for your kids</Text>
 
       <ScrollView style={styles.scrollForm} showsVerticalScrollIndicator={false}>
         {kids.map((kid, index) => (
@@ -254,7 +291,7 @@ export default function SignUpScreen() {
             <View style={styles.kidRow}>
               <TouchableOpacity
                 style={[styles.datePickerButton, styles.inputBirthDate]}
-                onPress={() => setShowDatePicker(index)}
+                onPress={() => openDatePicker(index)}
               >
                 <Text style={[styles.datePickerText, !kid.birthDate && styles.datePickerPlaceholder]}>
                   {kid.birthDate ? formatDateDisplay(kid.birthDate) : 'Select birth date'}
@@ -270,16 +307,6 @@ export default function SignUpScreen() {
                 </TouchableOpacity>
               )}
             </View>
-            {showDatePicker === index && (
-              <DateTimePicker
-                value={kid.birthDate ? new Date(kid.birthDate) : new Date()}
-                mode="date"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                onChange={(event, selectedDate) => handleDateChange(index, event, selectedDate)}
-                maximumDate={new Date()}
-                textColor={Colors.white}
-              />
-            )}
           </View>
         ))}
 
@@ -300,8 +327,8 @@ export default function SignUpScreen() {
 
   const renderLanguageStep = () => (
     <View style={styles.stepContainer}>
-      <Text style={styles.title}>Choose Your Language</Text>
-      <Text style={styles.subtitle}>Select your preferred language</Text>
+      <Text style={styles.title}>Language</Text>
+      <Text style={styles.subtitle}>Choose your preferred language</Text>
 
       <View style={styles.languageContainer}>
         <TouchableOpacity
@@ -354,6 +381,128 @@ export default function SignUpScreen() {
         {step === 'kids' && renderKidsStep()}
         {step === 'language' && renderLanguageStep()}
       </KeyboardAvoidingView>
+
+      <Modal
+        visible={showDatePicker !== null}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowDatePicker(null)}
+      >
+        <View style={styles.datePickerOverlay}>
+          <View style={styles.datePickerModal}>
+            <View style={styles.datePickerHeader}>
+              <Text style={styles.datePickerTitle}>Select birth date</Text>
+            </View>
+
+            <View style={styles.datePickerSelectedContainer}>
+              <Text style={styles.datePickerSelectedDate}>
+                {tempSelectedDate
+                  ? tempSelectedDate.toLocaleDateString('en-US', {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })
+                  : 'No date selected'}
+              </Text>
+              <Edit3 size={20} color={Colors.textDark} />
+            </View>
+
+            <View style={styles.calendarContainer}>
+              <View style={styles.calendarHeader}>
+                <TouchableOpacity
+                  onPress={() => changeMonth(-1)}
+                  style={styles.monthNavButton}
+                >
+                  <ChevronLeft size={24} color={Colors.textDark} />
+                </TouchableOpacity>
+                <Text style={styles.monthYearText}>{formatMonthYear(currentMonth)}</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    const nextMonth = new Date(currentMonth);
+                    nextMonth.setMonth(nextMonth.getMonth() + 1);
+                    if (nextMonth <= new Date()) {
+                      changeMonth(1);
+                    }
+                  }}
+                  style={styles.monthNavButton}
+                >
+                  <ChevronRight
+                    size={24}
+                    color={(() => {
+                      const nextMonth = new Date(currentMonth);
+                      nextMonth.setMonth(nextMonth.getMonth() + 1);
+                      return nextMonth > new Date() ? Colors.lightGrey : Colors.textDark;
+                    })()}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.weekDaysContainer}>
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+                  <Text key={index} style={styles.weekDayText}>
+                    {day}
+                  </Text>
+                ))}
+              </View>
+
+              <View style={styles.daysContainer}>
+                {(() => {
+                  const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentMonth);
+                  const days = [];
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+
+                  for (let i = 0; i < startingDayOfWeek; i++) {
+                    days.push(<View key={`empty-${i}`} style={styles.dayCell} />);
+                  }
+
+                  for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(year, month, day);
+                    date.setHours(0, 0, 0, 0);
+                    const isSelected = isSameDay(date, tempSelectedDate);
+                    const isFuture = date > today;
+                    days.push(
+                      <TouchableOpacity
+                        key={day}
+                        style={styles.dayCell}
+                        onPress={() => !isFuture && setTempSelectedDate(date)}
+                        disabled={isFuture}
+                      >
+                        <View style={[styles.dayButton, isSelected && styles.dayButtonSelected, isFuture && styles.dayButtonDisabled]}>
+                          <Text style={[styles.dayText, isSelected && styles.dayTextSelected, isFuture && styles.dayTextDisabled]}>
+                            {day}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  }
+
+                  return days;
+                })()}
+              </View>
+            </View>
+
+            <View style={styles.datePickerFooter}>
+              <TouchableOpacity
+                onPress={() => {
+                  setTempSelectedDate(null);
+                  setShowDatePicker(null);
+                }}
+                style={styles.datePickerCancelButton}
+              >
+                <Text style={styles.datePickerCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => showDatePicker !== null && confirmDateSelection(showDatePicker)}
+                style={styles.datePickerOkButton}
+              >
+                <Text style={styles.datePickerOkText}>OK</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </LinearGradient>
   );
 }
@@ -543,5 +692,126 @@ const styles = StyleSheet.create({
   },
   languageTextActive: {
     color: Colors.textDark,
+  },
+  datePickerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  datePickerModal: {
+    backgroundColor: Colors.white,
+    borderRadius: 20,
+    width: '100%',
+    maxWidth: 400,
+    overflow: 'hidden',
+  },
+  datePickerHeader: {
+    padding: 20,
+    paddingBottom: 16,
+  },
+  datePickerTitle: {
+    fontSize: 16,
+    color: Colors.textLight,
+    fontWeight: '500',
+  },
+  datePickerSelectedContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  datePickerSelectedDate: {
+    fontSize: 32,
+    fontWeight: '400',
+    color: Colors.textDark,
+  },
+  calendarContainer: {
+    padding: 20,
+  },
+  calendarHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  monthNavButton: {
+    padding: 8,
+  },
+  monthYearText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: Colors.textDark,
+  },
+  weekDaysContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 12,
+  },
+  weekDayText: {
+    width: 40,
+    textAlign: 'center',
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.textLight,
+  },
+  daysContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  dayCell: {
+    width: '14.28%',
+    aspectRatio: 1,
+    padding: 2,
+  },
+  dayButton: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 50,
+  },
+  dayButtonSelected: {
+    backgroundColor: '#0891b2',
+  },
+  dayButtonDisabled: {
+    opacity: 0.3,
+  },
+  dayText: {
+    fontSize: 16,
+    color: Colors.textDark,
+  },
+  dayTextSelected: {
+    color: Colors.white,
+    fontWeight: '600',
+  },
+  dayTextDisabled: {
+    color: Colors.lightGrey,
+  },
+  datePickerFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    padding: 20,
+    paddingTop: 12,
+    gap: 16,
+  },
+  datePickerCancelButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  datePickerCancelText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0891b2',
+  },
+  datePickerOkButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  datePickerOkText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0891b2',
   },
 });
