@@ -16,6 +16,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { path: '/activities', label: 'Activities' },
     { path: '/categories', label: 'Categories' },
     { path: '/tags', label: 'Tags' },
+    { path: '/banners', label: 'Banners' },
   ];
 
   return (

@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Activities from './pages/Activities';
 import Categories from './pages/Categories';
 import Tags from './pages/Tags';
+import Banners from './pages/Banners';
 
 function App() {
   const [session, setSession] = useState<any>(null);
@@ -41,6 +42,7 @@ function App() {
         <Route path="/activities" element={session ? <Activities /> : <Navigate to="/login" />} />
         <Route path="/categories" element={session ? <Categories /> : <Navigate to="/login" />} />
         <Route path="/tags" element={session ? <Tags /> : <Navigate to="/login" />} />
+        <Route path="/banners" element={session ? <Banners /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   );
