@@ -8,9 +8,9 @@ import {
   FlatList,
   RefreshControl,
   Dimensions,
+  Platform,
 } from 'react-native';
 import { Search } from 'lucide-react-native';
-import MapView, { Marker } from 'react-native-maps';
 import { Colors } from '@/constants/colors';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,6 +22,19 @@ import { supabase } from '@/lib/supabase';
 import { Activity } from '@/types';
 
 const { width, height } = Dimensions.get('window');
+
+let MapView: any = null;
+let Marker: any = null;
+
+if (Platform.OS !== 'web') {
+  try {
+    const maps = require('react-native-maps');
+    MapView = maps.default;
+    Marker = maps.Marker;
+  } catch (e) {
+    console.log('Maps not available on this platform');
+  }
+}
 
 export default function VenuesScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -220,6 +233,18 @@ export default function VenuesScreen() {
   };
 
   const renderMapView = () => {
+    if (Platform.OS === 'web' || !MapView) {
+      return (
+        <View style={styles.mapPlaceholder}>
+          <Text style={styles.mapPlaceholderText}>
+            {language === 'en'
+              ? 'Map view is only available on mobile devices'
+              : 'Kaartweergave is alleen beschikbaar op mobiele apparaten'}
+          </Text>
+        </View>
+      );
+    }
+
     const initialRegion = {
       latitude: profile?.location_lat || 52.3676,
       longitude: profile?.location_lng || 4.9041,
@@ -263,9 +288,11 @@ export default function VenuesScreen() {
             onSubmitEditing={loadVenues}
           />
         </View>
-        <View style={styles.toggleContainer}>
-          <MapListToggle view={view} onToggle={setView} />
-        </View>
+        {Platform.OS !== 'web' && MapView && (
+          <View style={styles.toggleContainer}>
+            <MapListToggle view={view} onToggle={setView} />
+          </View>
+        )}
       </View>
 
       <View style={styles.filterChipsContainer}>
@@ -380,6 +407,19 @@ const styles = StyleSheet.create({
     flex: 1,
     width: width,
     height: height - 300,
+  },
+  mapPlaceholder: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+    padding: 40,
+  },
+  mapPlaceholderText: {
+    fontSize: 16,
+    color: Colors.textLight,
+    textAlign: 'center',
+    lineHeight: 24,
   },
   emptyState: {
     padding: 40,
