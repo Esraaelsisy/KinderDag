@@ -12,7 +12,7 @@ type SignUpStep = 'credentials' | 'kids' | 'language';
 
 interface Kid {
   name: string;
-  birthYear: string;
+  birthDate: string;
 }
 
 export default function SignUpScreen() {
@@ -20,7 +20,7 @@ export default function SignUpScreen() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [kids, setKids] = useState<Kid[]>([{ name: '', birthYear: '' }]);
+  const [kids, setKids] = useState<Kid[]>([{ name: '', birthDate: '' }]);
   const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'nl'>('en');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({ fullName: '', email: '', password: '' });
@@ -103,12 +103,12 @@ export default function SignUpScreen() {
           .update({ language: selectedLanguage })
           .eq('id', data.user.id);
 
-        const validKids = kids.filter(kid => kid.birthYear && parseInt(kid.birthYear) > 1900);
+        const validKids = kids.filter(kid => kid.birthDate && kid.birthDate.trim() !== '');
         if (validKids.length > 0) {
           const kidsData = validKids.map(kid => ({
             profile_id: data.user.id,
             name: kid.name || null,
-            birth_year: parseInt(kid.birthYear),
+            birth_date: kid.birthDate,
           }));
           await supabase.from('kids').insert(kidsData);
         }
@@ -133,10 +133,10 @@ export default function SignUpScreen() {
   };
 
   const addKid = () => {
-    setKids([...kids, { name: '', birthYear: '' }]);
+    setKids([...kids, { name: '', birthDate: '' }]);
   };
 
-  const updateKid = (index: number, field: 'name' | 'birthYear', value: string) => {
+  const updateKid = (index: number, field: 'name' | 'birthDate', value: string) => {
     const updated = [...kids];
     updated[index][field] = value;
     setKids(updated);
@@ -230,13 +230,13 @@ export default function SignUpScreen() {
             />
             <View style={styles.kidRow}>
               <TextInput
-                style={[styles.input, styles.inputYear]}
-                placeholder="Birth year"
+                style={[styles.input, styles.inputBirthDate]}
+                placeholder="Birth date (YYYY-MM-DD)"
                 placeholderTextColor={Colors.lightGrey}
-                value={kid.birthYear}
-                onChangeText={(value) => updateKid(index, 'birthYear', value)}
-                keyboardType="number-pad"
-                maxLength={4}
+                value={kid.birthDate}
+                onChangeText={(value) => updateKid(index, 'birthDate', value)}
+                keyboardType="numbers-and-punctuation"
+                maxLength={10}
               />
               {kids.length > 1 && (
                 <TouchableOpacity
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
   },
-  inputYear: {
+  inputBirthDate: {
     flex: 1,
   },
   removeButton: {
