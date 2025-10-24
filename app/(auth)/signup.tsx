@@ -27,6 +27,8 @@ export default function SignUpScreen() {
   const [showDatePicker, setShowDatePicker] = useState<number | null>(null);
   const [tempSelectedDate, setTempSelectedDate] = useState<Date | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [showYearPicker, setShowYearPicker] = useState(false);
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
   const { setLanguage } = useLanguage();
   const router = useRouter();
 
@@ -164,6 +166,48 @@ export default function SignUpScreen() {
 
   const formatMonthYear = (date: Date) => {
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  const getYearsList = () => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let year = currentYear; year >= currentYear - 18; year--) {
+      years.push(year);
+    }
+    return years;
+  };
+
+  const getMonthsList = () => {
+    return [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+  };
+
+  const selectYear = (year: number) => {
+    const newDate = new Date(currentMonth);
+    newDate.setFullYear(year);
+
+    const today = new Date();
+    if (newDate > today) {
+      newDate.setMonth(today.getMonth());
+    }
+
+    setCurrentMonth(newDate);
+    setShowYearPicker(false);
+  };
+
+  const selectMonth = (monthIndex: number) => {
+    const newDate = new Date(currentMonth);
+    newDate.setMonth(monthIndex);
+
+    const today = new Date();
+    if (newDate > today) {
+      return;
+    }
+
+    setCurrentMonth(newDate);
+    setShowMonthPicker(false);
   };
 
   const isSameDay = (date1: Date | null, date2: Date | null) => {
@@ -411,30 +455,22 @@ export default function SignUpScreen() {
             <View style={styles.calendarContainer}>
               <View style={styles.calendarHeader}>
                 <TouchableOpacity
-                  onPress={() => changeMonth(-1)}
-                  style={styles.monthNavButton}
+                  style={styles.monthYearSelector}
+                  onPress={() => setShowMonthPicker(true)}
                 >
-                  <ChevronLeft size={24} color={Colors.textDark} />
+                  <Text style={styles.monthYearText}>
+                    {currentMonth.toLocaleDateString('en-US', { month: 'long' })}
+                  </Text>
+                  <Text style={styles.dropdownArrow}>▼</Text>
                 </TouchableOpacity>
-                <Text style={styles.monthYearText}>{formatMonthYear(currentMonth)}</Text>
                 <TouchableOpacity
-                  onPress={() => {
-                    const nextMonth = new Date(currentMonth);
-                    nextMonth.setMonth(nextMonth.getMonth() + 1);
-                    if (nextMonth <= new Date()) {
-                      changeMonth(1);
-                    }
-                  }}
-                  style={styles.monthNavButton}
+                  style={styles.monthYearSelector}
+                  onPress={() => setShowYearPicker(true)}
                 >
-                  <ChevronRight
-                    size={24}
-                    color={(() => {
-                      const nextMonth = new Date(currentMonth);
-                      nextMonth.setMonth(nextMonth.getMonth() + 1);
-                      return nextMonth > new Date() ? Colors.lightGrey : Colors.textDark;
-                    })()}
-                  />
+                  <Text style={styles.monthYearText}>
+                    {currentMonth.getFullYear()}
+                  </Text>
+                  <Text style={styles.dropdownArrow}>▼</Text>
                 </TouchableOpacity>
               </View>
 
@@ -500,6 +536,90 @@ export default function SignUpScreen() {
                 <Text style={styles.datePickerOkText}>OK</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showYearPicker}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowYearPicker(false)}
+      >
+        <View style={styles.pickerOverlay}>
+          <View style={styles.pickerModal}>
+            <View style={styles.pickerHeader}>
+              <Text style={styles.pickerTitle}>Select Year</Text>
+              <TouchableOpacity onPress={() => setShowYearPicker(false)}>
+                <Text style={styles.pickerCloseText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.pickerList}>
+              {getYearsList().map((year) => (
+                <TouchableOpacity
+                  key={year}
+                  style={[
+                    styles.pickerItem,
+                    year === currentMonth.getFullYear() && styles.pickerItemActive
+                  ]}
+                  onPress={() => selectYear(year)}
+                >
+                  <Text style={[
+                    styles.pickerItemText,
+                    year === currentMonth.getFullYear() && styles.pickerItemTextActive
+                  ]}>
+                    {year}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showMonthPicker}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowMonthPicker(false)}
+      >
+        <View style={styles.pickerOverlay}>
+          <View style={styles.pickerModal}>
+            <View style={styles.pickerHeader}>
+              <Text style={styles.pickerTitle}>Select Month</Text>
+              <TouchableOpacity onPress={() => setShowMonthPicker(false)}>
+                <Text style={styles.pickerCloseText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.pickerList}>
+              {getMonthsList().map((month, index) => {
+                const testDate = new Date(currentMonth.getFullYear(), index, 1);
+                const today = new Date();
+                const isDisabled = testDate > today;
+                const isSelected = index === currentMonth.getMonth();
+
+                return (
+                  <TouchableOpacity
+                    key={month}
+                    style={[
+                      styles.pickerItem,
+                      isSelected && styles.pickerItemActive,
+                      isDisabled && styles.pickerItemDisabled
+                    ]}
+                    onPress={() => !isDisabled && selectMonth(index)}
+                    disabled={isDisabled}
+                  >
+                    <Text style={[
+                      styles.pickerItemText,
+                      isSelected && styles.pickerItemTextActive,
+                      isDisabled && styles.pickerItemTextDisabled
+                    ]}>
+                      {month}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -733,9 +853,10 @@ const styles = StyleSheet.create({
   },
   calendarHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
+    gap: 16,
   },
   monthNavButton: {
     padding: 8,
@@ -813,5 +934,72 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#0891b2',
+  },
+  monthYearSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.inputBackground,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    gap: 8,
+  },
+  dropdownArrow: {
+    fontSize: 12,
+    color: Colors.primary,
+  },
+  pickerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  pickerModal: {
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '60%',
+  },
+  pickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  pickerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.textDark,
+  },
+  pickerCloseText: {
+    fontSize: 24,
+    color: Colors.textLight,
+  },
+  pickerList: {
+    flex: 1,
+  },
+  pickerItem: {
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  pickerItemActive: {
+    backgroundColor: '#E3F5FF',
+  },
+  pickerItemDisabled: {
+    opacity: 0.3,
+  },
+  pickerItemText: {
+    fontSize: 16,
+    color: Colors.textDark,
+    textAlign: 'center',
+  },
+  pickerItemTextActive: {
+    fontWeight: '600',
+    color: Colors.primary,
+  },
+  pickerItemTextDisabled: {
+    color: Colors.lightGrey,
   },
 });
