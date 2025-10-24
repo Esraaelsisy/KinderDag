@@ -52,6 +52,8 @@ export default function HomeScreen() {
   const [dontMiss, setDontMiss] = useState<Activity[]>([]);
   const [catchItBeforeEnds, setCatchItBeforeEnds] = useState<Activity[]>([]);
   const [hotPicks, setHotPicks] = useState<Activity[]>([]);
+  const [thisWeekendEvents, setThisWeekendEvents] = useState<Activity[]>([]);
+  const [nearbyVenues, setNearbyVenues] = useState<Activity[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [banners, setBanners] = useState<Banner[]>([]);
   const [currentBanner, setCurrentBanner] = useState(0);
@@ -100,6 +102,8 @@ export default function HomeScreen() {
 
   const loadData = async () => {
     await Promise.all([
+      loadThisWeekendEvents(),
+      loadNearbyVenues(),
       loadFeatured(),
       loadSeasonal(),
       loadDontMiss(),
@@ -108,6 +112,58 @@ export default function HomeScreen() {
       loadCategories(),
       loadBanners(),
     ]);
+  };
+
+  const loadThisWeekendEvents = async () => {
+    try {
+      const now = new Date();
+      const dayOfWeek = now.getDay();
+      const daysUntilSaturday = dayOfWeek === 0 ? 6 : 6 - dayOfWeek;
+
+      const saturday = new Date(now);
+      saturday.setDate(saturday.getDate() + daysUntilSaturday);
+      saturday.setHours(0, 0, 0, 0);
+
+      const sunday = new Date(saturday);
+      sunday.setDate(sunday.getDate() + 1);
+      sunday.setHours(23, 59, 59, 999);
+
+      let query = supabase
+        .from('activities')
+        .select('*')
+        .eq('type', 'event')
+        .gte('event_start_datetime', saturday.toISOString())
+        .lte('event_start_datetime', sunday.toISOString())
+        .order('event_start_datetime', { ascending: true });
+
+      if (selectedCity) {
+        query = query.eq('city', selectedCity);
+      }
+
+      const { data } = await query.limit(10);
+      if (data) setThisWeekendEvents(data);
+    } catch (error) {
+      console.error('Failed to load weekend events:', error);
+    }
+  };
+
+  const loadNearbyVenues = async () => {
+    try {
+      let query = supabase
+        .from('activities')
+        .select('*')
+        .eq('type', 'venue')
+        .order('average_rating', { ascending: false });
+
+      if (selectedCity) {
+        query = query.eq('city', selectedCity);
+      }
+
+      const { data } = await query.limit(10);
+      if (data) setNearbyVenues(data);
+    } catch (error) {
+      console.error('Failed to load nearby venues:', error);
+    }
   };
 
   const loadFeatured = async () => {
@@ -661,6 +717,52 @@ export default function HomeScreen() {
         </View>
         )}
       </View>
+
+      {thisWeekendEvents.length > 0 && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {language === 'en' ? 'This Weekend' : 'Dit Weekend'}
+            </Text>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/events')}>
+              <Text style={styles.seeAllLink}>
+                {language === 'en' ? 'See All' : 'Bekijk Alles'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            data={thisWeekendEvents}
+            renderItem={({ item }) => renderActivity(item)}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.activitiesList}
+          />
+        </View>
+      )}
+
+      {nearbyVenues.length > 0 && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {language === 'en' ? 'Near You' : 'Bij jou in de buurt'}
+            </Text>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/venues')}>
+              <Text style={styles.seeAllLink}>
+                {language === 'en' ? 'See All' : 'Bekijk Alles'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            data={nearbyVenues}
+            renderItem={({ item }) => renderActivity(item)}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.activitiesList}
+          />
+        </View>
+      )}
 
       {dontMiss.length > 0 && (
         <View style={styles.section}>

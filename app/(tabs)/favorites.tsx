@@ -11,6 +11,8 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import ActivityCard from '@/components/ActivityCard';
+import Header from '@/components/Header';
+import FilterChips from '@/components/FilterChips';
 import { Heart } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -19,10 +21,14 @@ import { Activity } from '@/types';
 import { favoritesService } from '@/services/favorites';
 import { calculateDistance } from '@/utils/location';
 
+type FilterType = 'all' | 'event' | 'venue';
+
 export default function FavoritesScreen() {
   const [favorites, setFavorites] = useState<Activity[]>([]);
+  const [filteredFavorites, setFilteredFavorites] = useState<Activity[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const { t } = useLanguage();
+  const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
+  const { t, language } = useLanguage();
   const { user, profile } = useAuth();
   const router = useRouter();
 
@@ -31,6 +37,10 @@ export default function FavoritesScreen() {
       loadFavorites();
     }
   }, [user]);
+
+  useEffect(() => {
+    applyFilter();
+  }, [selectedFilter, favorites]);
 
   const loadFavorites = async () => {
     if (!user) return;
@@ -41,6 +51,24 @@ export default function FavoritesScreen() {
     } catch (error) {
       console.error('Failed to load favorites:', error);
     }
+  };
+
+  const applyFilter = () => {
+    if (selectedFilter === 'all') {
+      setFilteredFavorites(favorites);
+    } else {
+      setFilteredFavorites(favorites.filter(item => item.type === selectedFilter));
+    }
+  };
+
+  const filterChips = [
+    { id: 'all', label: language === 'en' ? 'All' : 'Alles', value: 'all' },
+    { id: 'event', label: language === 'en' ? 'Events' : 'Evenementen', value: 'event' },
+    { id: 'venue', label: language === 'en' ? 'Venues' : 'Locaties', value: 'venue' },
+  ];
+
+  const handleFilterChange = (chipId: string) => {
+    setSelectedFilter(chipId as FilterType);
   };
 
   const onRefresh = async () => {
@@ -79,6 +107,8 @@ export default function FavoritesScreen() {
           ageMin={item.age_min}
           ageMax={item.age_max}
           layout="horizontal"
+          type={item.type as 'event' | 'venue'}
+          eventStartDatetime={item.event_start_datetime}
         />
       </View>
     );
@@ -86,9 +116,20 @@ export default function FavoritesScreen() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={[Colors.primary, Colors.primaryDark]} style={styles.header}>
-        <Text style={styles.title}>{t('nav.favorites')}</Text>
-      </LinearGradient>
+      <Header
+        title={language === 'en' ? 'Favorites' : 'Favorieten'}
+        showProfileIcon={true}
+      />
+
+      {favorites.length > 0 && (
+        <View style={styles.filterContainer}>
+          <FilterChips
+            chips={filterChips}
+            selectedChips={[selectedFilter]}
+            onChipPress={handleFilterChange}
+          />
+        </View>
+      )}
 
       {favorites.length === 0 ? (
         <ScrollView
@@ -101,13 +142,21 @@ export default function FavoritesScreen() {
         </ScrollView>
       ) : (
         <FlatList
-          data={favorites}
+          data={filteredFavorites}
           renderItem={renderActivity}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           numColumns={1}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Heart size={64} color={Colors.mutedGrey} />
+              <Text style={styles.emptyTitle}>
+                {language === 'en' ? 'No favorites in this category' : 'Geen favorieten in deze categorie'}
+              </Text>
+            </View>
+          }
         />
       )}
     </View>
@@ -128,6 +177,10 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: Colors.white,
+  },
+  filterContainer: {
+    paddingVertical: 16,
+    backgroundColor: Colors.white,
   },
   list: {
     padding: 20,

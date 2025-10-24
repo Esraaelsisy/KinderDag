@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, Search, Heart, LayoutGrid, User } from 'lucide-react-native';
+import { Home, Search, Heart, Calendar, MapPinned } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { View, StyleSheet, Platform } from 'react-native';
 import { Colors } from '@/constants/colors';
@@ -13,8 +13,8 @@ export default function TabLayout() {
       <Tabs
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: Colors.primary,
-          tabBarInactiveTintColor: Colors.secondary,
+          tabBarActiveTintColor: Colors.secondary,
+          tabBarInactiveTintColor: Colors.lightGrey,
           tabBarStyle: {
             backgroundColor: Colors.white,
             borderTopWidth: 1,
@@ -30,20 +30,26 @@ export default function TabLayout() {
         }}
       >
       <Tabs.Screen
-        name="categories"
+        name="search"
         options={{
-          title: 'Categories',
-          tabBarIcon: ({ color, size, focused }) => (
-            <LayoutGrid color={color} size={size} fill={focused ? color : 'none'} />
+          title: 'Search',
+          tabBarIcon: ({ color, size }) => (
+            <Search color={color} size={size} strokeWidth={2.5} />
           ),
         }}
       />
       <Tabs.Screen
         name="discover"
         options={{
-          title: 'Search',
-          tabBarIcon: ({ color, size, focused }) => (
-            <Search color={color} size={size} fill={focused ? color : 'none'} />
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="events"
+        options={{
+          title: 'Events',
+          tabBarIcon: ({ color, size }) => (
+            <Calendar color={color} size={size} strokeWidth={2.5} />
           ),
         }}
       />
@@ -66,21 +72,33 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="venues"
+        options={{
+          title: 'Venues',
+          tabBarIcon: ({ color, size }) => (
+            <MapPinned color={color} size={size} strokeWidth={2.5} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="favorites"
         options={{
           title: 'Favorites',
-          tabBarIcon: ({ color, size, focused }) => (
-            <Heart color={color} size={size} fill={focused ? color : 'none'} />
+          tabBarIcon: ({ color, size }) => (
+            <Heart color={color} size={size} strokeWidth={2.5} />
           ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size, focused }) => (
-            <User color={color} size={size} fill={focused ? color : 'none'} />
-          ),
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="categories"
+        options={{
+          href: null,
         }}
       />
       <Tabs.Screen
