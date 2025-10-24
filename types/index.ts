@@ -19,6 +19,7 @@ export interface Activity {
   address?: string;
   category_id?: string;
   is_featured?: boolean;
+  is_seasonal?: boolean;
   type?: 'event' | 'venue';
   event_start_datetime?: string;
   event_end_datetime?: string;
