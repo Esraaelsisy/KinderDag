@@ -16,14 +16,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import FilterChips from '@/components/FilterChips';
 import ActivityCard from '@/components/ActivityCard';
-import { supabase } from '@/lib/supabase';
-import { Activity } from '@/types';
+import { eventsService } from '@/services/events';
+import { Event } from '@/types';
 
 type DateFilter = 'today' | 'tomorrow' | 'weekend' | 'month';
 
 export default function EventsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [events, setEvents] = useState<Activity[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedDateFilter, setSelectedDateFilter] = useState<DateFilter>('weekend');
@@ -55,47 +55,38 @@ export default function EventsScreen() {
     setLoading(true);
     try {
       const dateRange = getDateRange(selectedDateFilter);
+      const startDate = new Date(dateRange.start);
+      const endDate = new Date(dateRange.end);
 
-      let query = supabase
-        .from('activities')
-        .select('*')
-        .eq('type', 'event')
-        .gte('event_start_datetime', dateRange.start)
-        .lte('event_start_datetime', dateRange.end)
-        .order('event_start_datetime', { ascending: true });
+      let allEvents = searchQuery.trim()
+        ? await eventsService.search(searchQuery)
+        : await eventsService.getByDateRange(startDate, endDate);
 
       if (profile?.location_name) {
-        query = query.eq('city', profile.location_name);
+        allEvents = allEvents.filter(e => e.city === profile.location_name);
       }
 
       if (selectedFilters.includes('free')) {
-        query = query.eq('is_free', true);
+        allEvents = allEvents.filter(e => e.is_free);
       }
 
       if (selectedFilters.includes('under10')) {
-        query = query.lte('price_max', 10);
-      }
-
-      if (selectedFilters.includes('seasonal')) {
-        query = query.eq('is_seasonal', true);
+        allEvents = allEvents.filter(e => e.price_max <= 10);
       }
 
       if (selectedFilters.includes('age0-3')) {
-        query = query.lte('age_min', 3);
+        allEvents = allEvents.filter(e => e.age_min <= 3);
       } else if (selectedFilters.includes('age4-7')) {
-        query = query.gte('age_max', 4).lte('age_min', 7);
+        allEvents = allEvents.filter(e => e.age_max >= 4 && e.age_min <= 7);
       } else if (selectedFilters.includes('age8-12')) {
-        query = query.gte('age_max', 8).lte('age_min', 12);
+        allEvents = allEvents.filter(e => e.age_max >= 8 && e.age_min <= 12);
       }
 
-      if (searchQuery.trim()) {
-        query = query.ilike('name', `%${searchQuery}%`);
-      }
+      allEvents.sort((a, b) =>
+        new Date(a.event_start_datetime).getTime() - new Date(b.event_start_datetime).getTime()
+      );
 
-      const { data, error } = await query;
-
-      if (error) throw error;
-      setEvents(data || []);
+      setEvents(allEvents);
     } catch (error) {
       console.error('Error loading events:', error);
     } finally {
@@ -188,7 +179,7 @@ export default function EventsScreen() {
     }
     acc[dateKey].push(event);
     return acc;
-  }, {} as Record<string, Activity[]>);
+  }, {} as Record<string, Event[]>);
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
     const R = 6371;
@@ -278,7 +269,6 @@ export default function EventsScreen() {
                     layout="horizontal"
                     type="event"
                     eventStartDatetime={event.event_start_datetime}
-                    seasonalBadge={event.is_seasonal ? (language === 'en' ? 'Seasonal' : 'Seizoensgebonden') : undefined}
                   />
                   <Text style={styles.eventTime}>
                     {formatEventTime(event.event_start_datetime || '')}

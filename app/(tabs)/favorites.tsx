@@ -17,15 +17,17 @@ import { Heart } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
-import { Activity } from '@/types';
+import { Venue, Event } from '@/types';
 import { favoritesService } from '@/services/favorites';
 import { calculateDistance } from '@/utils/location';
 
 type FilterType = 'all' | 'event' | 'venue';
+type FavoriteItem = (Venue | Event) & { itemType: 'venue' | 'event' };
 
 export default function FavoritesScreen() {
-  const [favorites, setFavorites] = useState<Activity[]>([]);
-  const [filteredFavorites, setFilteredFavorites] = useState<Activity[]>([]);
+  const [venues, setVenues] = useState<Venue[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [filteredFavorites, setFilteredFavorites] = useState<FavoriteItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const { t, language } = useLanguage();
@@ -40,24 +42,32 @@ export default function FavoritesScreen() {
 
   useEffect(() => {
     applyFilter();
-  }, [selectedFilter, favorites]);
+  }, [selectedFilter, venues, events]);
 
   const loadFavorites = async () => {
     if (!user) return;
 
     try {
       const data = await favoritesService.getAll(user.id);
-      setFavorites(data);
+      setVenues(data.venues);
+      setEvents(data.events);
     } catch (error) {
       console.error('Failed to load favorites:', error);
     }
   };
 
   const applyFilter = () => {
+    const allFavorites: FavoriteItem[] = [
+      ...venues.map(v => ({ ...v, itemType: 'venue' as const })),
+      ...events.map(e => ({ ...e, itemType: 'event' as const }))
+    ];
+
     if (selectedFilter === 'all') {
-      setFilteredFavorites(favorites);
+      setFilteredFavorites(allFavorites);
+    } else if (selectedFilter === 'venue') {
+      setFilteredFavorites(venues.map(v => ({ ...v, itemType: 'venue' as const })));
     } else {
-      setFilteredFavorites(favorites.filter(item => item.type === selectedFilter));
+      setFilteredFavorites(events.map(e => ({ ...e, itemType: 'event' as const })));
     }
   };
 
@@ -77,7 +87,7 @@ export default function FavoritesScreen() {
     setRefreshing(false);
   };
 
-  const renderActivity = ({ item }: { item: Activity }) => {
+  const renderActivity = ({ item }: { item: FavoriteItem }) => {
     let distance: number | undefined;
     if (profile?.location_lat && profile?.location_lng) {
       distance = calculateDistance(
@@ -87,6 +97,8 @@ export default function FavoritesScreen() {
         item.location_lng
       );
     }
+
+    const isEvent = item.itemType === 'event';
 
     return (
       <View style={styles.cardWrapper}>
@@ -107,8 +119,8 @@ export default function FavoritesScreen() {
           ageMin={item.age_min}
           ageMax={item.age_max}
           layout="horizontal"
-          type={item.type as 'event' | 'venue'}
-          eventStartDatetime={item.event_start_datetime}
+          type={item.itemType}
+          eventStartDatetime={isEvent ? (item as Event).event_start_datetime : undefined}
         />
       </View>
     );
@@ -121,7 +133,7 @@ export default function FavoritesScreen() {
         showProfileIcon={true}
       />
 
-      {favorites.length > 0 && (
+      {(venues.length > 0 || events.length > 0) && (
         <View style={styles.filterContainer}>
           <FilterChips
             chips={filterChips}
@@ -131,7 +143,7 @@ export default function FavoritesScreen() {
         </View>
       )}
 
-      {favorites.length === 0 ? (
+      {venues.length === 0 && events.length === 0 ? (
         <ScrollView
           contentContainerStyle={styles.emptyContainer}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}

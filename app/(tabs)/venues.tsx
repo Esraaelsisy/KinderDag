@@ -18,8 +18,8 @@ import Header from '@/components/Header';
 import FilterChips from '@/components/FilterChips';
 import MapListToggle from '@/components/MapListToggle';
 import ActivityCard from '@/components/ActivityCard';
-import { supabase } from '@/lib/supabase';
-import { Activity } from '@/types';
+import { venuesService } from '@/services/venues';
+import { Venue } from '@/types';
 
 const { width, height } = Dimensions.get('window');
 
@@ -38,7 +38,7 @@ if (Platform.OS !== 'web') {
 
 export default function VenuesScreen() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [venues, setVenues] = useState<Activity[]>([]);
+  const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [view, setView] = useState<'map' | 'list'>('list');
@@ -61,41 +61,31 @@ export default function VenuesScreen() {
   const loadVenues = async () => {
     setLoading(true);
     try {
-      let query = supabase
-        .from('activities')
-        .select('*')
-        .eq('type', 'venue')
-        .order('average_rating', { ascending: false });
+      let allVenues = searchQuery.trim()
+        ? await venuesService.search(searchQuery)
+        : await venuesService.getAll();
 
       if (profile?.location_name) {
-        query = query.eq('city', profile.location_name);
+        allVenues = allVenues.filter(v => v.city === profile.location_name);
       }
 
       if (selectedFilters.includes('free')) {
-        query = query.eq('is_free', true);
+        allVenues = allVenues.filter(v => v.is_free);
       }
 
       if (selectedFilters.includes('indoor')) {
-        query = query.eq('is_indoor', true);
+        allVenues = allVenues.filter(v => v.is_indoor);
       }
 
       if (selectedFilters.includes('outdoor')) {
-        query = query.eq('is_outdoor', true);
+        allVenues = allVenues.filter(v => v.is_outdoor);
       }
 
       if (selectedFilters.includes('age0-3')) {
-        query = query.lte('age_min', 3);
+        allVenues = allVenues.filter(v => v.age_min <= 3);
       }
 
-      if (searchQuery.trim()) {
-        query = query.ilike('name', `%${searchQuery}%`);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-
-      const sortedData = sortByDistance(data || []);
+      const sortedData = sortByDistance(allVenues);
       setVenues(sortedData);
     } catch (error) {
       console.error('Error loading venues:', error);
@@ -104,7 +94,7 @@ export default function VenuesScreen() {
     }
   };
 
-  const sortByDistance = (venuesList: Activity[]) => {
+  const sortByDistance = (venuesList: Venue[]) => {
     if (!profile?.location_lat || !profile?.location_lng) {
       return venuesList;
     }
@@ -171,7 +161,7 @@ export default function VenuesScreen() {
     return currentTime >= openTime && currentTime <= closeTime;
   };
 
-  const renderVenueCard = (venue: Activity) => {
+  const renderVenueCard = (venue: Venue) => {
     let distance: number | undefined;
     if (profile?.location_lat && profile?.location_lng) {
       distance = calculateDistance(

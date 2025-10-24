@@ -45,6 +45,7 @@ export default function ActivityCard({
   ageMin,
   ageMax,
   layout = 'vertical',
+  type = 'venue',
 }: ActivityCardProps) {
   const router = useRouter();
   const { user } = useAuth();
@@ -57,12 +58,14 @@ export default function ActivityCard({
     if (user) {
       checkFavoriteStatus();
     }
-  }, [user, id]);
+  }, [user, id, type]);
 
   const checkFavoriteStatus = async () => {
     if (!user) return;
     try {
-      const favorited = await favoritesService.isFavorited(user.id, id);
+      const favorited = type === 'venue'
+        ? await favoritesService.isFavoritedVenue(user.id, id)
+        : await favoritesService.isFavoritedEvent(user.id, id);
       setIsFavorite(favorited);
     } catch (error) {
       console.error('Error checking favorite status:', error);
@@ -79,7 +82,11 @@ export default function ActivityCard({
     setIsFavorite(!isFavorite);
 
     try {
-      await favoritesService.toggle(user.id, id);
+      if (type === 'venue') {
+        await favoritesService.toggleVenue(user.id, id);
+      } else {
+        await favoritesService.toggleEvent(user.id, id);
+      }
     } catch (error) {
       console.error('Error toggling favorite:', error);
       setIsFavorite(previousState);

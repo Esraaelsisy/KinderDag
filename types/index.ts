@@ -28,6 +28,72 @@ export interface Activity {
   };
 }
 
+export interface Venue {
+  id: string;
+  name: string;
+  description_en: string;
+  description_nl: string;
+  city: string;
+  province: string;
+  address: string;
+  location_lat: number;
+  location_lng: number;
+  phone?: string;
+  email?: string;
+  website?: string;
+  images: string[];
+  venue_opening_hours?: {
+    [day: string]: { open: string; close: string; closed?: boolean };
+  };
+  average_rating: number;
+  total_reviews: number;
+  price_min: number;
+  price_max: number;
+  is_free: boolean;
+  age_min: number;
+  age_max: number;
+  is_indoor: boolean;
+  is_outdoor: boolean;
+  weather_dependent: boolean;
+  booking_url?: string;
+  is_featured: boolean;
+  is_seasonal: boolean;
+  season_start?: string;
+  season_end?: string;
+  categories?: string[];
+}
+
+export interface Event {
+  id: string;
+  name: string;
+  description_en: string;
+  description_nl: string;
+  city: string;
+  province: string;
+  address: string;
+  location_lat: number;
+  location_lng: number;
+  phone?: string;
+  email?: string;
+  website?: string;
+  images: string[];
+  event_start_datetime: string;
+  event_end_datetime: string;
+  average_rating: number;
+  total_reviews: number;
+  price_min: number;
+  price_max: number;
+  is_free: boolean;
+  age_min: number;
+  age_max: number;
+  is_indoor: boolean;
+  is_outdoor: boolean;
+  weather_dependent: boolean;
+  booking_url?: string;
+  is_featured: boolean;
+  categories?: string[];
+}
+
 export interface Category {
   id: string;
   name: string;
@@ -62,4 +128,26 @@ export interface ActivityFilters {
   maxAge?: string;
   maxDistance?: string;
   categoryId?: string;
+}
+
+export interface VenueFilters {
+  indoor?: boolean;
+  outdoor?: boolean;
+  free?: boolean;
+  minAge?: string;
+  maxAge?: string;
+  maxDistance?: string;
+  categoryId?: string;
+}
+
+export interface EventFilters {
+  indoor?: boolean;
+  outdoor?: boolean;
+  free?: boolean;
+  minAge?: string;
+  maxAge?: string;
+  maxDistance?: string;
+  categoryId?: string;
+  startDate?: string;
+  endDate?: string;
 }
