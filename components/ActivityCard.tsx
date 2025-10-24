@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { MapPin, Star, Euro, Heart } from 'lucide-react-native';
+import { MapPin, Star, Euro, Heart, Calendar, Clock, Sun, Home as HomeIcon } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,6 +21,13 @@ interface ActivityCardProps {
   ageMin: number;
   ageMax: number;
   layout?: 'vertical' | 'horizontal';
+  type?: 'event' | 'venue';
+  eventStartDatetime?: string;
+  eventEndDatetime?: string;
+  isIndoor?: boolean;
+  isOutdoor?: boolean;
+  isOpen?: boolean;
+  seasonalBadge?: string;
 }
 
 export default function ActivityCard({
