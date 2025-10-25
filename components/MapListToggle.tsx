@@ -35,10 +35,14 @@ export default function MapListToggle({ view, onToggle }: MapListToggleProps) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.inputBackground,
     borderRadius: 8,
     padding: 4,
     gap: 4,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    maxWidth: 240,
+    width: '100%',
   },
   button: {
     flex: 1,

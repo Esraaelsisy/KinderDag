@@ -345,11 +345,9 @@ export default function VenuesScreen() {
         <FilterButton onPress={() => setShowFilterModal(true)} filterCount={getActiveFilterCount()} />
       </View>
 
-      {Platform.OS !== 'web' && MapView && (
-        <View style={styles.toggleContainer}>
-          <MapListToggle view={view} onToggle={setView} />
-        </View>
-      )}
+      <View style={styles.toggleContainer}>
+        <MapListToggle view={view} onToggle={setView} />
+      </View>
 
       {getActiveFiltersSummary().length > 0 && (
         <View style={styles.activeFiltersContainer}>
