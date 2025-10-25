@@ -9,14 +9,16 @@ import {
   RefreshControl,
   Dimensions,
   Platform,
+  TouchableOpacity,
 } from 'react-native';
-import { Search } from 'lucide-react-native';
+import { Search, X } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
-import FilterChips from '@/components/FilterChips';
+import FilterButton from '@/components/FilterButton';
 import MapListToggle from '@/components/MapListToggle';
+import VenuesFilterModal, { VenuesFilters } from '@/components/VenuesFilterModal';
 import ActivityCard from '@/components/ActivityCard';
 import { venuesService } from '@/services/venues';
 import { Venue } from '@/types';
@@ -42,21 +44,22 @@ export default function VenuesScreen() {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [view, setView] = useState<'map' | 'list'>('list');
-  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [filters, setFilters] = useState<VenuesFilters>({
+    environment: 'any',
+    price: 'any',
+    ageGroups: [],
+    amenities: [],
+    distance: 'any',
+    openNow: false,
+  });
   const { language } = useLanguage();
   const { profile } = useAuth();
 
-  const filterChips = [
-    { id: 'indoor', label: language === 'en' ? 'Indoor' : 'Binnen', value: 'indoor' },
-    { id: 'outdoor', label: language === 'en' ? 'Outdoor' : 'Buiten', value: 'outdoor' },
-    { id: 'free', label: language === 'en' ? 'Free' : 'Gratis', value: true },
-    { id: 'parking', label: language === 'en' ? 'Parking' : 'Parkeren', value: 'parking' },
-    { id: 'age0-3', label: '0-3y', value: '0-3' },
-  ];
 
   useEffect(() => {
     loadVenues();
-  }, [selectedFilters, profile?.location_name]);
+  }, [filters, profile?.location_name]);
 
   const loadVenues = async () => {
     setLoading(true);
@@ -69,20 +72,49 @@ export default function VenuesScreen() {
         allVenues = allVenues.filter(v => v.city === profile.location_name);
       }
 
-      if (selectedFilters.includes('free')) {
-        allVenues = allVenues.filter(v => v.is_free);
-      }
-
-      if (selectedFilters.includes('indoor')) {
+      if (filters.environment === 'indoor') {
         allVenues = allVenues.filter(v => v.is_indoor);
-      }
-
-      if (selectedFilters.includes('outdoor')) {
+      } else if (filters.environment === 'outdoor') {
         allVenues = allVenues.filter(v => v.is_outdoor);
+      } else if (filters.environment === 'both') {
+        allVenues = allVenues.filter(v => v.is_indoor && v.is_outdoor);
       }
 
-      if (selectedFilters.includes('age0-3')) {
-        allVenues = allVenues.filter(v => v.age_min <= 3);
+      if (filters.price === 'free') {
+        allVenues = allVenues.filter(v => v.is_free);
+      } else if (filters.price === 'under10') {
+        allVenues = allVenues.filter(v => v.price_max <= 10);
+      } else if (filters.price === 'under20') {
+        allVenues = allVenues.filter(v => v.price_max <= 20);
+      }
+
+      if (filters.ageGroups.length > 0 && !filters.ageGroups.includes('all')) {
+        allVenues = allVenues.filter(v => {
+          return filters.ageGroups.some(ageGroup => {
+            if (ageGroup === '0-3') return v.age_min <= 3;
+            if (ageGroup === '4-7') return v.age_max >= 4 && v.age_min <= 7;
+            if (ageGroup === '8-12') return v.age_max >= 8 && v.age_min <= 12;
+            if (ageGroup === '13+') return v.age_max >= 13;
+            return true;
+          });
+        });
+      }
+
+      if (filters.distance !== 'any' && profile?.location_lat && profile?.location_lng) {
+        const maxDist = parseInt(filters.distance);
+        allVenues = allVenues.filter(v => {
+          const dist = calculateDistance(
+            profile.location_lat!,
+            profile.location_lng!,
+            v.location_lat,
+            v.location_lng
+          );
+          return dist <= maxDist;
+        });
+      }
+
+      if (filters.openNow) {
+        allVenues = allVenues.filter(v => isVenueOpen(v.venue_opening_hours));
       }
 
       const sortedData = sortByDistance(allVenues);
@@ -130,10 +162,42 @@ export default function VenuesScreen() {
     return R * c;
   };
 
-  const handleFilterToggle = (chipId: string) => {
-    setSelectedFilters(prev =>
-      prev.includes(chipId) ? prev.filter(id => id !== chipId) : [...prev, chipId]
-    );
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (filters.environment !== 'any') count++;
+    if (filters.price !== 'any') count++;
+    if (filters.ageGroups.length > 0) count++;
+    if (filters.amenities.length > 0) count++;
+    if (filters.distance !== 'any') count++;
+    if (filters.openNow) count++;
+    return count;
+  };
+
+  const getActiveFiltersSummary = () => {
+    const summary: string[] = [];
+    if (filters.environment === 'indoor') summary.push(language === 'en' ? 'Indoor' : 'Binnen');
+    if (filters.environment === 'outdoor') summary.push(language === 'en' ? 'Outdoor' : 'Buiten');
+    if (filters.environment === 'both') summary.push(language === 'en' ? 'Both' : 'Beide');
+    if (filters.price === 'free') summary.push(language === 'en' ? 'Free' : 'Gratis');
+    if (filters.price === 'under10') summary.push('< €10');
+    if (filters.price === 'under20') summary.push('< €20');
+    if (filters.ageGroups.length > 0) {
+      summary.push(filters.ageGroups.join(', '));
+    }
+    if (filters.distance !== 'any') summary.push(`< ${filters.distance}km`);
+    if (filters.openNow) summary.push(language === 'en' ? 'Open now' : 'Nu open');
+    return summary;
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      environment: 'any',
+      price: 'any',
+      ageGroups: [],
+      amenities: [],
+      distance: 'any',
+      openNow: false,
+    });
   };
 
   const onRefresh = async () => {
@@ -278,6 +342,7 @@ export default function VenuesScreen() {
             onSubmitEditing={loadVenues}
           />
         </View>
+        <FilterButton onPress={() => setShowFilterModal(true)} filterCount={getActiveFilterCount()} />
         {Platform.OS !== 'web' && MapView && (
           <View style={styles.toggleContainer}>
             <MapListToggle view={view} onToggle={setView} />
@@ -285,13 +350,31 @@ export default function VenuesScreen() {
         )}
       </View>
 
-      <View style={styles.filterChipsContainer}>
-        <FilterChips
-          chips={filterChips}
-          selectedChips={selectedFilters}
-          onChipPress={handleFilterToggle}
-        />
-      </View>
+      {getActiveFiltersSummary().length > 0 && (
+        <View style={styles.activeFiltersContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.activeFiltersList}>
+            <Text style={styles.activeFiltersLabel}>
+              {language === 'en' ? 'Active:' : 'Actief:'}
+            </Text>
+            {getActiveFiltersSummary().map((filter, index) => (
+              <View key={index} style={styles.activeFilterChip}>
+                <Text style={styles.activeFilterText}>{filter}</Text>
+              </View>
+            ))}
+            <TouchableOpacity onPress={clearFilters} style={styles.clearFiltersButton}>
+              <X size={16} color={Colors.textLight} />
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+      )}
+
+      <VenuesFilterModal
+        visible={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        filters={filters}
+        onFiltersChange={setFilters}
+        language={language}
+      />
 
       {view === 'map' ? (
         renderMapView()
@@ -351,8 +434,38 @@ const styles = StyleSheet.create({
   toggleContainer: {
     width: 140,
   },
-  filterChipsContainer: {
-    marginVertical: 12,
+  activeFiltersContainer: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: Colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  activeFiltersList: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  activeFiltersLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.textLight,
+    marginRight: 4,
+  },
+  activeFilterChip: {
+    backgroundColor: Colors.successLight,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  activeFilterText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: Colors.textDark,
+  },
+  clearFiltersButton: {
+    marginLeft: 4,
+    padding: 4,
   },
   listContent: {
     padding: 20,

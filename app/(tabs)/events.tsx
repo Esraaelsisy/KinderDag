@@ -9,12 +9,15 @@ import {
   FlatList,
   RefreshControl,
 } from 'react-native';
-import { Search } from 'lucide-react-native';
+import { Search, X } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import FilterChips from '@/components/FilterChips';
+import FilterButton from '@/components/FilterButton';
+import MapListToggle from '@/components/MapListToggle';
+import EventsFilterModal, { EventsFilters } from '@/components/EventsFilterModal';
 import ActivityCard from '@/components/ActivityCard';
 import { eventsService } from '@/services/events';
 import { Event } from '@/types';
@@ -27,7 +30,14 @@ export default function EventsScreen() {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedDateFilter, setSelectedDateFilter] = useState<DateFilter>('weekend');
-  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  const [view, setView] = useState<'map' | 'list'>('list');
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [filters, setFilters] = useState<EventsFilters>({
+    price: 'any',
+    ageGroups: [],
+    distance: 'any',
+    timeOfDay: [],
+  });
   const { language } = useLanguage();
   const { profile } = useAuth();
 
@@ -38,18 +48,10 @@ export default function EventsScreen() {
     { id: 'month', label: language === 'en' ? 'This Month' : 'Deze Maand', value: 'month' },
   ];
 
-  const filterChips = [
-    { id: 'free', label: language === 'en' ? 'Free' : 'Gratis', value: true },
-    { id: 'under10', label: '< €10', value: '10' },
-    { id: 'age0-3', label: '0-3y', value: '0-3' },
-    { id: 'age4-7', label: '4-7y', value: '4-7' },
-    { id: 'age8-12', label: '8-12y', value: '8-12' },
-    { id: 'seasonal', label: language === 'en' ? 'Seasonal' : 'Seizoensgebonden', value: 'seasonal' },
-  ];
 
   useEffect(() => {
     loadEvents();
-  }, [selectedDateFilter, selectedFilters, profile?.location_name]);
+  }, [selectedDateFilter, filters, profile?.location_name]);
 
   const loadEvents = async () => {
     setLoading(true);
@@ -66,20 +68,50 @@ export default function EventsScreen() {
         allEvents = allEvents.filter(e => e.city === profile.location_name);
       }
 
-      if (selectedFilters.includes('free')) {
+      if (filters.price === 'free') {
         allEvents = allEvents.filter(e => e.is_free);
-      }
-
-      if (selectedFilters.includes('under10')) {
+      } else if (filters.price === 'under10') {
         allEvents = allEvents.filter(e => e.price_max <= 10);
+      } else if (filters.price === 'under20') {
+        allEvents = allEvents.filter(e => e.price_max <= 20);
       }
 
-      if (selectedFilters.includes('age0-3')) {
-        allEvents = allEvents.filter(e => e.age_min <= 3);
-      } else if (selectedFilters.includes('age4-7')) {
-        allEvents = allEvents.filter(e => e.age_max >= 4 && e.age_min <= 7);
-      } else if (selectedFilters.includes('age8-12')) {
-        allEvents = allEvents.filter(e => e.age_max >= 8 && e.age_min <= 12);
+      if (filters.ageGroups.length > 0 && !filters.ageGroups.includes('all')) {
+        allEvents = allEvents.filter(e => {
+          return filters.ageGroups.some(ageGroup => {
+            if (ageGroup === '0-3') return e.age_min <= 3;
+            if (ageGroup === '4-7') return e.age_max >= 4 && e.age_min <= 7;
+            if (ageGroup === '8-12') return e.age_max >= 8 && e.age_min <= 12;
+            if (ageGroup === '13+') return e.age_max >= 13;
+            return true;
+          });
+        });
+      }
+
+      if (filters.distance !== 'any' && profile?.location_lat && profile?.location_lng) {
+        const maxDist = parseInt(filters.distance);
+        allEvents = allEvents.filter(e => {
+          const dist = calculateDistance(
+            profile.location_lat!,
+            profile.location_lng!,
+            e.location_lat,
+            e.location_lng
+          );
+          return dist <= maxDist;
+        });
+      }
+
+      if (filters.timeOfDay.length > 0) {
+        allEvents = allEvents.filter(e => {
+          const date = new Date(e.event_start_datetime || '');
+          const hour = date.getHours();
+          return filters.timeOfDay.some(time => {
+            if (time === 'morning') return hour < 12;
+            if (time === 'afternoon') return hour >= 12 && hour < 17;
+            if (time === 'evening') return hour >= 17;
+            return true;
+          });
+        });
       }
 
       allEvents.sort((a, b) =>
@@ -129,10 +161,43 @@ export default function EventsScreen() {
     };
   };
 
-  const handleFilterToggle = (chipId: string) => {
-    setSelectedFilters(prev =>
-      prev.includes(chipId) ? prev.filter(id => id !== chipId) : [...prev, chipId]
-    );
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (filters.price !== 'any') count++;
+    if (filters.ageGroups.length > 0) count++;
+    if (filters.distance !== 'any') count++;
+    if (filters.timeOfDay.length > 0) count++;
+    return count;
+  };
+
+  const getActiveFiltersSummary = () => {
+    const summary: string[] = [];
+    if (filters.price === 'free') summary.push(language === 'en' ? 'Free' : 'Gratis');
+    if (filters.price === 'under10') summary.push('< €10');
+    if (filters.price === 'under20') summary.push('< €20');
+    if (filters.ageGroups.length > 0) {
+      summary.push(filters.ageGroups.join(', '));
+    }
+    if (filters.distance !== 'any') summary.push(`< ${filters.distance}km`);
+    if (filters.timeOfDay.length > 0) {
+      const times = filters.timeOfDay.map(t => {
+        if (t === 'morning') return language === 'en' ? 'Morning' : 'Ochtend';
+        if (t === 'afternoon') return language === 'en' ? 'Afternoon' : 'Middag';
+        if (t === 'evening') return language === 'en' ? 'Evening' : 'Avond';
+        return t;
+      });
+      summary.push(times.join(', '));
+    }
+    return summary;
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      price: 'any',
+      ageGroups: [],
+      distance: 'any',
+      timeOfDay: [],
+    });
   };
 
   const handleDateFilterToggle = (chipId: string) => {
@@ -202,6 +267,14 @@ export default function EventsScreen() {
         showProfileIcon={true}
       />
 
+      <View style={styles.dateChipsContainer}>
+        <FilterChips
+          chips={dateChips}
+          selectedChips={[selectedDateFilter]}
+          onChipPress={handleDateFilterToggle}
+        />
+      </View>
+
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
           <Search size={20} color={Colors.textLight} />
@@ -214,23 +287,37 @@ export default function EventsScreen() {
             onSubmitEditing={loadEvents}
           />
         </View>
+        <FilterButton onPress={() => setShowFilterModal(true)} filterCount={getActiveFilterCount()} />
+        <View style={styles.toggleContainer}>
+          <MapListToggle view={view} onToggle={setView} />
+        </View>
       </View>
 
-      <View style={styles.dateChipsContainer}>
-        <FilterChips
-          chips={dateChips}
-          selectedChips={[selectedDateFilter]}
-          onChipPress={handleDateFilterToggle}
-        />
-      </View>
+      {getActiveFiltersSummary().length > 0 && (
+        <View style={styles.activeFiltersContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.activeFiltersList}>
+            <Text style={styles.activeFiltersLabel}>
+              {language === 'en' ? 'Active:' : 'Actief:'}
+            </Text>
+            {getActiveFiltersSummary().map((filter, index) => (
+              <View key={index} style={styles.activeFilterChip}>
+                <Text style={styles.activeFilterText}>{filter}</Text>
+              </View>
+            ))}
+            <TouchableOpacity onPress={clearFilters} style={styles.clearFiltersButton}>
+              <X size={16} color={Colors.textLight} />
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+      )}
 
-      <View style={styles.filterChipsContainer}>
-        <FilterChips
-          chips={filterChips}
-          selectedChips={selectedFilters}
-          onChipPress={handleFilterToggle}
-        />
-      </View>
+      <EventsFilterModal
+        visible={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        filters={filters}
+        onFiltersChange={setFilters}
+        language={language}
+      />
 
       <ScrollView
         style={styles.content}
@@ -302,8 +389,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     backgroundColor: Colors.white,
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
   },
   searchBar: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.inputBackground,
@@ -312,16 +403,49 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     gap: 12,
   },
+  toggleContainer: {
+    width: 140,
+  },
   searchInput: {
     flex: 1,
     fontSize: 16,
     color: Colors.textDark,
   },
   dateChipsContainer: {
-    marginVertical: 12,
+    marginTop: 12,
   },
-  filterChipsContainer: {
-    marginBottom: 16,
+  activeFiltersContainer: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: Colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  activeFiltersList: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  activeFiltersLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.textLight,
+    marginRight: 4,
+  },
+  activeFilterChip: {
+    backgroundColor: Colors.successLight,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  activeFilterText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: Colors.textDark,
+  },
+  clearFiltersButton: {
+    marginLeft: 4,
+    padding: 4,
   },
   content: {
     flex: 1,
