@@ -198,7 +198,7 @@ export default function EventsScreen() {
   return (
     <View style={styles.container}>
       <Header
-        title={language === 'en' ? 'Events near you' : 'Evenementen bij jou in de buurt'}
+        title={language === 'en' ? "What's On" : 'Agenda'}
         showProfileIcon={true}
       />
 

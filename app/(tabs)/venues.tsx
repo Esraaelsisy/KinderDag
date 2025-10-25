@@ -262,7 +262,7 @@ export default function VenuesScreen() {
   return (
     <View style={styles.container}>
       <Header
-        title={language === 'en' ? 'Venues near you' : 'Locaties bij jou in de buurt'}
+        title={language === 'en' ? 'Play Spots' : 'Speelplekken'}
         showProfileIcon={true}
       />
 

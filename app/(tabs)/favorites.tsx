@@ -129,7 +129,7 @@ export default function FavoritesScreen() {
   return (
     <View style={styles.container}>
       <Header
-        title={language === 'en' ? 'Favorites' : 'Favorieten'}
+        title={language === 'en' ? 'Saved' : 'Bewaard'}
         showProfileIcon={true}
       />
 

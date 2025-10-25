@@ -120,7 +120,7 @@ export default function SearchScreen() {
   return (
     <View style={styles.container}>
       <Header
-        title={language === 'en' ? 'Search' : 'Zoeken'}
+        title={language === 'en' ? 'Explore' : 'Ontdek'}
         showProfileIcon={true}
       />
 
