@@ -198,7 +198,7 @@ export default function EventsScreen() {
   return (
     <View style={styles.container}>
       <Header
-        title={language === 'en' ? "What's On" : 'Agenda'}
+        title={language === 'en' ? "What's On?" : 'Agenda'}
         showProfileIcon={true}
       />
 
