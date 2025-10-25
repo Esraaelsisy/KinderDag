@@ -16,7 +16,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import FilterChips from '@/components/FilterChips';
 import FilterButton from '@/components/FilterButton';
-import MapListToggle from '@/components/MapListToggle';
 import EventsFilterModal, { EventsFilters } from '@/components/EventsFilterModal';
 import ActivityCard from '@/components/ActivityCard';
 import { eventsService } from '@/services/events';
@@ -30,7 +29,6 @@ export default function EventsScreen() {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedDateFilter, setSelectedDateFilter] = useState<DateFilter>('weekend');
-  const [view, setView] = useState<'map' | 'list'>('list');
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [filters, setFilters] = useState<EventsFilters>({
     price: 'any',
@@ -267,14 +265,6 @@ export default function EventsScreen() {
         showProfileIcon={true}
       />
 
-      <View style={styles.dateChipsContainer}>
-        <FilterChips
-          chips={dateChips}
-          selectedChips={[selectedDateFilter]}
-          onChipPress={handleDateFilterToggle}
-        />
-      </View>
-
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
           <Search size={20} color={Colors.textLight} />
@@ -288,9 +278,14 @@ export default function EventsScreen() {
           />
         </View>
         <FilterButton onPress={() => setShowFilterModal(true)} filterCount={getActiveFilterCount()} />
-        <View style={styles.toggleContainer}>
-          <MapListToggle view={view} onToggle={setView} />
-        </View>
+      </View>
+
+      <View style={styles.dateChipsContainer}>
+        <FilterChips
+          chips={dateChips}
+          selectedChips={[selectedDateFilter]}
+          onChipPress={handleDateFilterToggle}
+        />
       </View>
 
       {getActiveFiltersSummary().length > 0 && (
@@ -403,9 +398,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     gap: 12,
   },
-  toggleContainer: {
-    width: 140,
-  },
   searchInput: {
     flex: 1,
     fontSize: 16,
@@ -413,6 +405,7 @@ const styles = StyleSheet.create({
   },
   dateChipsContainer: {
     marginTop: 12,
+    marginBottom: 12,
   },
   activeFiltersContainer: {
     paddingVertical: 12,

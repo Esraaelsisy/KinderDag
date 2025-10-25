@@ -15,6 +15,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import ActivityCard from '@/components/ActivityCard';
 import { Search, SlidersHorizontal, X, List, MapPin as MapPinIcon, SearchX, ChevronLeft, ChevronRight, Edit3 } from 'lucide-react-native';
+import MapListToggle from '@/components/MapListToggle';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/colors';
 import { Activity } from '@/types';
@@ -397,46 +398,11 @@ export default function DiscoverScreen() {
             <MapPinIcon size={20} color={selectedCity ? Colors.primary : Colors.textLight} />
           </TouchableOpacity>
         </View>
-
-        <View style={styles.viewToggle}>
-          <TouchableOpacity
-            style={[
-              styles.toggleButton,
-              styles.toggleButtonLeft,
-              viewMode === 'list' && styles.toggleButtonActive,
-            ]}
-            onPress={() => setViewMode('list')}
-          >
-            <List size={18} color={viewMode === 'list' ? Colors.white : Colors.primary} />
-            <Text
-              style={[
-                styles.toggleButtonText,
-                viewMode === 'list' && styles.toggleButtonTextActive,
-              ]}
-            >
-              List
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.toggleButton,
-              styles.toggleButtonRight,
-              viewMode === 'map' && styles.toggleButtonActive,
-            ]}
-            onPress={() => setViewMode('map')}
-          >
-            <MapPinIcon size={18} color={viewMode === 'map' ? Colors.white : Colors.primary} />
-            <Text
-              style={[
-                styles.toggleButtonText,
-                viewMode === 'map' && styles.toggleButtonTextActive,
-              ]}
-            >
-              Map
-            </Text>
-          </TouchableOpacity>
-        </View>
       </LinearGradient>
+
+      <View style={styles.toggleContainer}>
+        <MapListToggle view={viewMode} onToggle={setViewMode} />
+      </View>
 
       {(categoryName || hasActiveFilters) && (
         <View style={styles.activeFiltersBar}>
@@ -1249,7 +1215,15 @@ const styles = StyleSheet.create({
   header: {
     paddingTop: 60,
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingBottom: 20,
+  },
+  toggleContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: Colors.white,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
   titleRow: {
     flexDirection: 'row',
@@ -1327,39 +1301,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  viewToggle: {
-    flexDirection: 'row',
-    backgroundColor: Colors.successLight,
-    borderRadius: 12,
-    padding: 4,
-  },
-  toggleButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    gap: 6,
-  },
-  toggleButtonLeft: {
-    borderTopLeftRadius: 8,
-    borderBottomLeftRadius: 8,
-  },
-  toggleButtonRight: {
-    borderTopRightRadius: 8,
-    borderBottomRightRadius: 8,
-  },
-  toggleButtonActive: {
-    backgroundColor: Colors.primary,
-  },
-  toggleButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: Colors.primary,
-  },
-  toggleButtonTextActive: {
-    color: Colors.white,
   },
   modalContainer: {
     flex: 1,

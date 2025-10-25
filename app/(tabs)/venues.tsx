@@ -343,12 +343,13 @@ export default function VenuesScreen() {
           />
         </View>
         <FilterButton onPress={() => setShowFilterModal(true)} filterCount={getActiveFilterCount()} />
-        {Platform.OS !== 'web' && MapView && (
-          <View style={styles.toggleContainer}>
-            <MapListToggle view={view} onToggle={setView} />
-          </View>
-        )}
       </View>
+
+      {Platform.OS !== 'web' && MapView && (
+        <View style={styles.toggleContainer}>
+          <MapListToggle view={view} onToggle={setView} />
+        </View>
+      )}
 
       {getActiveFiltersSummary().length > 0 && (
         <View style={styles.activeFiltersContainer}>
@@ -410,7 +411,8 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
     backgroundColor: Colors.white,
     flexDirection: 'row',
     gap: 12,
@@ -432,7 +434,10 @@ const styles = StyleSheet.create({
     color: Colors.textDark,
   },
   toggleContainer: {
-    width: 140,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    backgroundColor: Colors.white,
+    alignItems: 'center',
   },
   activeFiltersContainer: {
     paddingVertical: 12,
