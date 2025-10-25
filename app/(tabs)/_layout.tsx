@@ -32,7 +32,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="search"
         options={{
-          title: 'Search',
+          title: t('nav.explore'),
           tabBarIcon: ({ color, size }) => (
             <Search color={color} size={size} strokeWidth={2.5} />
           ),
@@ -47,7 +47,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="events"
         options={{
-          title: "What's On",
+          title: t('nav.whatsOn'),
           tabBarIcon: ({ color, size }) => (
             <Calendar color={color} size={size} strokeWidth={2.5} />
           ),
@@ -56,7 +56,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: t('nav.home'),
           tabBarIcon: ({ color, focused }) => (
             <View style={styles.centerIconContainer}>
               <View style={[styles.centerIcon, !focused && styles.centerIconInactive]}>
@@ -74,7 +74,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="venues"
         options={{
-          title: 'Play Spots',
+          title: t('nav.playSpots'),
           tabBarIcon: ({ color, size }) => (
             <MapPinned color={color} size={size} strokeWidth={2.5} />
           ),
@@ -83,7 +83,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="favorites"
         options={{
-          title: 'Favorites',
+          title: t('nav.saved'),
           tabBarIcon: ({ color, size }) => (
             <Heart color={color} size={size} strokeWidth={2.5} />
           ),
