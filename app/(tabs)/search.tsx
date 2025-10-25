@@ -14,6 +14,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import ActivityCard from '@/components/ActivityCard';
+import MapListToggle from '@/components/MapListToggle';
 import { supabase } from '@/lib/supabase';
 import { Activity } from '@/types';
 
@@ -22,6 +23,7 @@ export default function SearchScreen() {
   const [events, setEvents] = useState<Activity[]>([]);
   const [venues, setVenues] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(false);
+  const [view, setView] = useState<'map' | 'list'>('list');
   const { language } = useLanguage();
   const { profile } = useAuth();
 
@@ -138,6 +140,10 @@ export default function SearchScreen() {
         </View>
       </View>
 
+      <View style={styles.toggleContainer}>
+        <MapListToggle view={view} onToggle={setView} />
+      </View>
+
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {searchQuery.trim().length < 2 ? (
           <View style={styles.emptyState}>
@@ -214,8 +220,15 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
     backgroundColor: Colors.white,
+  },
+  toggleContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    backgroundColor: Colors.white,
+    alignItems: 'center',
   },
   searchBar: {
     flexDirection: 'row',
