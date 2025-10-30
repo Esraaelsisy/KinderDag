@@ -3,14 +3,12 @@ import { Home, Search, Heart, Calendar, MapPinned } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { View, StyleSheet, Platform } from 'react-native';
 import { Colors } from '@/constants/colors';
-import FloatingChatButton from '@/components/FloatingChatButton';
 
 export default function TabLayout() {
   const { t } = useLanguage();
 
   return (
-    <>
-      <Tabs
+    <Tabs
         screenOptions={{
           headerShown: false,
           tabBarActiveTintColor: Colors.secondary,
@@ -114,8 +112,6 @@ export default function TabLayout() {
         }}
       />
       </Tabs>
-      <FloatingChatButton />
-    </>
   );
 }
 
