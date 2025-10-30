@@ -5,6 +5,10 @@ import { adminEventsService, Event } from '../services/adminEvents';
 export default function Events() {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState<'add' | 'edit' | 'bulk-edit'>('add');
+  const [editingEvent, setEditingEvent] = useState<any>(null);
 
   useEffect(() => {
     loadEvents();
@@ -21,6 +25,31 @@ export default function Events() {
     setLoading(false);
   };
 
+  const handleSelectAll = () => {
+    setSelectedIds(selectedIds.length === events.length ? [] : events.map((e) => e.id));
+  };
+
+  const handleSelectOne = (id: string) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
+  };
+
+  const handleAdd = () => {
+    setModalMode('add');
+    setEditingEvent(null);
+    setShowModal(true);
+  };
+
+  const handleEdit = (event: any) => {
+    setModalMode('edit');
+    setEditingEvent(event);
+    setShowModal(true);
+  };
+
+  const handleBulkEdit = () => {
+    setModalMode('bulk-edit');
+    setShowModal(true);
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this event?')) return;
 
@@ -30,6 +59,19 @@ export default function Events() {
     } catch (error) {
       console.error('Failed to delete event:', error);
       alert('Failed to delete event');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`Delete ${selectedIds.length} events?`)) return;
+
+    try {
+      await adminEventsService.bulkDelete(selectedIds);
+      setSelectedIds([]);
+      await loadEvents();
+    } catch (error) {
+      console.error('Failed to delete events:', error);
+      alert('Failed to delete events');
     }
   };
 
@@ -56,8 +98,56 @@ export default function Events() {
       <div style={{ maxWidth: '1400px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
           <h1 style={{ color: 'white', fontSize: '32px', fontWeight: 'bold' }}>
-            What's On ({events.length})
+            Events ({events.length})
           </h1>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              onClick={handleAdd}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#3b82f6',
+                color: 'white',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: '600',
+              }}
+            >
+              + Add Event
+            </button>
+            {selectedIds.length > 0 && (
+              <>
+                <button
+                  onClick={handleBulkEdit}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: '#8b5cf6',
+                    color: 'white',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                  }}
+                >
+                  Bulk Edit ({selectedIds.length})
+                </button>
+                <button
+                  onClick={handleBulkDelete}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: '#ef4444',
+                    color: 'white',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                  }}
+                >
+                  Delete ({selectedIds.length})
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {events.length === 0 ? (
@@ -69,7 +159,7 @@ export default function Events() {
             textAlign: 'center',
           }}>
             <p style={{ color: '#64748b', fontSize: '16px' }}>
-              No events found. They will appear here once migrated.
+              No events found. Click "Add Event" to create one.
             </p>
           </div>
         ) : (
@@ -90,6 +180,15 @@ export default function Events() {
                   }}
                 >
                   <div style={{ display: 'flex', gap: '24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'start' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(event.id)}
+                        onChange={() => handleSelectOne(event.id)}
+                        style={{ marginTop: '4px' }}
+                      />
+                    </div>
+
                     {event.images && event.images.length > 0 && (
                       <img
                         src={event.images[0]}
@@ -187,6 +286,20 @@ export default function Events() {
 
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button
+                          onClick={() => handleEdit(event)}
+                          style={{
+                            padding: '8px 16px',
+                            borderRadius: '6px',
+                            backgroundColor: '#10b981',
+                            color: 'white',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
                           onClick={() => handleDelete(event.id)}
                           style={{
                             padding: '8px 16px',
@@ -206,6 +319,49 @@ export default function Events() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {showModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}>
+            <div style={{
+              backgroundColor: '#1e293b',
+              borderRadius: '12px',
+              padding: '32px',
+              maxWidth: '600px',
+              width: '90%',
+            }}>
+              <h2 style={{ color: 'white', fontSize: '24px', marginBottom: '24px' }}>
+                {modalMode === 'add' ? 'Add Event' : modalMode === 'edit' ? 'Edit Event' : `Bulk Edit ${selectedIds.length} Events`}
+              </h2>
+              <p style={{ color: '#94a3b8', marginBottom: '16px' }}>
+                Modal functionality coming soon. For now, please manage events through the database or API.
+              </p>
+              <button
+                onClick={() => setShowModal(false)}
+                style={{
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  backgroundColor: '#334155',
+                  color: 'white',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                Close
+              </button>
+            </div>
           </div>
         )}
       </div>

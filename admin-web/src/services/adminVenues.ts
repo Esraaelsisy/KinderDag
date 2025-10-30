@@ -239,6 +239,25 @@ export const adminVenuesService = {
       .eq('id', venueData.place.id);
   },
 
+  async bulkDelete(ids: string[]) {
+    const venues = await Promise.all(ids.map(id => this.getById(id)));
+    const placeIds = venues.filter(v => v?.place?.id).map(v => v!.place.id);
+
+    const { error } = await supabase
+      .from('venues')
+      .delete()
+      .in('id', ids);
+
+    if (error) throw error;
+
+    if (placeIds.length > 0) {
+      await supabase
+        .from('places')
+        .delete()
+        .in('id', placeIds);
+    }
+  },
+
   async linkCategories(venueId: string, categoryIds: string[]) {
     const links = categoryIds.map(categoryId => ({
       venue_id: venueId,

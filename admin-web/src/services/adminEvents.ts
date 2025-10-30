@@ -193,6 +193,15 @@ export const adminEventsService = {
     if (error) throw error;
   },
 
+  async bulkDelete(ids: string[]) {
+    const { error } = await supabase
+      .from('events')
+      .delete()
+      .in('id', ids);
+
+    if (error) throw error;
+  },
+
   async linkCategories(eventId: string, categoryIds: string[]) {
     const links = categoryIds.map(categoryId => ({
       event_id: eventId,
