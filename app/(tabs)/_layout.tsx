@@ -32,7 +32,14 @@ export default function TabLayout() {
         options={{
           title: 'Categories',
           tabBarIcon: ({ color, size, focused }) => (
-            <Grid3x3 color={color} size={size} strokeWidth={2.5} fill={focused ? color : 'none'} />
+            <View style={focused && styles.activeIconContainer}>
+              <Grid3x3
+                color={focused ? Colors.white : color}
+                size={size}
+                strokeWidth={2.5}
+                fill={focused ? Colors.white : 'none'}
+              />
+            </View>
           ),
         }}
       />
@@ -41,7 +48,14 @@ export default function TabLayout() {
         options={{
           title: t('nav.whatsOn'),
           tabBarIcon: ({ color, size, focused }) => (
-            <Calendar color={color} size={size} strokeWidth={2.5} fill={focused ? color : 'none'} />
+            <View style={focused && styles.activeIconContainer}>
+              <Calendar
+                color={focused ? Colors.white : color}
+                size={size}
+                strokeWidth={2.5}
+                fill={focused ? Colors.white : 'none'}
+              />
+            </View>
           ),
         }}
       />
@@ -68,7 +82,14 @@ export default function TabLayout() {
         options={{
           title: t('nav.playSpots'),
           tabBarIcon: ({ color, size, focused }) => (
-            <MapPinned color={color} size={size} strokeWidth={2.5} fill={focused ? color : 'none'} />
+            <View style={focused && styles.activeIconContainer}>
+              <MapPinned
+                color={focused ? Colors.white : color}
+                size={size}
+                strokeWidth={2.5}
+                fill={focused ? Colors.white : 'none'}
+              />
+            </View>
           ),
         }}
       />
@@ -77,7 +98,14 @@ export default function TabLayout() {
         options={{
           title: t('nav.profile'),
           tabBarIcon: ({ color, size, focused }) => (
-            <User color={color} size={size} strokeWidth={2.5} fill={focused ? color : 'none'} />
+            <View style={focused && styles.activeIconContainer}>
+              <User
+                color={focused ? Colors.white : color}
+                size={size}
+                strokeWidth={2.5}
+                fill={focused ? Colors.white : 'none'}
+              />
+            </View>
           ),
         }}
       />
@@ -144,5 +172,21 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderWidth: 3,
     borderColor: Colors.primary,
+  },
+  activeIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
   },
 });

@@ -371,34 +371,29 @@ export default function DiscoverScreen() {
         <View style={styles.titleRow}>
           <Text style={styles.title}>{t('nav.discover')}</Text>
         </View>
-        <View style={styles.searchRow}>
-          <View style={styles.searchContainer}>
-            <Search size={20} color={Colors.textLight} style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder={t('search.placeholder')}
-              placeholderTextColor={Colors.lightGrey}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-          </View>
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => setShowFilters(!showFilters)}
-          >
-            <SlidersHorizontal
-              size={20}
-              color={hasActiveFilters ? Colors.primary : Colors.textLight}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => setShowCityPicker(!showCityPicker)}
-          >
-            <MapPinIcon size={20} color={selectedCity ? Colors.primary : Colors.textLight} />
-          </TouchableOpacity>
-        </View>
       </LinearGradient>
+
+      <View style={styles.searchSection}>
+        <View style={styles.searchBar}>
+          <Search size={20} color={Colors.textLight} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder={t('search.placeholder')}
+            placeholderTextColor={Colors.lightGrey}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+        <TouchableOpacity
+          style={styles.filterIcon}
+          onPress={() => setShowFilters(!showFilters)}
+        >
+          <SlidersHorizontal
+            size={24}
+            color={hasActiveFilters ? Colors.primary : Colors.textDark}
+          />
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.toggleContainer}>
         <MapListToggle view={viewMode} onToggle={setViewMode} />
@@ -1217,6 +1212,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
+  searchSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: Colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  searchBar: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.inputBackground,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 8,
+  },
+  filterIcon: {
+    width: 48,
+    height: 48,
+    backgroundColor: Colors.inputBackground,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   toggleContainer: {
     paddingHorizontal: 20,
     paddingVertical: 12,
@@ -1290,7 +1313,6 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    paddingVertical: 12,
     fontSize: 16,
     color: Colors.textDark,
   },
