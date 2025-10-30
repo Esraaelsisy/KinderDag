@@ -100,12 +100,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="categories"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
         name="activities"
         options={{
           href: null,
