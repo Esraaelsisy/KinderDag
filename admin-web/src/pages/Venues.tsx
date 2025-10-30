@@ -5,6 +5,7 @@ import { adminVenuesService, Venue } from '../services/adminVenues';
 export default function Venues() {
   const [venues, setVenues] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   useEffect(() => {
     loadVenues();
@@ -21,15 +22,52 @@ export default function Venues() {
     setLoading(false);
   };
 
+  const handleSelectAll = () => {
+    setSelectedIds(selectedIds.length === venues.length ? [] : venues.map((v) => v.id));
+  };
+
+  const handleSelectOne = (id: string) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
+  };
+
+  const handleAdd = () => {
+    alert('Add Venue - Feature coming soon');
+  };
+
+  const handleBulkAdd = () => {
+    alert('Bulk Add Venues - Feature coming soon');
+  };
+
+  const handleEdit = (id: string) => {
+    alert(`Edit Venue ${id} - Feature coming soon`);
+  };
+
+  const handleBulkEdit = () => {
+    alert(`Bulk Edit ${selectedIds.length} Venues - Feature coming soon`);
+  };
+
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this play spot?')) return;
+    if (!confirm('Are you sure you want to delete this venue?')) return;
 
     try {
       await adminVenuesService.delete(id);
       await loadVenues();
     } catch (error) {
       console.error('Failed to delete venue:', error);
-      alert('Failed to delete play spot');
+      alert('Failed to delete venue');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`Delete ${selectedIds.length} venues?`)) return;
+
+    try {
+      await Promise.all(selectedIds.map((id) => adminVenuesService.delete(id)));
+      setSelectedIds([]);
+      await loadVenues();
+    } catch (error) {
+      console.error('Failed to delete venues:', error);
+      alert('Failed to delete venues');
     }
   };
 
@@ -46,8 +84,70 @@ export default function Venues() {
       <div style={{ maxWidth: '1400px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
           <h1 style={{ color: 'white', fontSize: '32px', fontWeight: 'bold' }}>
-            Play Spots ({venues.length})
+            Venues ({venues.length})
           </h1>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              onClick={handleAdd}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#3b82f6',
+                color: 'white',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: '600',
+              }}
+            >
+              + Add Venue
+            </button>
+            <button
+              onClick={handleBulkAdd}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#06b6d4',
+                color: 'white',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: '600',
+              }}
+            >
+              + Bulk Add
+            </button>
+            {selectedIds.length > 0 && (
+              <>
+                <button
+                  onClick={handleBulkEdit}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: '#8b5cf6',
+                    color: 'white',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                  }}
+                >
+                  Bulk Edit ({selectedIds.length})
+                </button>
+                <button
+                  onClick={handleBulkDelete}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: '#ef4444',
+                    color: 'white',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                  }}
+                >
+                  Delete ({selectedIds.length})
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {venues.length === 0 ? (
@@ -59,7 +159,7 @@ export default function Venues() {
             textAlign: 'center',
           }}>
             <p style={{ color: '#64748b', fontSize: '16px' }}>
-              No play spots found. They will appear here once migrated.
+              No venues found. They will appear here once migrated.
             </p>
           </div>
         ) : (
@@ -75,6 +175,14 @@ export default function Venues() {
                 }}
               >
                 <div style={{ display: 'flex', gap: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'start', paddingTop: '8px' }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(venue.id)}
+                      onChange={() => handleSelectOne(venue.id)}
+                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                    />
+                  </div>
                   {venue.images && venue.images.length > 0 && (
                     <img
                       src={venue.images[0]}
@@ -168,6 +276,20 @@ export default function Venues() {
                     </div>
 
                     <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        onClick={() => handleEdit(venue.id)}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: '6px',
+                          backgroundColor: '#3b82f6',
+                          color: 'white',
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                        }}
+                      >
+                        Edit
+                      </button>
                       <button
                         onClick={() => handleDelete(venue.id)}
                         style={{
