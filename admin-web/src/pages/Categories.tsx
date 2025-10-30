@@ -109,7 +109,7 @@ export default function Categories() {
     <AdminLayout>
       <div>
         <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: 'white' }}>Categories Management</h1>
+          <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: 'white' }}>Categories</h1>
           <div style={{ display: 'flex', gap: '12px' }}>
             <button
               onClick={handleAdd}

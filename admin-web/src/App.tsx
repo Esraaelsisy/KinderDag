@@ -5,7 +5,7 @@ import Login from './pages/Login';
 import Venues from './pages/Venues';
 import Events from './pages/Events';
 import Categories from './pages/Categories';
-import Tags from './pages/Tags';
+import Collections from './pages/Tags';
 import Banners from './pages/Banners';
 
 function App() {
@@ -43,7 +43,7 @@ function App() {
         <Route path="/venues" element={session ? <Venues /> : <Navigate to="/login" />} />
         <Route path="/events" element={session ? <Events /> : <Navigate to="/login" />} />
         <Route path="/categories" element={session ? <Categories /> : <Navigate to="/login" />} />
-        <Route path="/tags" element={session ? <Tags /> : <Navigate to="/login" />} />
+        <Route path="/collections" element={session ? <Collections /> : <Navigate to="/login" />} />
         <Route path="/banners" element={session ? <Banners /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>

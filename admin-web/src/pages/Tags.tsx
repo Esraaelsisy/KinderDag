@@ -18,13 +18,9 @@ export default function Tags() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [tagsData, activitiesData] = await Promise.all([
-        adminTagsService.getAll(),
-        adminActivitiesService.getAll(),
-      ]);
-      const sorted = (tagsData || []).sort((a: any, b: any) => a.sort_order - b.sort_order);
-      setTags(sorted);
-      setActivities(activitiesData || []);
+      const collectionsData = await adminTagsService.getAll();
+      const sorted = (collectionsData || []).sort((a: any, b: any) => a.sort_order - b.sort_order);
+      setCollections(sorted);
     } catch (error) {
       console.error('Failed to load data:', error);
     }
@@ -32,7 +28,7 @@ export default function Tags() {
   };
 
   const handleSelectAll = () => {
-    setSelectedIds(selectedIds.length === tags.length ? [] : tags.map((t) => t.id));
+    setSelectedIds(selectedIds.length === collections.length ? [] : collections.map((c) => c.id));
   };
 
   const handleSelectOne = (id: string) => {
@@ -41,13 +37,13 @@ export default function Tags() {
 
   const handleAdd = () => {
     setModalMode('add');
-    setEditingTag(null);
+    setEditingCollection(null);
     setShowModal(true);
   };
 
-  const handleEdit = (tag: any) => {
+  const handleEdit = (collection: any) => {
     setModalMode('edit');
-    setEditingTag(tag);
+    setEditingCollection(collection);
     setShowModal(true);
   };
 
@@ -57,24 +53,24 @@ export default function Tags() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Are you sure? This will unlink all activities from this tag.')) {
+    if (confirm('Are you sure? This will unlink all items from this collection.')) {
       try {
         await adminTagsService.delete(id);
         await loadData();
       } catch (error) {
-        alert('Failed to delete tag');
+        alert('Failed to delete collection');
       }
     }
   };
 
   const handleBulkDelete = async () => {
-    if (confirm(`Delete ${selectedIds.length} tags? This will unlink all their activities.`)) {
+    if (confirm(`Delete ${selectedIds.length} collections? This will unlink all their items.`)) {
       try {
         await adminTagsService.bulkDelete(selectedIds);
         setSelectedIds([]);
         await loadData();
       } catch (error) {
-        alert('Failed to delete tags');
+        alert('Failed to delete collections');
       }
     }
   };
@@ -97,22 +93,22 @@ export default function Tags() {
     }
   };
 
-  const moveTag = async (index: number, direction: 'up' | 'down') => {
-    if ((direction === 'up' && index === 0) || (direction === 'down' && index === tags.length - 1)) {
+  const moveCollection = async (index: number, direction: 'up' | 'down') => {
+    if ((direction === 'up' && index === 0) || (direction === 'down' && index === collections.length - 1)) {
       return;
     }
 
     const newIndex = direction === 'up' ? index - 1 : index + 1;
-    const newTags = [...tags];
-    const [moved] = newTags.splice(index, 1);
-    newTags.splice(newIndex, 0, moved);
+    const newCollections = [...collections];
+    const [moved] = newCollections.splice(index, 1);
+    newCollections.splice(newIndex, 0, moved);
 
-    const updates = newTags.map((tag, idx) => ({
-      id: tag.id,
+    const updates = newCollections.map((collection, idx) => ({
+      id: collection.id,
       sort_order: idx,
     }));
 
-    setTags(newTags);
+    setCollections(newCollections);
 
     try {
       await adminTagsService.updateSortOrders(updates);
@@ -126,10 +122,10 @@ export default function Tags() {
     <AdminLayout>
       <div>
         <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: 'white' }}>Tags Management</h1>
+          <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: 'white' }}>Collections</h1>
           <div style={{ display: 'flex', gap: '12px' }}>
             <button onClick={handleAdd} style={{ padding: '12px 24px', backgroundColor: '#3b82f6', color: 'white', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '600' }}>
-              + Add Tag
+              + Add Collection
             </button>
             {selectedIds.length > 0 && (
               <>
@@ -152,7 +148,7 @@ export default function Tags() {
               <thead style={{ backgroundColor: '#334155' }}>
                 <tr>
                   <th style={{ padding: '16px', textAlign: 'left' }}>
-                    <input type="checkbox" checked={selectedIds.length === tags.length && tags.length > 0} onChange={handleSelectAll} />
+                    <input type="checkbox" checked={selectedIds.length === collections.length && collections.length > 0} onChange={handleSelectAll} />
                   </th>
                   <th style={{ padding: '16px', textAlign: 'left', color: 'white', fontWeight: '600' }}>Sort</th>
                   <th style={{ padding: '16px', textAlign: 'left', color: 'white', fontWeight: '600' }}>Name</th>
@@ -160,20 +156,20 @@ export default function Tags() {
                   <th style={{ padding: '16px', textAlign: 'left', color: 'white', fontWeight: '600' }}>Color</th>
                   <th style={{ padding: '16px', textAlign: 'left', color: 'white', fontWeight: '600' }}>Status</th>
                   <th style={{ padding: '16px', textAlign: 'left', color: 'white', fontWeight: '600' }}>Show on Home</th>
-                  <th style={{ padding: '16px', textAlign: 'left', color: 'white', fontWeight: '600' }}>Activities</th>
+                  <th style={{ padding: '16px', textAlign: 'left', color: 'white', fontWeight: '600' }}>Items</th>
                   <th style={{ padding: '16px', textAlign: 'left', color: 'white', fontWeight: '600' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {tags.map((tag, index) => (
-                  <tr key={tag.id} style={{ borderBottom: '1px solid #334155' }}>
+                {collections.map((collection, index) => (
+                  <tr key={collection.id} style={{ borderBottom: '1px solid #334155' }}>
                     <td style={{ padding: '16px' }}>
-                      <input type="checkbox" checked={selectedIds.includes(tag.id)} onChange={() => handleSelectOne(tag.id)} />
+                      <input type="checkbox" checked={selectedIds.includes(collection.id)} onChange={() => handleSelectOne(collection.id)} />
                     </td>
                     <td style={{ padding: '16px' }}>
                       <div style={{ display: 'flex', gap: '4px' }}>
                         <button
-                          onClick={() => moveTag(index, 'up')}
+                          onClick={() => moveCollection(index, 'up')}
                           disabled={index === 0}
                           style={{
                             padding: '4px 8px',
@@ -188,15 +184,15 @@ export default function Tags() {
                           ↑
                         </button>
                         <button
-                          onClick={() => moveTag(index, 'down')}
-                          disabled={index === tags.length - 1}
+                          onClick={() => moveCollection(index, 'down')}
+                          disabled={index === collections.length - 1}
                           style={{
                             padding: '4px 8px',
-                            backgroundColor: index === tags.length - 1 ? '#334155' : '#3b82f6',
+                            backgroundColor: index === collections.length - 1 ? '#334155' : '#3b82f6',
                             color: 'white',
                             border: 'none',
                             borderRadius: '4px',
-                            cursor: index === tags.length - 1 ? 'not-allowed' : 'pointer',
+                            cursor: index === collections.length - 1 ? 'not-allowed' : 'pointer',
                             fontSize: '12px',
                           }}
                         >
@@ -204,53 +200,53 @@ export default function Tags() {
                         </button>
                       </div>
                     </td>
-                    <td style={{ padding: '16px', color: 'white' }}>{tag.name}</td>
-                    <td style={{ padding: '16px', color: '#94a3b8', fontSize: '12px' }}>{tag.slug}</td>
+                    <td style={{ padding: '16px', color: 'white' }}>{collection.name}</td>
+                    <td style={{ padding: '16px', color: '#94a3b8', fontSize: '12px' }}>{collection.slug}</td>
                     <td style={{ padding: '16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '24px', height: '24px', borderRadius: '4px', backgroundColor: tag.color }}></div>
-                        <span style={{ color: '#94a3b8', fontSize: '12px' }}>{tag.color}</span>
+                        <div style={{ width: '24px', height: '24px', borderRadius: '4px', backgroundColor: collection.color }}></div>
+                        <span style={{ color: '#94a3b8', fontSize: '12px' }}>{collection.color}</span>
                       </div>
                     </td>
                     <td style={{ padding: '16px' }}>
                       <button
-                        onClick={() => toggleActive(tag.id, tag.is_active)}
+                        onClick={() => toggleActive(collection.id, collection.is_active)}
                         style={{
                           padding: '6px 12px',
                           borderRadius: '4px',
-                          backgroundColor: tag.is_active ? '#10b981' : '#64748b',
+                          backgroundColor: collection.is_active ? '#10b981' : '#64748b',
                           color: 'white',
                           border: 'none',
                           cursor: 'pointer',
                           fontSize: '12px',
                         }}
                       >
-                        {tag.is_active ? 'Active' : 'Inactive'}
+                        {collection.is_active ? 'Active' : 'Inactive'}
                       </button>
                     </td>
                     <td style={{ padding: '16px' }}>
                       <button
-                        onClick={() => toggleShowOnHome(tag.id, tag.show_on_home)}
+                        onClick={() => toggleShowOnHome(collection.id, collection.show_on_home)}
                         style={{
                           padding: '6px 12px',
                           borderRadius: '4px',
-                          backgroundColor: tag.show_on_home ? '#10b981' : '#64748b',
+                          backgroundColor: collection.show_on_home ? '#10b981' : '#64748b',
                           color: 'white',
                           border: 'none',
                           cursor: 'pointer',
                           fontSize: '12px',
                         }}
                       >
-                        {tag.show_on_home ? '✓ Shown' : 'Hidden'}
+                        {collection.show_on_home ? '✓ Shown' : 'Hidden'}
                       </button>
                     </td>
-                    <td style={{ padding: '16px', color: '#94a3b8' }}>{tag.activityCount} activities</td>
+                    <td style={{ padding: '16px', color: '#94a3b8' }}>{collection.itemCount || 0} items</td>
                     <td style={{ padding: '16px' }}>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <button onClick={() => handleEdit(tag)} style={{ padding: '6px 12px', backgroundColor: '#10b981', color: 'white', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>
+                        <button onClick={() => handleEdit(collection)} style={{ padding: '6px 12px', backgroundColor: '#10b981', color: 'white', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>
                           Edit
                         </button>
-                        <button onClick={() => handleDelete(tag.id)} style={{ padding: '6px 12px', backgroundColor: '#ef4444', color: 'white', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>
+                        <button onClick={() => handleDelete(collection.id)} style={{ padding: '6px 12px', backgroundColor: '#ef4444', color: 'white', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>
                           Delete
                         </button>
                       </div>
@@ -263,11 +259,10 @@ export default function Tags() {
         )}
 
         {showModal && (
-          <TagModal
+          <CollectionModal
             mode={modalMode}
-            tag={editingTag}
+            collection={editingCollection}
             selectedIds={selectedIds}
-            activities={activities}
             onClose={() => setShowModal(false)}
             onSave={async () => {
               setShowModal(false);
@@ -281,18 +276,17 @@ export default function Tags() {
   );
 }
 
-interface TagModalProps {
+interface CollectionModalProps {
   mode: 'add' | 'edit' | 'bulk-edit';
-  tag: any;
+  collection: any;
   selectedIds: string[];
-  activities: any[];
   onClose: () => void;
   onSave: () => void;
 }
 
-function TagModal({ mode, tag, selectedIds, activities, onClose, onSave }: TagModalProps) {
+function CollectionModal({ mode, collection, selectedIds, onClose, onSave }: CollectionModalProps) {
   const [formData, setFormData] = useState<any>(
-    tag || {
+    collection || {
       name: '',
       slug: '',
       description: '',
@@ -302,10 +296,6 @@ function TagModal({ mode, tag, selectedIds, activities, onClose, onSave }: TagMo
       show_on_home: false,
       sort_order: 0,
     }
-  );
-
-  const [selectedActivities, setSelectedActivities] = useState<string[]>(
-    tag?.activities?.map((link: any) => link.activity.id) || []
   );
 
   const generateSlug = (name: string) => {
@@ -319,25 +309,20 @@ function TagModal({ mode, tag, selectedIds, activities, onClose, onSave }: TagMo
     e.preventDefault();
     try {
       if (mode === 'add') {
-        await adminTagsService.create(formData, selectedActivities);
+        await adminTagsService.create(formData);
       } else if (mode === 'edit') {
-        await adminTagsService.update(tag.id, formData, selectedActivities);
+        await adminTagsService.update(collection.id, formData);
       } else if (mode === 'bulk-edit') {
-        if (selectedActivities.length > 0) {
-          for (const id of selectedIds) {
-            await adminTagsService.unlinkAllActivities(id);
-            await adminTagsService.linkActivities(id, selectedActivities);
-          }
-        }
         const updates: any = {};
         if (formData.is_active !== undefined) updates.is_active = formData.is_active;
+        if (formData.show_on_home !== undefined) updates.show_on_home = formData.show_on_home;
         if (Object.keys(updates).length > 0) {
           await adminTagsService.bulkUpdate(selectedIds, updates);
         }
       }
       onSave();
     } catch (error) {
-      alert('Failed to save tag');
+      alert('Failed to save collection');
     }
   };
 
@@ -397,28 +382,6 @@ function TagModal({ mode, tag, selectedIds, activities, onClose, onSave }: TagMo
               </div>
             </>
           )}
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{ color: 'white', display: 'block', marginBottom: '8px' }}>Activities</label>
-            <div style={{ maxHeight: '200px', overflow: 'auto', border: '1px solid #334155', borderRadius: '8px', padding: '12px' }}>
-              {activities.map((activity) => (
-                <label key={activity.id} style={{ display: 'block', color: 'white', marginBottom: '8px', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={selectedActivities.includes(activity.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedActivities([...selectedActivities, activity.id]);
-                      } else {
-                        setSelectedActivities(selectedActivities.filter((id) => id !== activity.id));
-                      }
-                    }}
-                    style={{ marginRight: '8px' }}
-                  />
-                  {activity.name}
-                </label>
-              ))}
-            </div>
-          </div>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
             <button type="button" onClick={onClose} style={{ padding: '12px 24px', borderRadius: '8px', backgroundColor: '#334155', color: 'white', border: 'none', cursor: 'pointer' }}>
               Cancel
