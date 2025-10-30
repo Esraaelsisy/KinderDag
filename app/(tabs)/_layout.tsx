@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, Calendar, MapPinned, User, Search } from 'lucide-react-native';
+import { Home, Calendar, MapPinned, User, Grid3x3 } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { View, StyleSheet, Platform } from 'react-native';
 import { Colors } from '@/constants/colors';
@@ -32,7 +32,7 @@ export default function TabLayout() {
         options={{
           title: 'Categories',
           tabBarIcon: ({ color, size }) => (
-            <Search color={color} size={size} strokeWidth={2.5} />
+            <Grid3x3 color={color} size={size} strokeWidth={2.5} />
           ),
         }}
       />

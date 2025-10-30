@@ -47,6 +47,7 @@ interface Banner {
 
 export default function HomeScreen() {
   const [banners, setBanners] = useState<Banner[]>([]);
+  const [activeBannerIndex, setActiveBannerIndex] = useState(0);
   const [happeningThisWeek, setHappeningThisWeek] = useState<Activity[]>([]);
   const [aroundYou, setAroundYou] = useState<Activity[]>([]);
   const [seasonal, setSeasonal] = useState<Activity[]>([]);
@@ -458,6 +459,45 @@ export default function HomeScreen() {
     });
   };
 
+  const handleBannerPress = (banner: Banner) => {
+    if (!banner.action_type || !banner.action_value) {
+      return;
+    }
+
+    switch (banner.action_type) {
+      case 'category':
+        router.push({
+          pathname: '/(tabs)/search',
+          params: { categoryId: banner.action_value },
+        });
+        break;
+
+      case 'event':
+        router.push(`/activity/${banner.action_value}?type=event` as any);
+        break;
+
+      case 'venue':
+        router.push(`/activity/${banner.action_value}?type=venue` as any);
+        break;
+
+      case 'tab':
+        const validTabs = ['events', 'venues', 'categories', 'search', 'favorites', 'profile'];
+        if (validTabs.includes(banner.action_value)) {
+          router.push(`/(tabs)/${banner.action_value}` as any);
+        }
+        break;
+
+      case 'url':
+        if (banner.action_value.startsWith('/')) {
+          router.push(banner.action_value as any);
+        }
+        break;
+
+      default:
+        break;
+    }
+  };
+
   const showSeasonal = seasonal.length >= 5;
 
   return (
@@ -487,49 +527,61 @@ export default function HomeScreen() {
       </LinearGradient>
 
       {banners.length > 0 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          pagingEnabled
-          contentContainerStyle={styles.bannersContainer}
-          style={styles.banners}
-        >
-          {banners.map((banner) => (
-            <TouchableOpacity
-              key={banner.id}
-              style={styles.bannerCard}
-              onPress={() => {
-                if (banner.action_type === 'category' && banner.action_value) {
-                  router.push({
-                    pathname: '/(tabs)/search',
-                    params: { categoryId: banner.action_value },
-                  });
-                } else if (banner.action_type === 'url' && banner.action_value) {
-                  router.push(banner.action_value as any);
-                }
-              }}
-            >
-              <Image
-                source={{ uri: banner.image_url }}
-                style={styles.bannerImage}
-                resizeMode="cover"
-              />
-              <LinearGradient
-                colors={['transparent', 'rgba(0,0,0,0.7)']}
-                style={styles.bannerOverlay}
+        <View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            pagingEnabled
+            contentContainerStyle={styles.bannersContainer}
+            style={styles.banners}
+            onScroll={(event) => {
+              const offsetX = event.nativeEvent.contentOffset.x;
+              const index = Math.round(offsetX / screenWidth);
+              setActiveBannerIndex(index);
+            }}
+            scrollEventThrottle={16}
+          >
+            {banners.map((banner) => (
+              <TouchableOpacity
+                key={banner.id}
+                style={styles.bannerCard}
+                onPress={() => handleBannerPress(banner)}
               >
-                <Text style={styles.bannerTitle}>
-                  {language === 'en' ? banner.title_en : banner.title_nl}
-                </Text>
-                {(banner.subtitle_en || banner.subtitle_nl) && (
-                  <Text style={styles.bannerSubtitle}>
-                    {language === 'en' ? banner.subtitle_en : banner.subtitle_nl}
+                <Image
+                  source={{ uri: banner.image_url }}
+                  style={styles.bannerImage}
+                  resizeMode="cover"
+                />
+                <LinearGradient
+                  colors={['transparent', 'rgba(0,0,0,0.7)']}
+                  style={styles.bannerOverlay}
+                >
+                  <Text style={styles.bannerTitle}>
+                    {language === 'en' ? banner.title_en : banner.title_nl}
                   </Text>
-                )}
-              </LinearGradient>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+                  {(banner.subtitle_en || banner.subtitle_nl) && (
+                    <Text style={styles.bannerSubtitle}>
+                      {language === 'en' ? banner.subtitle_en : banner.subtitle_nl}
+                    </Text>
+                  )}
+                </LinearGradient>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          {banners.length > 1 && (
+            <View style={styles.paginationDots}>
+              {banners.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.paginationDot,
+                    index === activeBannerIndex && styles.paginationDotActive,
+                  ]}
+                />
+              ))}
+            </View>
+          )}
+        </View>
       )}
 
       {happeningThisWeek.length > 0 && (
@@ -685,5 +737,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.white,
     opacity: 0.9,
+  },
+  paginationDots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.lightGrey,
+    opacity: 0.5,
+  },
+  paginationDotActive: {
+    width: 24,
+    backgroundColor: Colors.primary,
+    opacity: 1,
   },
 });
