@@ -6,7 +6,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   RefreshControl,
-  Dimensions,
 } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -20,8 +19,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/colors';
 import { Activity } from '@/types';
 import { useRouter } from 'expo-router';
-
-const { width } = Dimensions.get('window');
 
 interface Category {
   id: string;
@@ -73,63 +70,136 @@ export default function HomeScreen() {
       const nextWeek = new Date(today);
       nextWeek.setDate(nextWeek.getDate() + 7);
 
-      const { data, error } = await supabase
-        .from('activities')
-        .select('*')
-        .eq('type', 'event')
+      const { data: events, error } = await supabase
+        .from('events')
+        .select(`
+          id,
+          event_start_datetime,
+          event_end_datetime,
+          place:places!events_place_id_fkey(
+            name,
+            city,
+            location_lat,
+            location_lng,
+            images,
+            description_en,
+            description_nl,
+            age_min,
+            age_max,
+            price_min,
+            price_max,
+            is_free,
+            average_rating,
+            total_reviews
+          )
+        `)
         .gte('event_start_datetime', today.toISOString())
         .lte('event_start_datetime', nextWeek.toISOString())
         .order('event_start_datetime', { ascending: true })
         .limit(10);
 
       if (error) throw error;
-      setHappeningThisWeek(data || []);
+
+      const transformed = (events || []).map((event: any) => ({
+        id: event.id,
+        name: event.place?.name || '',
+        city: event.place?.city || '',
+        location_lat: event.place?.location_lat || 0,
+        location_lng: event.place?.location_lng || 0,
+        images: event.place?.images || [],
+        description_en: event.place?.description_en || '',
+        description_nl: event.place?.description_nl || '',
+        age_min: event.place?.age_min,
+        age_max: event.place?.age_max,
+        price_min: event.place?.price_min,
+        price_max: event.place?.price_max,
+        is_free: event.place?.is_free || false,
+        average_rating: event.place?.average_rating,
+        total_reviews: event.place?.total_reviews || 0,
+        type: 'event',
+        event_start_datetime: event.event_start_datetime,
+        event_end_datetime: event.event_end_datetime,
+      }));
+
+      setHappeningThisWeek(transformed);
     } catch (error) {
       console.error('Error loading happening this week:', error);
+      setHappeningThisWeek([]);
     }
   };
 
   const loadAroundYou = async () => {
     try {
-      if (!profile?.location_lat || !profile?.location_lng) {
-        const { data, error } = await supabase
-          .from('activities')
-          .select('*')
-          .eq('type', 'venue')
-          .limit(10);
-
-        if (error) throw error;
-        setAroundYou(data || []);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('activities')
-        .select('*')
-        .eq('type', 'venue')
-        .limit(10);
+      const { data: venues, error } = await supabase
+        .from('venues')
+        .select(`
+          id,
+          place:places!venues_place_id_fkey(
+            name,
+            city,
+            location_lat,
+            location_lng,
+            images,
+            description_en,
+            description_nl,
+            age_min,
+            age_max,
+            price_min,
+            price_max,
+            is_free,
+            average_rating,
+            total_reviews,
+            is_indoor,
+            is_outdoor
+          )
+        `)
+        .limit(20);
 
       if (error) throw error;
 
-      const sorted = (data || []).sort((a, b) => {
-        const distA = calculateDistance(
-          profile.location_lat!,
-          profile.location_lng!,
-          a.location_lat,
-          a.location_lng
-        );
-        const distB = calculateDistance(
-          profile.location_lat!,
-          profile.location_lng!,
-          b.location_lat,
-          b.location_lng
-        );
-        return distA - distB;
-      });
+      let transformed = (venues || []).map((venue: any) => ({
+        id: venue.id,
+        name: venue.place?.name || '',
+        city: venue.place?.city || '',
+        location_lat: venue.place?.location_lat || 0,
+        location_lng: venue.place?.location_lng || 0,
+        images: venue.place?.images || [],
+        description_en: venue.place?.description_en || '',
+        description_nl: venue.place?.description_nl || '',
+        age_min: venue.place?.age_min,
+        age_max: venue.place?.age_max,
+        price_min: venue.place?.price_min,
+        price_max: venue.place?.price_max,
+        is_free: venue.place?.is_free || false,
+        average_rating: venue.place?.average_rating,
+        total_reviews: venue.place?.total_reviews || 0,
+        is_indoor: venue.place?.is_indoor,
+        is_outdoor: venue.place?.is_outdoor,
+        type: 'venue',
+      }));
 
-      setAroundYou(sorted);
+      if (profile?.location_lat && profile?.location_lng) {
+        transformed = transformed.sort((a, b) => {
+          const distA = calculateDistance(
+            profile.location_lat!,
+            profile.location_lng!,
+            a.location_lat,
+            a.location_lng
+          );
+          const distB = calculateDistance(
+            profile.location_lat!,
+            profile.location_lng!,
+            b.location_lat,
+            b.location_lng
+          );
+          return distA - distB;
+        });
+      }
+
+      setAroundYou(transformed.slice(0, 10));
     } catch (error) {
       console.error('Error loading around you:', error);
+      setAroundYou([]);
     }
   };
 
@@ -140,25 +210,84 @@ export default function HomeScreen() {
         .select('id')
         .in('slug', ['seasonal', 'sinterklaas', 'autumn', 'winter', 'spring', 'summer']);
 
-      if (!tagsData || tagsData.length === 0) return;
+      if (!tagsData || tagsData.length === 0) {
+        setSeasonal([]);
+        return;
+      }
 
       const tagIds = tagsData.map(t => t.id);
 
-      const { data, error } = await supabase
-        .from('activity_tags')
-        .select('activity:activities(*)')
-        .in('tag_id', tagIds)
-        .limit(10);
+      const [venueLinks, eventLinks] = await Promise.all([
+        supabase
+          .from('venue_tag_links')
+          .select(`
+            venue:venues!venue_tag_links_venue_id_fkey(
+              id,
+              place:places!venues_place_id_fkey(*)
+            )
+          `)
+          .in('tag_id', tagIds)
+          .limit(5),
+        supabase
+          .from('event_tag_links')
+          .select(`
+            event:events!event_tag_links_event_id_fkey(
+              id,
+              event_start_datetime,
+              event_end_datetime,
+              place:places!events_place_id_fkey(*)
+            )
+          `)
+          .in('tag_id', tagIds)
+          .limit(5),
+      ]);
 
-      if (error) throw error;
+      const venues = (venueLinks.data || [])
+        .map((link: any) => link.venue)
+        .filter(Boolean)
+        .map((venue: any) => ({
+          id: venue.id,
+          name: venue.place?.name || '',
+          city: venue.place?.city || '',
+          location_lat: venue.place?.location_lat || 0,
+          location_lng: venue.place?.location_lng || 0,
+          images: venue.place?.images || [],
+          type: 'venue',
+          age_min: venue.place?.age_min,
+          age_max: venue.place?.age_max,
+          price_min: venue.place?.price_min,
+          price_max: venue.place?.price_max,
+          is_free: venue.place?.is_free || false,
+          average_rating: venue.place?.average_rating,
+          total_reviews: venue.place?.total_reviews || 0,
+        }));
 
-      const activities = (data || [])
-        .map((item: any) => item.activity)
-        .filter(Boolean);
+      const events = (eventLinks.data || [])
+        .map((link: any) => link.event)
+        .filter(Boolean)
+        .map((event: any) => ({
+          id: event.id,
+          name: event.place?.name || '',
+          city: event.place?.city || '',
+          location_lat: event.place?.location_lat || 0,
+          location_lng: event.place?.location_lng || 0,
+          images: event.place?.images || [],
+          type: 'event',
+          event_start_datetime: event.event_start_datetime,
+          event_end_datetime: event.event_end_datetime,
+          age_min: event.place?.age_min,
+          age_max: event.place?.age_max,
+          price_min: event.place?.price_min,
+          price_max: event.place?.price_max,
+          is_free: event.place?.is_free || false,
+          average_rating: event.place?.average_rating,
+          total_reviews: event.place?.total_reviews || 0,
+        }));
 
-      setSeasonal(activities);
+      setSeasonal([...venues, ...events]);
     } catch (error) {
       console.error('Error loading seasonal:', error);
+      setSeasonal([]);
     }
   };
 
@@ -169,32 +298,91 @@ export default function HomeScreen() {
         .select('id')
         .in('slug', ['featured', 'hot-pick', 'dont-miss']);
 
-      if (!tagsData || tagsData.length === 0) return;
+      if (!tagsData || tagsData.length === 0) {
+        setQualityTime([]);
+        return;
+      }
 
       const tagIds = tagsData.map(t => t.id);
 
-      const { data, error } = await supabase
-        .from('activity_tags')
-        .select('activity:activities(*)')
-        .in('tag_id', tagIds)
-        .limit(10);
+      const [venueLinks, eventLinks] = await Promise.all([
+        supabase
+          .from('venue_tag_links')
+          .select(`
+            venue:venues!venue_tag_links_venue_id_fkey(
+              id,
+              place:places!venues_place_id_fkey(*)
+            )
+          `)
+          .in('tag_id', tagIds)
+          .limit(5),
+        supabase
+          .from('event_tag_links')
+          .select(`
+            event:events!event_tag_links_event_id_fkey(
+              id,
+              event_start_datetime,
+              event_end_datetime,
+              place:places!events_place_id_fkey(*)
+            )
+          `)
+          .in('tag_id', tagIds)
+          .limit(5),
+      ]);
 
-      if (error) throw error;
+      const venues = (venueLinks.data || [])
+        .map((link: any) => link.venue)
+        .filter(Boolean)
+        .map((venue: any) => ({
+          id: venue.id,
+          name: venue.place?.name || '',
+          city: venue.place?.city || '',
+          location_lat: venue.place?.location_lat || 0,
+          location_lng: venue.place?.location_lng || 0,
+          images: venue.place?.images || [],
+          type: 'venue',
+          age_min: venue.place?.age_min,
+          age_max: venue.place?.age_max,
+          price_min: venue.place?.price_min,
+          price_max: venue.place?.price_max,
+          is_free: venue.place?.is_free || false,
+          average_rating: venue.place?.average_rating,
+          total_reviews: venue.place?.total_reviews || 0,
+        }));
 
-      const activities = (data || [])
-        .map((item: any) => item.activity)
-        .filter(Boolean);
+      const events = (eventLinks.data || [])
+        .map((link: any) => link.event)
+        .filter(Boolean)
+        .map((event: any) => ({
+          id: event.id,
+          name: event.place?.name || '',
+          city: event.place?.city || '',
+          location_lat: event.place?.location_lat || 0,
+          location_lng: event.place?.location_lng || 0,
+          images: event.place?.images || [],
+          type: 'event',
+          event_start_datetime: event.event_start_datetime,
+          event_end_datetime: event.event_end_datetime,
+          age_min: event.place?.age_min,
+          age_max: event.place?.age_max,
+          price_min: event.place?.price_min,
+          price_max: event.place?.price_max,
+          is_free: event.place?.is_free || false,
+          average_rating: event.place?.average_rating,
+          total_reviews: event.place?.total_reviews || 0,
+        }));
 
-      setQualityTime(activities);
+      setQualityTime([...venues, ...events]);
     } catch (error) {
       console.error('Error loading quality time:', error);
+      setQualityTime([]);
     }
   };
 
   const loadCategories = async () => {
     try {
       const { data, error } = await supabase
-        .from('categories')
+        .from('activity_categories')
         .select('*')
         .order('sort_order', { ascending: true })
         .limit(20);
@@ -203,6 +391,7 @@ export default function HomeScreen() {
       setCategories(data || []);
     } catch (error) {
       console.error('Error loading categories:', error);
+      setCategories([]);
     }
   };
 
