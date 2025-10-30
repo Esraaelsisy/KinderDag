@@ -11,7 +11,7 @@ export default function TabLayout() {
     <Tabs
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: Colors.secondary,
+          tabBarActiveTintColor: Colors.primary,
           tabBarInactiveTintColor: Colors.lightGrey,
           tabBarStyle: {
             backgroundColor: Colors.white,
@@ -53,7 +53,7 @@ export default function TabLayout() {
             <View style={styles.centerIconContainer}>
               <View style={[styles.centerIcon, !focused && styles.centerIconInactive]}>
                 <Home
-                  color={focused ? Colors.white : Colors.secondary}
+                  color={focused ? Colors.white : Colors.primary}
                   size={28}
                   strokeWidth={2.5}
                 />
@@ -143,6 +143,6 @@ const styles = StyleSheet.create({
   centerIconInactive: {
     backgroundColor: Colors.white,
     borderWidth: 3,
-    borderColor: Colors.secondary,
+    borderColor: Colors.primary,
   },
 });

@@ -4,13 +4,12 @@ import { adminTagsService, Tag } from '../services/adminTags';
 import { adminActivitiesService } from '../services/adminActivities';
 
 export default function Tags() {
-  const [tags, setTags] = useState<any[]>([]);
-  const [activities, setActivities] = useState<any[]>([]);
+  const [collections, setCollections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState<'add' | 'edit' | 'bulk-edit'>('add');
-  const [editingTag, setEditingTag] = useState<any>(null);
+  const [editingCollection, setEditingCollection] = useState<any>(null);
 
   useEffect(() => {
     loadData();

@@ -14,108 +14,96 @@ export interface Tag {
 
 export const adminTagsService = {
   /**
-   * Get all tags with activity count
+   * Get all collections with venue and event count
    */
   async getAll() {
-    const { data: tags, error } = await supabase
-      .from('tags')
+    const { data: collections, error } = await supabase
+      .from('collections')
       .select('*')
       .order('sort_order');
 
     if (error) throw error;
-    if (!tags) return [];
+    if (!collections) return [];
 
-    // Fetch activity links
-    const { data: activityLinks } = await supabase
-      .from('activity_tag_links')
+    // Fetch venue and event links
+    const { data: venueLinks } = await supabase
+      .from('venue_collection_links')
       .select('*');
 
-    const { data: allActivities } = await supabase
-      .from('activities')
+    const { data: eventLinks } = await supabase
+      .from('event_collection_links')
       .select('*');
 
-    // Transform data to include activity count
-    return tags.map(tag => {
-      const links = activityLinks
-        ?.filter(link => link.tag_id === tag.id)
+    const { data: allVenues } = await supabase
+      .from('venues')
+      .select('*');
+
+    const { data: allEvents } = await supabase
+      .from('events')
+      .select('*');
+
+    // Transform data to include venue and event count
+    return collections.map(collection => {
+      const vLinks = venueLinks
+        ?.filter(link => link.collection_id === collection.id)
         .map(link => ({
           ...link,
-          activity: allActivities?.find(act => act.id === link.activity_id)
+          venue: allVenues?.find(v => v.id === link.venue_id)
         })) || [];
+
+      const eLinks = eventLinks
+        ?.filter(link => link.collection_id === collection.id)
+        .map(link => ({
+          ...link,
+          event: allEvents?.find(e => e.id === link.event_id)
+        })) || [];
+
       return {
-        ...tag,
-        activities: links,
-        activityCount: links.length,
+        ...collection,
+        venues: vLinks,
+        events: eLinks,
+        itemCount: vLinks.length + eLinks.length,
       };
     });
   },
 
   /**
-   * Get single tag by ID
+   * Get single collection by ID
    */
   async getById(id: string) {
-    const { data: tag, error } = await supabase
-      .from('tags')
+    const { data: collection, error } = await supabase
+      .from('collections')
       .select('*')
       .eq('id', id)
       .maybeSingle();
 
     if (error) throw error;
-    if (!tag) return null;
+    if (!collection) return null;
 
-    // Fetch activity links
-    const { data: activityLinks } = await supabase
-      .from('activity_tag_links')
-      .select('*')
-      .eq('tag_id', id);
-
-    let activities = [];
-    if (activityLinks && activityLinks.length > 0) {
-      const activityIds = activityLinks.map(link => link.activity_id);
-      const { data: acts } = await supabase
-        .from('activities')
-        .select('*')
-        .in('id', activityIds);
-
-      activities = activityLinks.map(link => ({
-        ...link,
-        activity: acts?.find(act => act.id === link.activity_id)
-      }));
-    }
-
-    return {
-      ...tag,
-      activities,
-    };
+    return collection;
   },
 
   /**
-   * Create new tag
+   * Create new collection
    */
-  async create(tag: Tag, activityIds: string[] = []) {
+  async create(collection: Tag) {
     const { data, error } = await supabase
-      .from('tags')
-      .insert([tag])
+      .from('collections')
+      .insert([collection])
       .select()
       .single();
 
     if (error) throw error;
-
-    // Link activities
-    if (activityIds.length > 0) {
-      await this.linkActivities(data.id, activityIds);
-    }
-
     return data;
   },
 
   /**
-   * Bulk create tags
+   * Bulk create collections
    */
-  async bulkCreate(tags: Tag[]) {
+  async bulkCreate(collections: Tag[]) {
     const { data, error } = await supabase
-      .from('tags')
-      .insert(tags)
+      .from('collections')
+      .insert(collections)
       .select();
 
     if (error) throw error;
@@ -123,35 +111,26 @@ export const adminTagsService = {
   },
 
   /**
-   * Update tag
+   * Update collection
    */
-  async update(id: string, tag: Partial<Tag>, activityIds?: string[]) {
+  async update(id: string, collection: Partial<Tag>) {
     const { data, error } = await supabase
-      .from('tags')
-      .update(tag)
+      .from('collections')
+      .update(collection)
       .eq('id', id)
       .select()
       .single();
 
     if (error) throw error;
-
-    // Update activities if provided
-    if (activityIds !== undefined) {
-      await this.unlinkAllActivities(id);
-      if (activityIds.length > 0) {
-        await this.linkActivities(id, activityIds);
-      }
-    }
-
     return data;
   },
 
   /**
-   * Bulk update tags
+   * Bulk update collections
    */
   async bulkUpdate(ids: string[], updates: Partial<Tag>) {
     const { data, error } = await supabase
-      .from('tags')
+      .from('collections')
       .update(updates)
       .in('id', ids)
       .select();
@@ -161,11 +140,11 @@ export const adminTagsService = {
   },
 
   /**
-   * Delete tag
+   * Delete collection
    */
   async delete(id: string) {
     const { error } = await supabase
-      .from('tags')
+      .from('collections')
       .delete()
       .eq('id', id);
 
@@ -173,11 +152,11 @@ export const adminTagsService = {
   },
 
   /**
-   * Bulk delete tags
+   * Bulk delete collections
    */
   async bulkDelete(ids: string[]) {
     const { error } = await supabase
-      .from('tags')
+      .from('collections')
       .delete()
       .in('id', ids);
 
@@ -185,40 +164,12 @@ export const adminTagsService = {
   },
 
   /**
-   * Link activities to tag
-   */
-  async linkActivities(tagId: string, activityIds: string[]) {
-    const links = activityIds.map(activityId => ({
-      tag_id: tagId,
-      activity_id: activityId,
-    }));
-
-    const { error } = await supabase
-      .from('activity_tag_links')
-      .insert(links);
-
-    if (error) throw error;
-  },
-
-  /**
-   * Unlink all activities from tag
-   */
-  async unlinkAllActivities(tagId: string) {
-    const { error } = await supabase
-      .from('activity_tag_links')
-      .delete()
-      .eq('tag_id', tagId);
-
-    if (error) throw error;
-  },
-
-  /**
-   * Update sort orders for multiple tags
+   * Update sort orders for multiple collections
    */
   async updateSortOrders(updates: { id: string; sort_order: number }[]) {
     for (const update of updates) {
       const { error } = await supabase
-        .from('tags')
+        .from('collections')
         .update({ sort_order: update.sort_order })
         .eq('id', update.id);
 
