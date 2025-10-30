@@ -4,6 +4,8 @@ import { supabase } from './lib/supabase';
 import Login from './pages/Login';
 import Venues from './pages/Venues';
 import Events from './pages/Events';
+import AddEvent from './pages/AddEvent';
+import EditEvent from './pages/EditEvent';
 import Categories from './pages/Categories';
 import Collections from './pages/Tags';
 import Banners from './pages/Banners';
@@ -42,6 +44,8 @@ function App() {
         <Route path="/" element={session ? <Navigate to="/venues" /> : <Navigate to="/login" />} />
         <Route path="/venues" element={session ? <Venues /> : <Navigate to="/login" />} />
         <Route path="/events" element={session ? <Events /> : <Navigate to="/login" />} />
+        <Route path="/events/add" element={session ? <AddEvent /> : <Navigate to="/login" />} />
+        <Route path="/events/edit/:id" element={session ? <EditEvent /> : <Navigate to="/login" />} />
         <Route path="/categories" element={session ? <Categories /> : <Navigate to="/login" />} />
         <Route path="/collections" element={session ? <Collections /> : <Navigate to="/login" />} />
         <Route path="/banners" element={session ? <Banners /> : <Navigate to="/login" />} />

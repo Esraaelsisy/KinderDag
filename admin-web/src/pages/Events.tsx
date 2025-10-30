@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../components/AdminLayout';
 import { adminEventsService, Event } from '../services/adminEvents';
 
 export default function Events() {
+  const navigate = useNavigate();
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -31,19 +33,23 @@ export default function Events() {
   };
 
   const handleAdd = () => {
-    alert('Add Event - Feature coming soon');
+    navigate('/events/add');
   };
 
   const handleBulkAdd = () => {
-    alert('Bulk Add Events - Feature coming soon');
+    alert('Bulk Add Events - Please add events individually for now');
   };
 
   const handleEdit = (id: string) => {
-    alert(`Edit Event ${id} - Feature coming soon`);
+    navigate(`/events/edit/${id}`);
   };
 
   const handleBulkEdit = () => {
-    alert(`Bulk Edit ${selectedIds.length} Events - Feature coming soon`);
+    if (selectedIds.length === 0) {
+      alert('Please select events to edit');
+      return;
+    }
+    alert(`Bulk Edit - Please edit ${selectedIds.length} events individually for now`);
   };
 
   const handleDelete = async (id: string) => {
