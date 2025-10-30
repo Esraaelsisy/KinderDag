@@ -13,8 +13,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   const navItems = [
-    { path: '/venues', label: 'Venues' },
-    { path: '/events', label: "Events" },
+    { path: '/venues', label: 'Play Spots' },
+    { path: '/events', label: "What's On" },
     { path: '/categories', label: 'Categories' },
     { path: '/tags', label: 'Tags' },
     { path: '/banners', label: 'Banners' },

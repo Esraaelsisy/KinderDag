@@ -53,7 +53,6 @@ export default function ActivityCard({
   const [isToggling, setIsToggling] = useState(false);
 
   const reviewsCount = reviewCount || reviews || 0;
-  const safeRating = rating || 0;
 
   useEffect(() => {
     if (user) {
@@ -202,7 +201,7 @@ export default function ActivityCard({
           <View style={styles.row}>
             <Star size={14} color={Colors.warning} fill={Colors.warning} />
             <Text style={styles.rating}>
-              {safeRating.toFixed(1)} ({reviewsCount})
+              {rating.toFixed(1)} ({reviewsCount})
             </Text>
           </View>
           <View style={styles.tags}>

@@ -16,6 +16,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import FilterChips from '@/components/FilterChips';
 import FilterButton from '@/components/FilterButton';
+import FloatingSearchButton from '@/components/FloatingSearchButton';
 import EventsFilterModal, { EventsFilters } from '@/components/EventsFilterModal';
 import ActivityCard from '@/components/ActivityCard';
 import { eventsService } from '@/services/events';
@@ -371,6 +372,7 @@ export default function EventsScreen() {
           </View>
         )}
       </ScrollView>
+      <FloatingSearchButton />
     </View>
   );
 }

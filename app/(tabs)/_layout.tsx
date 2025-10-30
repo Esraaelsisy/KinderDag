@@ -1,39 +1,47 @@
 import { Tabs } from 'expo-router';
-import { Home, Calendar, MapPinned, User, Grid3x3 } from 'lucide-react-native';
+import { Home, Search, Heart, Calendar, MapPinned } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { View, StyleSheet, Platform } from 'react-native';
 import { Colors } from '@/constants/colors';
+import FloatingChatButton from '@/components/FloatingChatButton';
 
 export default function TabLayout() {
   const { t } = useLanguage();
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: Colors.secondary,
-        tabBarInactiveTintColor: Colors.lightGrey,
-        tabBarStyle: {
-          backgroundColor: Colors.white,
-          borderTopWidth: 1,
-          borderTopColor: Colors.border,
-          paddingTop: 8,
-          paddingBottom: Platform.OS === 'ios' ? 20 : 8,
-          height: Platform.OS === 'ios' ? 85 : 70,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '600',
-        },
-      }}
-    >
+    <>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: Colors.secondary,
+          tabBarInactiveTintColor: Colors.lightGrey,
+          tabBarStyle: {
+            backgroundColor: Colors.white,
+            borderTopWidth: 1,
+            borderTopColor: Colors.border,
+            paddingTop: 8,
+            paddingBottom: Platform.OS === 'ios' ? 20 : 8,
+            height: Platform.OS === 'ios' ? 85 : 70,
+          },
+          tabBarLabelStyle: {
+            fontSize: 12,
+            fontWeight: '600',
+          },
+        }}
+      >
       <Tabs.Screen
-        name="categories"
+        name="search"
         options={{
-          title: 'Categories',
+          title: t('nav.explore'),
           tabBarIcon: ({ color, size }) => (
-            <Grid3x3 color={color} size={size} strokeWidth={2.5} />
+            <Search color={color} size={size} strokeWidth={2.5} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="discover"
+        options={{
+          href: null,
         }}
       />
       <Tabs.Screen
@@ -73,28 +81,22 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="favorites"
         options={{
-          title: 'Profile',
+          title: t('nav.saved'),
           tabBarIcon: ({ color, size }) => (
-            <User color={color} size={size} strokeWidth={2.5} />
+            <Heart color={color} size={size} strokeWidth={2.5} />
           ),
         }}
       />
       <Tabs.Screen
-        name="favorites"
+        name="profile"
         options={{
           href: null,
         }}
       />
       <Tabs.Screen
-        name="search"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="discover"
+        name="categories"
         options={{
           href: null,
         }}
@@ -111,7 +113,9 @@ export default function TabLayout() {
           href: null,
         }}
       />
-    </Tabs>
+      </Tabs>
+      <FloatingChatButton />
+    </>
   );
 }
 
