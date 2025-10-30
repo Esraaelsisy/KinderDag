@@ -327,7 +327,7 @@ export default function VenuesScreen() {
     <View style={styles.container}>
       <Header
         title={language === 'en' ? 'Play Spots near you' : 'Speelplekken'}
-        showProfileIcon={true}
+        showProfileIcon={false}
       />
 
       <View style={styles.searchContainer}>

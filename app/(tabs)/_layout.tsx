@@ -31,8 +31,8 @@ export default function TabLayout() {
         name="categories"
         options={{
           title: 'Categories',
-          tabBarIcon: ({ color, size }) => (
-            <Grid3x3 color={color} size={size} strokeWidth={2.5} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Grid3x3 color={color} size={size} strokeWidth={2.5} fill={focused ? color : 'none'} />
           ),
         }}
       />
@@ -40,8 +40,8 @@ export default function TabLayout() {
         name="events"
         options={{
           title: t('nav.whatsOn'),
-          tabBarIcon: ({ color, size }) => (
-            <Calendar color={color} size={size} strokeWidth={2.5} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Calendar color={color} size={size} strokeWidth={2.5} fill={focused ? color : 'none'} />
           ),
         }}
       />
@@ -67,8 +67,8 @@ export default function TabLayout() {
         name="venues"
         options={{
           title: t('nav.playSpots'),
-          tabBarIcon: ({ color, size }) => (
-            <MapPinned color={color} size={size} strokeWidth={2.5} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <MapPinned color={color} size={size} strokeWidth={2.5} fill={focused ? color : 'none'} />
           ),
         }}
       />
@@ -76,8 +76,8 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: t('nav.profile'),
-          tabBarIcon: ({ color, size }) => (
-            <User color={color} size={size} strokeWidth={2.5} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <User color={color} size={size} strokeWidth={2.5} fill={focused ? color : 'none'} />
           ),
         }}
       />

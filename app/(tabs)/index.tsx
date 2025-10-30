@@ -620,138 +620,6 @@ export default function HomeScreen() {
         </TouchableOpacity>
       )}
 
-      <View style={styles.categoriesSection}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>{t('home.categories')}</Text>
-          <TouchableOpacity onPress={() => router.push('/(tabs)/categories')}>
-            <Text style={styles.seeAllLink}>
-              {language === 'en' ? 'See All' : 'Bekijk Alles'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <FlatList
-          ref={categoriesFlatListRef}
-          data={categories}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoriesList}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item: category, index }) => {
-            const categoryEmojis: Record<string, string> = {
-              'spring fun': '🌸',
-              'autumn fun': '🍂',
-              'loyalty program': '⭐',
-              'wednesday pass': '📅',
-              'exclusively on kidzapp': '💎',
-              'certified autism centers': '🤝',
-              'afterschool activities': '🎒',
-              'animal fun': '🐾',
-              'art, music & dance': '🎨',
-              'baby & toddler': '👶',
-              'birthdays': '🎂',
-              'courses, camps & workshops': '📚',
-              'eat out': '🍽️',
-              'explore the city': '🗺️',
-              'free for people of determination': '💚',
-              'fun & play': '🎮',
-              'markets & fairs': '🎪',
-              'outdoor & nature': '🌳',
-              'parent zone': '👨‍👩‍👧',
-              'schools & nurseries': '🏫',
-              'shows & cinema': '🎬',
-              'sports & active': '⚽',
-              'theme parks': '🎢',
-              'water fun': '💦',
-              'fun at home': '🏠',
-              'teens': '🎧',
-            };
-            const emoji = categoryEmojis[category.name_en.toLowerCase()] || '🎯';
-
-            return (
-              <CategoryButton
-                nameEn={category.name_en}
-                nameNl={category.name_nl}
-                color={category.color}
-                emoji={emoji}
-                isActive={selectedCategoryId === category.id}
-                onPress={() => {
-                  if (selectedCategoryId === category.id) {
-                    setSelectedCategoryId(null);
-                    setCategoryActivities([]);
-                  } else {
-                    setSelectedCategoryId(category.id);
-                    loadCategoryActivities(category.id);
-
-                    // Scroll to selected category
-                    setTimeout(() => {
-                      categoriesFlatListRef.current?.scrollToIndex({
-                        index,
-                        animated: true,
-                        viewPosition: 0.5,
-                      });
-                    }, 100);
-                  }
-                }}
-              />
-            );
-          }}
-          onScrollToIndexFailed={(info) => {
-            setTimeout(() => {
-              categoriesFlatListRef.current?.scrollToOffset({
-                offset: info.averageItemLength * info.index,
-                animated: true,
-              });
-            }, 100);
-          }}
-        />
-
-        {selectedCategoryId && (
-        <View style={styles.categoryActivitiesContainer}>
-          <View style={styles.bubblePointer} />
-          {categoryActivities.length > 0 ? (
-            <>
-              <FlatList
-                data={categoryActivities}
-                renderItem={({ item }) => renderActivity(item)}
-                keyExtractor={(item) => item.id}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.categoryActivitiesList}
-              />
-              <TouchableOpacity
-                style={styles.seeMoreButton}
-                onPress={() => {
-                  const selectedCategory = categories.find(c => c.id === selectedCategoryId);
-                  if (selectedCategory) {
-                    router.push({
-                      pathname: '/(tabs)/discover',
-                      params: {
-                        categoryId: selectedCategory.id,
-                        categoryName: language === 'en' ? selectedCategory.name_en : selectedCategory.name_nl
-                      }
-                    });
-                  }
-                }}
-              >
-                <Text style={styles.seeMoreText}>
-                  {language === 'en' ? 'See More' : 'Bekijk Meer'}
-                </Text>
-                <ArrowRight size={18} color={Colors.secondary} strokeWidth={2.5} />
-              </TouchableOpacity>
-            </>
-          ) : (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyStateText}>
-                {language === 'en'
-                  ? 'No activities for your city added yet. Stay tuned!'
-                  : 'Nog geen activiteiten voor jouw stad toegevoegd. Blijf op de hoogte!'}
-              </Text>
-            </View>
-          )}
-        </View>
-        )}
-      </View>
-
       {thisWeekendEvents.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -952,6 +820,137 @@ export default function HomeScreen() {
           />
         </View>
       )}
+
+      <View style={styles.categoriesSection}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>{t('home.categories')}</Text>
+          <TouchableOpacity onPress={() => router.push('/(tabs)/categories')}>
+            <Text style={styles.seeAllLink}>
+              {language === 'en' ? 'See All' : 'Bekijk Alles'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <FlatList
+          ref={categoriesFlatListRef}
+          data={categories}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoriesList}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item: category, index }) => {
+            const categoryEmojis: Record<string, string> = {
+              'spring fun': '🌸',
+              'autumn fun': '🍂',
+              'loyalty program': '⭐',
+              'wednesday pass': '📅',
+              'exclusively on kidzapp': '💎',
+              'certified autism centers': '🤝',
+              'afterschool activities': '🎒',
+              'animal fun': '🐾',
+              'art, music & dance': '🎨',
+              'baby & toddler': '👶',
+              'birthdays': '🎂',
+              'courses, camps & workshops': '📚',
+              'eat out': '🍽️',
+              'explore the city': '🗺️',
+              'free for people of determination': '💚',
+              'fun & play': '🎮',
+              'markets & fairs': '🎪',
+              'outdoor & nature': '🌳',
+              'parent zone': '👨‍👩‍👧',
+              'schools & nurseries': '🏫',
+              'shows & cinema': '🎬',
+              'sports & active': '⚽',
+              'theme parks': '🎢',
+              'water fun': '💦',
+              'fun at home': '🏠',
+              'teens': '🎧',
+            };
+            const emoji = categoryEmojis[category.name_en.toLowerCase()] || '🎯';
+
+            return (
+              <CategoryButton
+                nameEn={category.name_en}
+                nameNl={category.name_nl}
+                color={category.color}
+                emoji={emoji}
+                isActive={selectedCategoryId === category.id}
+                onPress={() => {
+                  if (selectedCategoryId === category.id) {
+                    setSelectedCategoryId(null);
+                    setCategoryActivities([]);
+                  } else {
+                    setSelectedCategoryId(category.id);
+                    loadCategoryActivities(category.id);
+
+                    setTimeout(() => {
+                      categoriesFlatListRef.current?.scrollToIndex({
+                        index,
+                        animated: true,
+                        viewPosition: 0.5,
+                      });
+                    }, 100);
+                  }
+                }}
+              />
+            );
+          }}
+          onScrollToIndexFailed={(info) => {
+            setTimeout(() => {
+              categoriesFlatListRef.current?.scrollToOffset({
+                offset: info.averageItemLength * info.index,
+                animated: true,
+              });
+            }, 100);
+          }}
+        />
+
+        {selectedCategoryId && (
+        <View style={styles.categoryActivitiesContainer}>
+          <View style={styles.bubblePointer} />
+          {categoryActivities.length > 0 ? (
+            <>
+              <FlatList
+                data={categoryActivities}
+                renderItem={({ item }) => renderActivity(item)}
+                keyExtractor={(item) => item.id}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.categoryActivitiesList}
+              />
+              <TouchableOpacity
+                style={styles.seeMoreButton}
+                onPress={() => {
+                  const selectedCategory = categories.find(c => c.id === selectedCategoryId);
+                  if (selectedCategory) {
+                    router.push({
+                      pathname: '/(tabs)/discover',
+                      params: {
+                        categoryId: selectedCategory.id,
+                        categoryName: language === 'en' ? selectedCategory.name_en : selectedCategory.name_nl
+                      }
+                    });
+                  }
+                }}
+              >
+                <Text style={styles.seeMoreText}>
+                  {language === 'en' ? 'See More' : 'Bekijk Meer'}
+                </Text>
+                <ArrowRight size={18} color={Colors.secondary} strokeWidth={2.5} />
+              </TouchableOpacity>
+            </>
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateText}>
+                {language === 'en'
+                  ? 'No activities for your city added yet. Stay tuned!'
+                  : 'Nog geen activiteiten voor jouw stad toegevoegd. Blijf op de hoogte!'}
+              </Text>
+            </View>
+          )}
+        </View>
+        )}
+      </View>
 
     </ScrollView>
   );
