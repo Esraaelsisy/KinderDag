@@ -30,7 +30,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="categories"
         options={{
-          title: t('nav.categories'),
+          title: 'Categories',
           tabBarIcon: ({ color, size }) => (
             <Grid3x3 color={color} size={size} strokeWidth={2.5} />
           ),
