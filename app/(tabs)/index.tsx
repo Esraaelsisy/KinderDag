@@ -24,6 +24,7 @@ import { Colors } from '@/constants/colors';
 import { Activity } from '@/types';
 import { activitiesService } from '@/services/activities';
 import { citiesService } from '@/services/cities';
+import { collectionsService } from '@/services/collections';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 
@@ -48,19 +49,21 @@ interface Banner {
   action_value: string | null;
 }
 
+interface CollectionWithItems {
+  id: string;
+  name: string;
+  slug: string;
+  color: string;
+  sort_order: number;
+  items: Activity[];
+}
+
 export default function HomeScreen() {
-  const [featured, setFeatured] = useState<Activity[]>([]);
-  const [seasonal, setSeasonal] = useState<Activity[]>([]);
-  const [dontMiss, setDontMiss] = useState<Activity[]>([]);
-  const [catchItBeforeEnds, setCatchItBeforeEnds] = useState<Activity[]>([]);
-  const [hotPicks, setHotPicks] = useState<Activity[]>([]);
-  const [thisWeekendEvents, setThisWeekendEvents] = useState<Activity[]>([]);
-  const [nearbyVenues, setNearbyVenues] = useState<Activity[]>([]);
+  const [collections, setCollections] = useState<CollectionWithItems[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [banners, setBanners] = useState<Banner[]>([]);
   const [currentBanner, setCurrentBanner] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
-  const [tags, setTags] = useState<Array<{ id: string; name: string; slug: string }>>([]);
   const [showCityModal, setShowCityModal] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
@@ -76,7 +79,6 @@ export default function HomeScreen() {
   useEffect(() => {
     loadData();
     loadCities();
-    loadTags();
     if (profile?.location_name) {
       setSelectedCity(profile.location_name);
     }
@@ -104,156 +106,41 @@ export default function HomeScreen() {
 
   const loadData = async () => {
     await Promise.all([
-      loadThisWeekendEvents(),
-      loadNearbyVenues(),
-      loadFeatured(),
-      loadSeasonal(),
-      loadDontMiss(),
-      loadCatchItBeforeEnds(),
-      loadHotPicks(),
+      loadCollections(),
       loadCategories(),
       loadBanners(),
     ]);
   };
 
-  const loadThisWeekendEvents = async () => {
+  const loadCollections = async () => {
     try {
-      const now = new Date();
-      const dayOfWeek = now.getDay();
-      const daysUntilSaturday = dayOfWeek === 0 ? 6 : 6 - dayOfWeek;
+      const activeCollections = await collectionsService.getActiveCollections();
 
-      const saturday = new Date(now);
-      saturday.setDate(saturday.getDate() + daysUntilSaturday);
-      saturday.setHours(0, 0, 0, 0);
+      const collectionsWithItems = await Promise.all(
+        activeCollections.map(async (collection) => {
+          const items = await collectionsService.getCollectionItems(collection.id, 10);
 
-      const sunday = new Date(saturday);
-      sunday.setDate(sunday.getDate() + 1);
-      sunday.setHours(23, 59, 59, 999);
+          let filteredItems = items;
+          if (selectedCity) {
+            filteredItems = items.filter((item: any) => item.city === selectedCity);
+          }
 
-      let query = supabase
-        .from('activities')
-        .select('*')
-        .eq('type', 'event')
-        .gte('event_start_datetime', saturday.toISOString())
-        .lte('event_start_datetime', sunday.toISOString())
-        .order('event_start_datetime', { ascending: true });
+          return {
+            id: collection.id,
+            name: collection.name,
+            slug: collection.slug,
+            color: collection.color,
+            sort_order: collection.sort_order,
+            items: filteredItems,
+          };
+        })
+      );
 
-      if (selectedCity) {
-        query = query.eq('city', selectedCity);
-      }
-
-      const { data } = await query.limit(10);
-      if (data) setThisWeekendEvents(data);
+      const sorted = collectionsWithItems.sort((a, b) => a.sort_order - b.sort_order);
+      setCollections(sorted);
     } catch (error) {
-      console.error('Failed to load weekend events:', error);
+      console.error('Failed to load collections:', error);
     }
-  };
-
-  const loadNearbyVenues = async () => {
-    try {
-      let query = supabase
-        .from('activities')
-        .select('*')
-        .eq('type', 'venue')
-        .order('average_rating', { ascending: false });
-
-      if (selectedCity) {
-        query = query.eq('city', selectedCity);
-      }
-
-      const { data } = await query.limit(10);
-      if (data) setNearbyVenues(data);
-    } catch (error) {
-      console.error('Failed to load nearby venues:', error);
-    }
-  };
-
-  const loadFeatured = async () => {
-    try {
-      let data = await activitiesService.getFeatured(10);
-      if (selectedCity) {
-        data = data.filter(activity => activity.city === selectedCity);
-      }
-      setFeatured(data);
-    } catch (error) {
-      console.error('Failed to load featured activities:', error);
-    }
-  };
-
-  const loadSeasonal = async () => {
-    const today = new Date().toISOString().split('T')[0];
-    let query = supabase
-      .from('activities')
-      .select('*')
-      .eq('is_seasonal', true)
-      .lte('season_start', today)
-      .gte('season_end', today);
-
-    if (selectedCity) {
-      query = query.eq('city', selectedCity);
-    }
-
-    const { data } = await query
-      .order('average_rating', { ascending: false })
-      .limit(10);
-
-    if (data) setSeasonal(data);
-  };
-
-  const loadDontMiss = async () => {
-    let query = supabase
-      .from('activities')
-      .select('*')
-      .eq('is_featured', true);
-
-    if (selectedCity) {
-      query = query.eq('city', selectedCity);
-    }
-
-    const { data } = await query
-      .order('average_rating', { ascending: false })
-      .limit(5);
-
-    if (data) setDontMiss(data);
-  };
-
-  const loadCatchItBeforeEnds = async () => {
-    const today = new Date();
-    const nextWeek = new Date();
-    nextWeek.setDate(today.getDate() + 7);
-    let query = supabase
-      .from('activities')
-      .select('*')
-      .eq('is_seasonal', true)
-      .lte('season_end', nextWeek.toISOString().split('T')[0])
-      .gte('season_end', today.toISOString().split('T')[0]);
-
-    if (selectedCity) {
-      query = query.eq('city', selectedCity);
-    }
-
-    const { data } = await query
-      .order('season_end', { ascending: true })
-      .limit(10);
-
-    if (data) setCatchItBeforeEnds(data);
-  };
-
-  const loadHotPicks = async () => {
-    let query = supabase
-      .from('activities')
-      .select('*')
-      .gte('average_rating', 4.0);
-
-    if (selectedCity) {
-      query = query.eq('city', selectedCity);
-    }
-
-    const { data } = await query
-      .order('total_reviews', { ascending: false })
-      .limit(10);
-
-    if (data) setHotPicks(data);
   };
 
   const loadCategories = async () => {
@@ -289,20 +176,6 @@ export default function HomeScreen() {
       setCities(data);
     } catch (error) {
       console.error('Failed to load cities:', error);
-    }
-  };
-
-  const loadTags = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('tags')
-        .select('id, name, slug')
-        .eq('is_active', true);
-
-      if (error) throw error;
-      setTags(data || []);
-    } catch (error) {
-      console.error('Failed to load tags:', error);
     }
   };
 
@@ -620,206 +493,35 @@ export default function HomeScreen() {
         </TouchableOpacity>
       )}
 
-      {thisWeekendEvents.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              {language === 'en' ? 'This Weekend' : 'Dit Weekend'}
-            </Text>
-            <TouchableOpacity onPress={() => router.push('/(tabs)/events')}>
-              <Text style={styles.seeAllLink}>
-                {language === 'en' ? 'See All' : 'Bekijk Alles'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <FlatList
-            data={thisWeekendEvents}
-            renderItem={({ item }) => renderActivity(item)}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.activitiesList}
-          />
-        </View>
-      )}
-
-      {nearbyVenues.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              {language === 'en' ? 'Near You' : 'Bij jou in de buurt'}
-            </Text>
-            <TouchableOpacity onPress={() => router.push('/(tabs)/venues')}>
-              <Text style={styles.seeAllLink}>
-                {language === 'en' ? 'See All' : 'Bekijk Alles'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <FlatList
-            data={nearbyVenues}
-            renderItem={({ item }) => renderActivity(item)}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.activitiesList}
-          />
-        </View>
-      )}
-
-      {dontMiss.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              {language === 'en' ? "Don't miss this week" : 'Mis deze week niet'}
-            </Text>
-            <TouchableOpacity
-              onPress={() => {
-                const tag = tags.find(t => t.slug === 'dont-miss');
-                if (tag) {
+      {collections.map((collection) => (
+        collection.items.length > 0 && (
+          <View key={collection.id} style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{collection.name}</Text>
+              <TouchableOpacity
+                onPress={() => {
                   router.push({
                     pathname: '/(tabs)/discover',
-                    params: { tagId: tag.id, tagName: tag.name }
+                    params: { collectionId: collection.id, collectionName: collection.name }
                   });
-                }
-              }}
-            >
-              <Text style={styles.seeAllLink}>
-                {language === 'en' ? 'See All' : 'Bekijk Alles'}
-              </Text>
-            </TouchableOpacity>
+                }}
+              >
+                <Text style={styles.seeAllLink}>
+                  {language === 'en' ? 'See All' : 'Bekijk Alles'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={collection.items}
+              renderItem={({ item }) => renderActivity(item)}
+              keyExtractor={(item) => item.id}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.activitiesList}
+            />
           </View>
-          <FlatList
-            data={dontMiss}
-            renderItem={({ item }) => renderActivity(item)}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.activitiesList}
-          />
-        </View>
-      )}
-
-      {catchItBeforeEnds.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              {language === 'en' ? 'Catch it before it Ends' : 'Grijp het voordat het eindigt'}
-            </Text>
-            <TouchableOpacity
-              onPress={() => {
-                const tag = tags.find(t => t.slug === 'ending-soon');
-                if (tag) {
-                  router.push({
-                    pathname: '/(tabs)/discover',
-                    params: { tagId: tag.id, tagName: tag.name }
-                  });
-                }
-              }}
-            >
-              <Text style={styles.seeAllLink}>
-                {language === 'en' ? 'See All' : 'Bekijk Alles'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <FlatList
-            data={catchItBeforeEnds}
-            renderItem={({ item }) => renderActivity(item)}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.activitiesList}
-          />
-        </View>
-      )}
-
-      {hotPicks.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              {language === 'en' ? 'Hot Picks' : 'Populaire keuzes'}
-            </Text>
-            <TouchableOpacity
-              onPress={() => {
-                const tag = tags.find(t => t.slug === 'hot-pick');
-                if (tag) {
-                  router.push({
-                    pathname: '/(tabs)/discover',
-                    params: { tagId: tag.id, tagName: tag.name }
-                  });
-                }
-              }}
-            >
-              <Text style={styles.seeAllLink}>
-                {language === 'en' ? 'See All' : 'Bekijk Alles'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <FlatList
-            data={hotPicks}
-            renderItem={({ item }) => renderActivity(item)}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.activitiesList}
-          />
-        </View>
-      )}
-
-      {featured.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{t('home.featured')}</Text>
-            <TouchableOpacity
-              onPress={() => {
-                router.push('/(tabs)/discover');
-              }}
-            >
-              <Text style={styles.seeAllLink}>
-                {language === 'en' ? 'See All' : 'Bekijk Alles'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <FlatList
-            data={featured}
-            renderItem={({ item }) => renderActivity(item)}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.activitiesList}
-          />
-        </View>
-      )}
-
-      {seasonal.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{t('home.seasonal')}</Text>
-            <TouchableOpacity
-              onPress={() => {
-                const tag = tags.find(t => t.slug === 'seasonal');
-                if (tag) {
-                  router.push({
-                    pathname: '/(tabs)/discover',
-                    params: { tagId: tag.id, tagName: tag.name }
-                  });
-                }
-              }}
-            >
-              <Text style={styles.seeAllLink}>
-                {language === 'en' ? 'See All' : 'Bekijk Alles'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <FlatList
-            data={seasonal}
-            renderItem={({ item }) => renderActivity(item)}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.activitiesList}
-          />
-        </View>
-      )}
+        )
+      ))}
 
       <View style={styles.categoriesSection}>
         <View style={styles.sectionHeader}>
