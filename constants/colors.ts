@@ -5,6 +5,8 @@ export const Colors = {
   secondary: '#0D9488',
   secondaryDark: '#0F766E',
   secondaryLight: '#ccfbf1',
+  teal: '#1ABC9C',
+  tealDark: '#16A085',
   accent: '#FDD835',
   accentDark: '#FBC02D',
   background: '#FAFAFA',

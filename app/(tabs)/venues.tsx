@@ -16,6 +16,7 @@ import { Colors } from '@/constants/colors';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
+import FloatingSearchButton from '@/components/FloatingSearchButton';
 import FilterButton from '@/components/FilterButton';
 import MapListToggle from '@/components/MapListToggle';
 import VenuesFilterModal, { VenuesFilters } from '@/components/VenuesFilterModal';
@@ -398,6 +399,7 @@ export default function VenuesScreen() {
           }
         />
       )}
+      <FloatingSearchButton />
     </View>
   );
 }

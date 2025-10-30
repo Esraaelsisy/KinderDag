@@ -18,6 +18,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/lib/supabase';
 import ActivityCard from '@/components/ActivityCard';
 import CategoryButton from '@/components/CategoryButton';
+import FloatingSearchButton from '@/components/FloatingSearchButton';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MapPin, ChevronDown, Navigation, X, ArrowRight } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
@@ -462,6 +463,7 @@ export default function HomeScreen() {
   };
 
   return (
+    <>
     <ScrollView
       style={styles.container}
       showsVerticalScrollIndicator={false}
@@ -948,6 +950,8 @@ export default function HomeScreen() {
       )}
 
     </ScrollView>
+    <FloatingSearchButton />
+    </>
   );
 }
 
