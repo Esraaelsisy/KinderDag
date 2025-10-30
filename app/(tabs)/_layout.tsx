@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, Search, Heart, Calendar, MapPinned } from 'lucide-react-native';
+import { Home, Grid3x3, User, Calendar, MapPinned } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { View, StyleSheet, Platform } from 'react-native';
 import { Colors } from '@/constants/colors';
@@ -28,18 +28,12 @@ export default function TabLayout() {
         }}
       >
       <Tabs.Screen
-        name="search"
+        name="categories"
         options={{
-          title: t('nav.explore'),
+          title: t('nav.categories'),
           tabBarIcon: ({ color, size }) => (
-            <Search color={color} size={size} strokeWidth={2.5} />
+            <Grid3x3 color={color} size={size} strokeWidth={2.5} />
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="discover"
-        options={{
-          href: null,
         }}
       />
       <Tabs.Screen
@@ -79,22 +73,28 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="favorites"
+        name="profile"
         options={{
-          title: t('nav.saved'),
+          title: t('nav.profile'),
           tabBarIcon: ({ color, size }) => (
-            <Heart color={color} size={size} strokeWidth={2.5} />
+            <User color={color} size={size} strokeWidth={2.5} />
           ),
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="search"
         options={{
           href: null,
         }}
       />
       <Tabs.Screen
-        name="categories"
+        name="discover"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="favorites"
         options={{
           href: null,
         }}

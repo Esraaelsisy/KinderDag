@@ -18,9 +18,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/lib/supabase';
 import ActivityCard from '@/components/ActivityCard';
 import CategoryButton from '@/components/CategoryButton';
-import FloatingSearchButton from '@/components/FloatingSearchButton';
 import { LinearGradient } from 'expo-linear-gradient';
-import { MapPin, ChevronDown, Navigation, X, ArrowRight } from 'lucide-react-native';
+import { MapPin, ChevronDown, Navigation, X, ArrowRight, Search } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { Activity } from '@/types';
 import { activitiesService } from '@/services/activities';
@@ -463,7 +462,6 @@ export default function HomeScreen() {
   };
 
   return (
-    <>
     <ScrollView
       style={styles.container}
       showsVerticalScrollIndicator={false}
@@ -486,6 +484,12 @@ export default function HomeScreen() {
               <ChevronDown size={16} color={Colors.white} />
             </TouchableOpacity>
           </View>
+          <TouchableOpacity
+            style={styles.searchButton}
+            onPress={() => router.push('/(tabs)/search')}
+          >
+            <Search size={20} color={Colors.white} />
+          </TouchableOpacity>
         </View>
       </LinearGradient>
 
@@ -950,8 +954,6 @@ export default function HomeScreen() {
       )}
 
     </ScrollView>
-    <FloatingSearchButton />
-    </>
   );
 }
 
@@ -972,6 +974,14 @@ const styles = StyleSheet.create({
   },
   headerLeft: {
     flex: 1,
+  },
+  searchButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   greeting: {
     fontSize: 28,
