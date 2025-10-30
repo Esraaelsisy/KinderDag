@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, Heart, Calendar, MapPinned, User } from 'lucide-react-native';
+import { Home, Calendar, MapPinned, User, Search } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { View, StyleSheet, Platform } from 'react-native';
 import { Colors } from '@/constants/colors';
@@ -28,20 +28,20 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
+        name="categories"
+        options={{
+          title: 'Categories',
+          tabBarIcon: ({ color, size }) => (
+            <Search color={color} size={size} strokeWidth={2.5} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="events"
         options={{
           title: t('nav.whatsOn'),
           tabBarIcon: ({ color, size }) => (
             <Calendar color={color} size={size} strokeWidth={2.5} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="venues"
-        options={{
-          title: t('nav.playSpots'),
-          tabBarIcon: ({ color, size }) => (
-            <MapPinned color={color} size={size} strokeWidth={2.5} />
           ),
         }}
       />
@@ -64,11 +64,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="favorites"
+        name="venues"
         options={{
-          title: t('nav.saved'),
+          title: t('nav.playSpots'),
           tabBarIcon: ({ color, size }) => (
-            <Heart color={color} size={size} strokeWidth={2.5} />
+            <MapPinned color={color} size={size} strokeWidth={2.5} />
           ),
         }}
       />
@@ -79,6 +79,12 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <User color={color} size={size} strokeWidth={2.5} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="favorites"
+        options={{
+          href: null,
         }}
       />
       <Tabs.Screen

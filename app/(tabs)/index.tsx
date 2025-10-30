@@ -6,6 +6,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   RefreshControl,
+  Image,
+  Dimensions,
 } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -20,6 +22,8 @@ import { Colors } from '@/constants/colors';
 import { Activity } from '@/types';
 import { useRouter } from 'expo-router';
 
+const { width: screenWidth } = Dimensions.get('window');
+
 interface Category {
   id: string;
   name_en: string;
@@ -29,7 +33,20 @@ interface Category {
   sort_order: number;
 }
 
+interface Banner {
+  id: string;
+  title_en: string;
+  title_nl: string;
+  subtitle_en?: string;
+  subtitle_nl?: string;
+  image_url: string;
+  action_type?: string;
+  action_value?: string;
+  sort_order: number;
+}
+
 export default function HomeScreen() {
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [happeningThisWeek, setHappeningThisWeek] = useState<Activity[]>([]);
   const [aroundYou, setAroundYou] = useState<Activity[]>([]);
   const [seasonal, setSeasonal] = useState<Activity[]>([]);
@@ -49,6 +66,7 @@ export default function HomeScreen() {
   const loadData = async () => {
     setLoading(true);
     await Promise.all([
+      loadBanners(),
       loadHappeningThisWeek(),
       loadAroundYou(),
       loadSeasonal(),
@@ -56,6 +74,26 @@ export default function HomeScreen() {
       loadCategories(),
     ]);
     setLoading(false);
+  };
+
+  const loadBanners = async () => {
+    try {
+      const today = new Date().toISOString();
+      const { data, error } = await supabase
+        .from('banners')
+        .select('*')
+        .eq('is_active', true)
+        .lte('start_date', today)
+        .gte('end_date', today)
+        .order('sort_order', { ascending: true })
+        .limit(5);
+
+      if (error) throw error;
+      setBanners(data || []);
+    } catch (error) {
+      console.error('Error loading banners:', error);
+      setBanners([]);
+    }
   };
 
   const onRefresh = async () => {
@@ -73,24 +111,12 @@ export default function HomeScreen() {
       const { data: events, error } = await supabase
         .from('events')
         .select(`
-          id,
-          event_start_datetime,
-          event_end_datetime,
+          *,
           place:places!events_place_id_fkey(
             name,
             city,
             location_lat,
-            location_lng,
-            images,
-            description_en,
-            description_nl,
-            age_min,
-            age_max,
-            price_min,
-            price_max,
-            is_free,
-            average_rating,
-            total_reviews
+            location_lng
           )
         `)
         .gte('event_start_datetime', today.toISOString())
@@ -106,16 +132,16 @@ export default function HomeScreen() {
         city: event.place?.city || '',
         location_lat: event.place?.location_lat || 0,
         location_lng: event.place?.location_lng || 0,
-        images: event.place?.images || [],
-        description_en: event.place?.description_en || '',
-        description_nl: event.place?.description_nl || '',
-        age_min: event.place?.age_min,
-        age_max: event.place?.age_max,
-        price_min: event.place?.price_min,
-        price_max: event.place?.price_max,
-        is_free: event.place?.is_free || false,
-        average_rating: event.place?.average_rating,
-        total_reviews: event.place?.total_reviews || 0,
+        images: event.images || [],
+        description_en: event.description_en || '',
+        description_nl: event.description_nl || '',
+        age_min: event.age_min,
+        age_max: event.age_max,
+        price_min: event.price_min,
+        price_max: event.price_max,
+        is_free: event.is_free || false,
+        average_rating: event.average_rating,
+        total_reviews: event.total_reviews || 0,
         type: 'event',
         event_start_datetime: event.event_start_datetime,
         event_end_datetime: event.event_end_datetime,
@@ -133,24 +159,12 @@ export default function HomeScreen() {
       const { data: venues, error } = await supabase
         .from('venues')
         .select(`
-          id,
+          *,
           place:places!venues_place_id_fkey(
             name,
             city,
             location_lat,
-            location_lng,
-            images,
-            description_en,
-            description_nl,
-            age_min,
-            age_max,
-            price_min,
-            price_max,
-            is_free,
-            average_rating,
-            total_reviews,
-            is_indoor,
-            is_outdoor
+            location_lng
           )
         `)
         .limit(20);
@@ -163,18 +177,18 @@ export default function HomeScreen() {
         city: venue.place?.city || '',
         location_lat: venue.place?.location_lat || 0,
         location_lng: venue.place?.location_lng || 0,
-        images: venue.place?.images || [],
-        description_en: venue.place?.description_en || '',
-        description_nl: venue.place?.description_nl || '',
-        age_min: venue.place?.age_min,
-        age_max: venue.place?.age_max,
-        price_min: venue.place?.price_min,
-        price_max: venue.place?.price_max,
-        is_free: venue.place?.is_free || false,
-        average_rating: venue.place?.average_rating,
-        total_reviews: venue.place?.total_reviews || 0,
-        is_indoor: venue.place?.is_indoor,
-        is_outdoor: venue.place?.is_outdoor,
+        images: venue.images || [],
+        description_en: venue.description_en || '',
+        description_nl: venue.description_nl || '',
+        age_min: venue.age_min,
+        age_max: venue.age_max,
+        price_min: venue.price_min,
+        price_max: venue.price_max,
+        is_free: venue.is_free || false,
+        average_rating: venue.average_rating,
+        total_reviews: venue.total_reviews || 0,
+        is_indoor: venue.is_indoor,
+        is_outdoor: venue.is_outdoor,
         type: 'venue',
       }));
 
@@ -222,8 +236,8 @@ export default function HomeScreen() {
           .from('venue_tag_links')
           .select(`
             venue:venues!venue_tag_links_venue_id_fkey(
-              id,
-              place:places!venues_place_id_fkey(*)
+              *,
+              place:places!venues_place_id_fkey(name, city, location_lat, location_lng)
             )
           `)
           .in('tag_id', tagIds)
@@ -232,10 +246,8 @@ export default function HomeScreen() {
           .from('event_tag_links')
           .select(`
             event:events!event_tag_links_event_id_fkey(
-              id,
-              event_start_datetime,
-              event_end_datetime,
-              place:places!events_place_id_fkey(*)
+              *,
+              place:places!events_place_id_fkey(name, city, location_lat, location_lng)
             )
           `)
           .in('tag_id', tagIds)
@@ -251,15 +263,15 @@ export default function HomeScreen() {
           city: venue.place?.city || '',
           location_lat: venue.place?.location_lat || 0,
           location_lng: venue.place?.location_lng || 0,
-          images: venue.place?.images || [],
+          images: venue.images || [],
           type: 'venue',
-          age_min: venue.place?.age_min,
-          age_max: venue.place?.age_max,
-          price_min: venue.place?.price_min,
-          price_max: venue.place?.price_max,
-          is_free: venue.place?.is_free || false,
-          average_rating: venue.place?.average_rating,
-          total_reviews: venue.place?.total_reviews || 0,
+          age_min: venue.age_min,
+          age_max: venue.age_max,
+          price_min: venue.price_min,
+          price_max: venue.price_max,
+          is_free: venue.is_free || false,
+          average_rating: venue.average_rating,
+          total_reviews: venue.total_reviews || 0,
         }));
 
       const events = (eventLinks.data || [])
@@ -271,17 +283,17 @@ export default function HomeScreen() {
           city: event.place?.city || '',
           location_lat: event.place?.location_lat || 0,
           location_lng: event.place?.location_lng || 0,
-          images: event.place?.images || [],
+          images: event.images || [],
           type: 'event',
           event_start_datetime: event.event_start_datetime,
           event_end_datetime: event.event_end_datetime,
-          age_min: event.place?.age_min,
-          age_max: event.place?.age_max,
-          price_min: event.place?.price_min,
-          price_max: event.place?.price_max,
-          is_free: event.place?.is_free || false,
-          average_rating: event.place?.average_rating,
-          total_reviews: event.place?.total_reviews || 0,
+          age_min: event.age_min,
+          age_max: event.age_max,
+          price_min: event.price_min,
+          price_max: event.price_max,
+          is_free: event.is_free || false,
+          average_rating: event.average_rating,
+          total_reviews: event.total_reviews || 0,
         }));
 
       setSeasonal([...venues, ...events]);
@@ -310,8 +322,8 @@ export default function HomeScreen() {
           .from('venue_tag_links')
           .select(`
             venue:venues!venue_tag_links_venue_id_fkey(
-              id,
-              place:places!venues_place_id_fkey(*)
+              *,
+              place:places!venues_place_id_fkey(name, city, location_lat, location_lng)
             )
           `)
           .in('tag_id', tagIds)
@@ -320,10 +332,8 @@ export default function HomeScreen() {
           .from('event_tag_links')
           .select(`
             event:events!event_tag_links_event_id_fkey(
-              id,
-              event_start_datetime,
-              event_end_datetime,
-              place:places!events_place_id_fkey(*)
+              *,
+              place:places!events_place_id_fkey(name, city, location_lat, location_lng)
             )
           `)
           .in('tag_id', tagIds)
@@ -339,15 +349,15 @@ export default function HomeScreen() {
           city: venue.place?.city || '',
           location_lat: venue.place?.location_lat || 0,
           location_lng: venue.place?.location_lng || 0,
-          images: venue.place?.images || [],
+          images: venue.images || [],
           type: 'venue',
-          age_min: venue.place?.age_min,
-          age_max: venue.place?.age_max,
-          price_min: venue.place?.price_min,
-          price_max: venue.place?.price_max,
-          is_free: venue.place?.is_free || false,
-          average_rating: venue.place?.average_rating,
-          total_reviews: venue.place?.total_reviews || 0,
+          age_min: venue.age_min,
+          age_max: venue.age_max,
+          price_min: venue.price_min,
+          price_max: venue.price_max,
+          is_free: venue.is_free || false,
+          average_rating: venue.average_rating,
+          total_reviews: venue.total_reviews || 0,
         }));
 
       const events = (eventLinks.data || [])
@@ -359,17 +369,17 @@ export default function HomeScreen() {
           city: event.place?.city || '',
           location_lat: event.place?.location_lat || 0,
           location_lng: event.place?.location_lng || 0,
-          images: event.place?.images || [],
+          images: event.images || [],
           type: 'event',
           event_start_datetime: event.event_start_datetime,
           event_end_datetime: event.event_end_datetime,
-          age_min: event.place?.age_min,
-          age_max: event.place?.age_max,
-          price_min: event.place?.price_min,
-          price_max: event.place?.price_max,
-          is_free: event.place?.is_free || false,
-          average_rating: event.place?.average_rating,
-          total_reviews: event.place?.total_reviews || 0,
+          age_min: event.age_min,
+          age_max: event.age_max,
+          price_min: event.price_min,
+          price_max: event.price_max,
+          is_free: event.is_free || false,
+          average_rating: event.average_rating,
+          total_reviews: event.total_reviews || 0,
         }));
 
       setQualityTime([...venues, ...events]);
@@ -475,6 +485,52 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
       </LinearGradient>
+
+      {banners.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          pagingEnabled
+          contentContainerStyle={styles.bannersContainer}
+          style={styles.banners}
+        >
+          {banners.map((banner) => (
+            <TouchableOpacity
+              key={banner.id}
+              style={styles.bannerCard}
+              onPress={() => {
+                if (banner.action_type === 'category' && banner.action_value) {
+                  router.push({
+                    pathname: '/(tabs)/search',
+                    params: { categoryId: banner.action_value },
+                  });
+                } else if (banner.action_type === 'url' && banner.action_value) {
+                  router.push(banner.action_value as any);
+                }
+              }}
+            >
+              <Image
+                source={{ uri: banner.image_url }}
+                style={styles.bannerImage}
+                resizeMode="cover"
+              />
+              <LinearGradient
+                colors={['transparent', 'rgba(0,0,0,0.7)']}
+                style={styles.bannerOverlay}
+              >
+                <Text style={styles.bannerTitle}>
+                  {language === 'en' ? banner.title_en : banner.title_nl}
+                </Text>
+                {(banner.subtitle_en || banner.subtitle_nl) && (
+                  <Text style={styles.bannerSubtitle}>
+                    {language === 'en' ? banner.subtitle_en : banner.subtitle_nl}
+                  </Text>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
 
       {happeningThisWeek.length > 0 && (
         <View style={styles.section}>
@@ -593,5 +649,41 @@ const styles = StyleSheet.create({
   },
   bottomPadding: {
     height: 40,
+  },
+  banners: {
+    marginTop: 16,
+  },
+  bannersContainer: {
+    paddingHorizontal: 20,
+    gap: 16,
+  },
+  bannerCard: {
+    width: screenWidth - 40,
+    height: 160,
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: Colors.background,
+  },
+  bannerImage: {
+    width: '100%',
+    height: '100%',
+  },
+  bannerOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 16,
+  },
+  bannerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.white,
+    marginBottom: 4,
+  },
+  bannerSubtitle: {
+    fontSize: 14,
+    color: Colors.white,
+    opacity: 0.9,
   },
 });
