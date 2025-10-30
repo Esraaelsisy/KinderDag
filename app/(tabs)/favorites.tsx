@@ -12,7 +12,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import ActivityCard from '@/components/ActivityCard';
 import Header from '@/components/Header';
-import FloatingSearchButton from '@/components/FloatingSearchButton';
 import FilterChips from '@/components/FilterChips';
 import { Heart } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -172,7 +171,6 @@ export default function FavoritesScreen() {
           }
         />
       )}
-      <FloatingSearchButton />
     </View>
   );
 }
