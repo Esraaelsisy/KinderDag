@@ -268,35 +268,54 @@ export default function ActivityDetailScreen() {
             <Text style={styles.title}>{activity.name}</Text>
             {activity.type === 'event' && activity.event_start_datetime && (
               <View style={styles.eventDateTimeContainer}>
-                <View style={styles.eventDateTimeRow}>
-                  <Calendar size={18} color={Colors.primary} />
-                  <Text style={styles.eventDateTimeText}>
-                    {new Date(activity.event_start_datetime).toLocaleDateString('nl-NL', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
-                  </Text>
+                <View style={styles.eventDateTimeSection}>
+                  <Text style={styles.eventDateTimeLabel}>Start</Text>
+                  <View style={styles.eventDateTimeRow}>
+                    <Calendar size={18} color={Colors.primary} />
+                    <Text style={styles.eventDateTimeText}>
+                      {new Date(activity.event_start_datetime).toLocaleDateString('nl-NL', {
+                        weekday: 'short',
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </Text>
+                  </View>
+                  <View style={styles.eventDateTimeRow}>
+                    <Clock size={18} color={Colors.primary} />
+                    <Text style={styles.eventDateTimeText}>
+                      {new Date(activity.event_start_datetime).toLocaleTimeString('nl-NL', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </Text>
+                  </View>
                 </View>
-                <View style={styles.eventDateTimeRow}>
-                  <Clock size={18} color={Colors.primary} />
-                  <Text style={styles.eventDateTimeText}>
-                    {new Date(activity.event_start_datetime).toLocaleTimeString('nl-NL', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                    {activity.event_end_datetime && (
-                      <Text>
-                        {' - '}
+                {activity.event_end_datetime && (
+                  <View style={styles.eventDateTimeSection}>
+                    <Text style={styles.eventDateTimeLabel}>End</Text>
+                    <View style={styles.eventDateTimeRow}>
+                      <Calendar size={18} color={Colors.primary} />
+                      <Text style={styles.eventDateTimeText}>
+                        {new Date(activity.event_end_datetime).toLocaleDateString('nl-NL', {
+                          weekday: 'short',
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </Text>
+                    </View>
+                    <View style={styles.eventDateTimeRow}>
+                      <Clock size={18} color={Colors.primary} />
+                      <Text style={styles.eventDateTimeText}>
                         {new Date(activity.event_end_datetime).toLocaleTimeString('nl-NL', {
                           hour: '2-digit',
                           minute: '2-digit',
                         })}
                       </Text>
-                    )}
-                  </Text>
-                </View>
+                    </View>
+                  </View>
+                )}
               </View>
             )}
             <View style={styles.ratingRow}>
@@ -522,13 +541,23 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     backgroundColor: Colors.primaryLight,
     borderRadius: 12,
-    padding: 12,
+    padding: 16,
+    gap: 16,
+  },
+  eventDateTimeSection: {
+    gap: 8,
+  },
+  eventDateTimeLabel: {
+    fontSize: 13,
+    color: Colors.primary,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   eventDateTimeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginBottom: 6,
   },
   eventDateTimeText: {
     fontSize: 15,
