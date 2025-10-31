@@ -53,10 +53,13 @@ interface Activity {
   website: string | null;
   booking_url: string | null;
   opening_hours: any;
+  event_start_datetime?: string;
+  event_end_datetime?: string;
+  type?: 'event' | 'venue';
 }
 
 export default function ActivityDetailScreen() {
-  const { id } = useLocalSearchParams();
+  const { id, type } = useLocalSearchParams();
   const [activity, setActivity] = useState<Activity | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
@@ -66,6 +69,7 @@ export default function ActivityDetailScreen() {
   const { user } = useAuth();
   const { t, language } = useLanguage();
   const router = useRouter();
+  const activityType = (type as string) || 'venue';
 
   useEffect(() => {
     if (id) {
@@ -75,14 +79,82 @@ export default function ActivityDetailScreen() {
   }, [id]);
 
   const loadActivity = async () => {
-    const { data } = await supabase
-      .from('activities')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
+    if (activityType === 'event') {
+      const { data, error } = await supabase
+        .from('events')
+        .select(`
+          *,
+          place:places(*)
+        `)
+        .eq('id', id)
+        .maybeSingle();
 
-    if (data) {
-      setActivity(data);
+      if (data && !error) {
+        const place = data.place || {};
+        setActivity({
+          id: data.id,
+          name: data.event_name || place.name || 'Event',
+          description_en: data.description_en,
+          description_nl: data.description_nl,
+          city: place.city || '',
+          province: place.province || '',
+          address: place.address || '',
+          images: data.images || [],
+          average_rating: data.average_rating,
+          total_reviews: data.total_reviews,
+          price_min: data.price_min,
+          price_max: data.price_max,
+          is_free: data.is_free,
+          age_min: data.age_min,
+          age_max: data.age_max,
+          is_indoor: data.is_indoor,
+          is_outdoor: data.is_outdoor,
+          phone: place.phone,
+          website: place.website,
+          booking_url: data.booking_url,
+          opening_hours: null,
+          event_start_datetime: data.event_start_datetime,
+          event_end_datetime: data.event_end_datetime,
+          type: 'event',
+        });
+      }
+    } else {
+      const { data, error } = await supabase
+        .from('venues')
+        .select(`
+          *,
+          place:places(*)
+        `)
+        .eq('id', id)
+        .maybeSingle();
+
+      if (data && !error) {
+        const place = data.place || {};
+        setActivity({
+          id: data.id,
+          name: place.name || 'Venue',
+          description_en: data.description_en,
+          description_nl: data.description_nl,
+          city: place.city || '',
+          province: place.province || '',
+          address: place.address || '',
+          images: data.images || [],
+          average_rating: data.average_rating,
+          total_reviews: data.total_reviews,
+          price_min: data.price_min,
+          price_max: data.price_max,
+          is_free: data.is_free,
+          age_min: data.age_min,
+          age_max: data.age_max,
+          is_indoor: data.is_indoor,
+          is_outdoor: data.is_outdoor,
+          phone: place.phone,
+          website: place.website,
+          booking_url: data.booking_url,
+          opening_hours: data.venue_opening_hours,
+          type: 'venue',
+        });
+      }
     }
   };
 
@@ -194,6 +266,39 @@ export default function ActivityDetailScreen() {
         <View style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.title}>{activity.name}</Text>
+            {activity.type === 'event' && activity.event_start_datetime && (
+              <View style={styles.eventDateTimeContainer}>
+                <View style={styles.eventDateTimeRow}>
+                  <Calendar size={18} color={Colors.primary} />
+                  <Text style={styles.eventDateTimeText}>
+                    {new Date(activity.event_start_datetime).toLocaleDateString('nl-NL', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </Text>
+                </View>
+                <View style={styles.eventDateTimeRow}>
+                  <Clock size={18} color={Colors.primary} />
+                  <Text style={styles.eventDateTimeText}>
+                    {new Date(activity.event_start_datetime).toLocaleTimeString('nl-NL', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                    {activity.event_end_datetime && (
+                      <Text>
+                        {' - '}
+                        {new Date(activity.event_end_datetime).toLocaleTimeString('nl-NL', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </Text>
+                    )}
+                  </Text>
+                </View>
+              </View>
+            )}
             <View style={styles.ratingRow}>
               <Star size={20} color={Colors.warning} fill={Colors.warning} />
               <Text style={styles.rating}>
@@ -410,6 +515,24 @@ const styles = StyleSheet.create({
   rating: {
     fontSize: 16,
     color: Colors.textLight,
+    fontWeight: '600',
+  },
+  eventDateTimeContainer: {
+    marginTop: 12,
+    marginBottom: 12,
+    backgroundColor: Colors.primaryLight,
+    borderRadius: 12,
+    padding: 12,
+  },
+  eventDateTimeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 6,
+  },
+  eventDateTimeText: {
+    fontSize: 15,
+    color: Colors.primary,
     fontWeight: '600',
   },
   tags: {
