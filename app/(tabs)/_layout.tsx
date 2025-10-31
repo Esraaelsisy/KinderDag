@@ -32,12 +32,7 @@ export default function TabLayout() {
         options={{
           title: 'Categories',
           tabBarIcon: ({ color, size, focused }) => (
-            <Grid3x3
-              color={focused ? Colors.white : color}
-              size={size}
-              strokeWidth={focused ? 3 : 2.5}
-              fill={focused ? Colors.primary : 'none'}
-            />
+            <Grid3x3 color={color} size={size} strokeWidth={2.5} fill={focused ? color : 'none'} />
           ),
         }}
       />
@@ -46,12 +41,7 @@ export default function TabLayout() {
         options={{
           title: t('nav.whatsOn'),
           tabBarIcon: ({ color, size, focused }) => (
-            <Calendar
-              color={focused ? Colors.white : color}
-              size={size}
-              strokeWidth={focused ? 3 : 2.5}
-              fill={focused ? Colors.primary : 'none'}
-            />
+            <Calendar color={color} size={size} strokeWidth={2.5} fill={focused ? color : 'none'} />
           ),
         }}
       />
@@ -78,26 +68,16 @@ export default function TabLayout() {
         options={{
           title: t('nav.playSpots'),
           tabBarIcon: ({ color, size, focused }) => (
-            <MapPinned
-              color={focused ? Colors.white : color}
-              size={size}
-              strokeWidth={focused ? 3 : 2.5}
-              fill={focused ? Colors.primary : 'none'}
-            />
+            <MapPinned color={color} size={size} strokeWidth={2.5} fill={focused ? color : 'none'} />
           ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: t('nav.profile'),
           tabBarIcon: ({ color, size, focused }) => (
-            <User
-              color={focused ? Colors.white : color}
-              size={size}
-              strokeWidth={focused ? 3 : 2.5}
-              fill={focused ? Colors.primary : 'none'}
-            />
+            <User color={color} size={size} strokeWidth={2.5} fill={focused ? color : 'none'} />
           ),
         }}
       />
