@@ -147,6 +147,40 @@ export default function ActivityCard({
               {city}
             </Text>
           </View>
+          {type === 'event' && eventStartDatetime && (
+            <View style={styles.dateTimeContainerHorizontal}>
+              <View style={styles.rowHorizontal}>
+                <Calendar size={12} color={Colors.primary} />
+                <Text style={styles.dateTimeTextHorizontal}>
+                  {formatEventDateTime(eventStartDatetime)}
+                </Text>
+              </View>
+              {eventEndDatetime && (
+                <Text style={styles.dateTimeTextHorizontal}>
+                  - {formatEventDateTime(eventEndDatetime)}
+                </Text>
+              )}
+            </View>
+          )}
+          {collections && collections.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.collectionsScrollHorizontal}
+              contentContainerStyle={styles.collectionsContainer}
+            >
+              {collections.map((collection) => (
+                <View
+                  key={collection.id}
+                  style={[styles.collectionTagSmall, { backgroundColor: collection.color + '20' }]}
+                >
+                  <Text style={[styles.collectionTextSmall, { color: collection.color }]}>
+                    {collection.name}
+                  </Text>
+                </View>
+              ))}
+            </ScrollView>
+          )}
           <View style={styles.footerHorizontal}>
             <View style={styles.rowHorizontal}>
               <Star size={14} color={Colors.warning} fill={Colors.warning} />
@@ -424,15 +458,16 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
-    height: 120,
+    minHeight: 120,
   },
   imageContainerHorizontal: {
     width: 120,
-    height: 120,
+    minHeight: 120,
   },
   imageHorizontal: {
     width: '100%',
     height: '100%',
+    minHeight: 120,
     backgroundColor: Colors.border,
   },
   contentHorizontal: {
@@ -480,5 +515,29 @@ const styles = StyleSheet.create({
   tagsHorizontal: {
     flexDirection: 'row',
     gap: 6,
+  },
+  dateTimeContainerHorizontal: {
+    marginTop: 4,
+    marginBottom: 2,
+  },
+  dateTimeTextHorizontal: {
+    fontSize: 11,
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+  collectionsScrollHorizontal: {
+    marginTop: 4,
+    marginBottom: 2,
+    maxHeight: 24,
+  },
+  collectionTagSmall: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginRight: 4,
+  },
+  collectionTextSmall: {
+    fontSize: 10,
+    fontWeight: '600',
   },
 });
