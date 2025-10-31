@@ -8,9 +8,12 @@ export const venuesService = {
       .from('venues')
       .select(`
         *,
-        place:places(*)
+        place:places(*),
+        venue_collection_links(
+          collection:collections(*)
+        )
       `)
-      .order('average_rating', { ascending: false });
+      .order('average_rating', { ascending: false});
 
     if (error) throw error;
     return (data || []).map(transformVenue);
@@ -21,7 +24,10 @@ export const venuesService = {
       .from('venues')
       .select(`
         *,
-        place:places(*)
+        place:places(*),
+        venue_collection_links(
+          collection:collections(*)
+        )
       `)
       .eq('is_featured', true)
       .order('average_rating', { ascending: false })
@@ -37,7 +43,10 @@ export const venuesService = {
       .select(`
         venue:venues(
           *,
-          place:places(*)
+          place:places(*),
+          venue_collection_links(
+            collection:collections(*)
+          )
         )
       `)
       .eq('category_id', categoryId);
@@ -54,7 +63,10 @@ export const venuesService = {
       .from('venues')
       .select(`
         *,
-        place:places(*)
+        place:places(*),
+        venue_collection_links(
+          collection:collections(*)
+        )
       `)
       .eq('id', id)
       .maybeSingle();
@@ -68,10 +80,13 @@ export const venuesService = {
       .from('venues')
       .select(`
         *,
-        place:places(*)
+        place:places(*),
+        venue_collection_links(
+          collection:collections(*)
+        )
       `)
       .in('id', ids)
-      .order('average_rating', { ascending: false });
+      .order('average_rating', { ascending: false});
 
     if (error) throw error;
     return (data || []).map(transformVenue);
@@ -82,7 +97,10 @@ export const venuesService = {
       .from('venues')
       .select(`
         *,
-        place:places!inner(*)
+        place:places!inner(*),
+        venue_collection_links(
+          collection:collections(*)
+        )
       `)
       .or(`place.name.ilike.%${query}%,place.city.ilike.%${query}%`)
       .order('average_rating', { ascending: false });
@@ -170,6 +188,10 @@ export const venuesService = {
 };
 
 function transformVenue(data: any): Venue {
+  const collections = (data.venue_collection_links || [])
+    .map((link: any) => link.collection)
+    .filter(Boolean);
+
   return {
     id: data.id,
     name: data.place.name,
@@ -200,5 +222,6 @@ function transformVenue(data: any): Venue {
     is_seasonal: data.is_seasonal,
     season_start: data.season_start,
     season_end: data.season_end,
+    collections: collections.length > 0 ? collections : undefined,
   };
 }

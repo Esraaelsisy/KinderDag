@@ -375,10 +375,9 @@ export default function EventsScreen() {
                     layout="horizontal"
                     type="event"
                     eventStartDatetime={event.event_start_datetime}
+                    eventEndDatetime={event.event_end_datetime}
+                    collections={event.collections}
                   />
-                  <Text style={styles.eventTime}>
-                    {formatEventTime(event.event_start_datetime || '')}
-                  </Text>
                 </View>
               );
             })}

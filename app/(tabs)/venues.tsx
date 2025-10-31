@@ -251,6 +251,7 @@ export default function VenuesScreen() {
           ageMax={venue.age_max}
           layout="horizontal"
           type="venue"
+          collections={venue.collections}
           isIndoor={venue.is_indoor}
           isOutdoor={venue.is_outdoor}
           isOpen={isOpen}

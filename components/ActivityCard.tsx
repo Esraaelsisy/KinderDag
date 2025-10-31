@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { MapPin, Star, Euro, Heart, Calendar, Clock, Sun, Home as HomeIcon } from 'lucide-react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { MapPin, Star, Euro, Heart, Calendar, Clock } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { favoritesService } from '@/services/favorites';
+import { Collection } from '@/types';
 
 interface ActivityCardProps {
   id: string;
@@ -24,6 +25,7 @@ interface ActivityCardProps {
   type?: 'event' | 'venue';
   eventStartDatetime?: string;
   eventEndDatetime?: string;
+  collections?: Collection[];
   isIndoor?: boolean;
   isOutdoor?: boolean;
   isOpen?: boolean;
@@ -46,6 +48,9 @@ export default function ActivityCard({
   ageMax,
   layout = 'vertical',
   type = 'venue',
+  eventStartDatetime,
+  eventEndDatetime,
+  collections,
 }: ActivityCardProps) {
   const router = useRouter();
   const { user } = useAuth();
@@ -93,6 +98,17 @@ export default function ActivityCard({
     } finally {
       setIsToggling(false);
     }
+  };
+
+  const formatEventDateTime = (datetime?: string) => {
+    if (!datetime) return '';
+    const date = new Date(datetime);
+    return date.toLocaleString('nl-NL', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   if (layout === 'horizontal') {
@@ -197,6 +213,43 @@ export default function ActivityCard({
             {distance && ` • ${distance.toFixed(1)}km`}
           </Text>
         </View>
+        {type === 'event' && eventStartDatetime && (
+          <View style={styles.dateTimeContainer}>
+            <View style={styles.row}>
+              <Calendar size={14} color={Colors.primary} />
+              <Text style={styles.dateTimeText}>
+                {formatEventDateTime(eventStartDatetime)}
+              </Text>
+            </View>
+            {eventEndDatetime && (
+              <View style={[styles.row, { marginTop: 2 }]}>
+                <Clock size={14} color={Colors.primary} />
+                <Text style={styles.dateTimeText}>
+                  {formatEventDateTime(eventEndDatetime)}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+        {collections && collections.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.collectionsScroll}
+            contentContainerStyle={styles.collectionsContainer}
+          >
+            {collections.map((collection) => (
+              <View
+                key={collection.id}
+                style={[styles.collectionTag, { backgroundColor: collection.color + '20' }]}
+              >
+                <Text style={[styles.collectionText, { color: collection.color }]}>
+                  {collection.name}
+                </Text>
+              </View>
+            ))}
+          </ScrollView>
+        )}
         <View style={styles.footer}>
           <View style={styles.row}>
             <Star size={14} color={Colors.warning} fill={Colors.warning} />
@@ -332,6 +385,32 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: 11,
     color: Colors.primary,
+    fontWeight: '600',
+  },
+  dateTimeContainer: {
+    marginTop: 6,
+    gap: 2,
+  },
+  dateTimeText: {
+    fontSize: 12,
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+  collectionsScroll: {
+    marginTop: 6,
+    marginBottom: 4,
+  },
+  collectionsContainer: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  collectionTag: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  collectionText: {
+    fontSize: 11,
     fontWeight: '600',
   },
   cardHorizontal: {

@@ -61,6 +61,7 @@ export interface Venue {
   season_start?: string;
   season_end?: string;
   categories?: string[];
+  collections?: Collection[];
 }
 
 export interface Event {
@@ -92,6 +93,7 @@ export interface Event {
   booking_url?: string;
   is_featured: boolean;
   categories?: string[];
+  collections?: Collection[];
 }
 
 export interface Category {
@@ -100,6 +102,18 @@ export interface Category {
   icon: string;
   color_start: string;
   color_end: string;
+}
+
+export interface Collection {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  color: string;
+  icon?: string;
+  is_active: boolean;
+  sort_order: number;
+  show_on_home: boolean;
 }
 
 export interface Kid {

@@ -8,7 +8,10 @@ export const eventsService = {
       .from('events')
       .select(`
         *,
-        place:places(*)
+        place:places(*),
+        event_collection_links(
+          collection:collections(*)
+        )
       `)
       .order('event_start_datetime', { ascending: true });
 
@@ -22,10 +25,13 @@ export const eventsService = {
       .from('events')
       .select(`
         *,
-        place:places(*)
+        place:places(*),
+        event_collection_links(
+          collection:collections(*)
+        )
       `)
       .gte('event_start_datetime', now)
-      .order('event_start_datetime', { ascending: true });
+      .order('event_start_datetime', { ascending: true});
 
     if (limit) {
       query = query.limit(limit);
@@ -43,7 +49,10 @@ export const eventsService = {
       .from('events')
       .select(`
         *,
-        place:places(*)
+        place:places(*),
+        event_collection_links(
+          collection:collections(*)
+        )
       `)
       .eq('is_featured', true)
       .gte('event_start_datetime', now)
@@ -60,7 +69,10 @@ export const eventsService = {
       .select(`
         event:events(
           *,
-          place:places(*)
+          place:places(*),
+          event_collection_links(
+            collection:collections(*)
+          )
         )
       `)
       .eq('category_id', categoryId);
@@ -77,7 +89,10 @@ export const eventsService = {
       .from('events')
       .select(`
         *,
-        place:places(*)
+        place:places(*),
+        event_collection_links(
+          collection:collections(*)
+        )
       `)
       .eq('id', id)
       .maybeSingle();
@@ -91,7 +106,10 @@ export const eventsService = {
       .from('events')
       .select(`
         *,
-        place:places(*)
+        place:places(*),
+        event_collection_links(
+          collection:collections(*)
+        )
       `)
       .in('id', ids)
       .order('event_start_datetime', { ascending: true });
@@ -105,7 +123,10 @@ export const eventsService = {
       .from('events')
       .select(`
         *,
-        place:places(*)
+        place:places(*),
+        event_collection_links(
+          collection:collections(*)
+        )
       `)
       .or(`event_name.ilike.%${query}%,custom_location_name.ilike.%${query}%,custom_city.ilike.%${query}%,place.name.ilike.%${query}%,place.city.ilike.%${query}%`)
       .order('event_start_datetime', { ascending: true });
@@ -119,7 +140,10 @@ export const eventsService = {
       .from('events')
       .select(`
         *,
-        place:places(*)
+        place:places(*),
+        event_collection_links(
+          collection:collections(*)
+        )
       `)
       .gte('event_start_datetime', startDate.toISOString())
       .lte('event_start_datetime', endDate.toISOString())
@@ -219,6 +243,10 @@ export const eventsService = {
 
 function transformEvent(data: any): Event {
   const place = data.place || {};
+  const collections = (data.event_collection_links || [])
+    .map((link: any) => link.collection)
+    .filter(Boolean);
+
   return {
     id: data.id,
     name: data.event_name || place.name || data.custom_location_name || 'Event',
@@ -247,5 +275,6 @@ function transformEvent(data: any): Event {
     weather_dependent: data.weather_dependent,
     booking_url: data.booking_url,
     is_featured: data.is_featured,
+    collections: collections.length > 0 ? collections : undefined,
   };
 }
