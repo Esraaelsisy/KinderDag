@@ -221,10 +221,10 @@ export default function Events() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
                         <div>
                           <h3 style={{ color: 'white', fontSize: '20px', fontWeight: 'bold', marginBottom: '4px' }}>
-                            {locationName}
+                            {event.event_name || locationName}
                           </h3>
                           <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '8px' }}>
-                            {city}, {province}
+                            {locationName} - {city}, {province}
                           </p>
                           <p style={{ color: '#f59e0b', fontSize: '14px', fontWeight: '600', marginBottom: '8px' }}>
                             {formatDateTime(event.event_start_datetime)} - {formatDateTime(event.event_end_datetime)}

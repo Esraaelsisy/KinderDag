@@ -100,6 +100,19 @@ export default function EditEvent() {
         </h1>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {/* Event Name */}
+          <div style={{ backgroundColor: '#1f2937', padding: '24px', borderRadius: '12px' }}>
+            <h2 style={{ color: 'white', fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>Event Name</h2>
+            <input
+              type="text"
+              placeholder="Event Name"
+              value={formData.event_name}
+              onChange={(e) => setFormData({ ...formData, event_name: e.target.value })}
+              required
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: 'none' }}
+            />
+          </div>
+
           {/* Location */}
           <div style={{ backgroundColor: '#1f2937', padding: '24px', borderRadius: '12px' }}>
             <h2 style={{ color: 'white', fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>Location</h2>

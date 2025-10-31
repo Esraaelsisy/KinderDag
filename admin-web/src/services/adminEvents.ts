@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase';
 
 export interface Event {
   id?: string;
+  event_name: string;
   place_id?: string | null;
   custom_location_name?: string;
   custom_address?: string;
@@ -98,6 +99,7 @@ export const adminEventsService = {
 
   async create(event: Event, categoryIds: string[] = []) {
     const eventData: any = {
+      event_name: event.event_name,
       place_id: event.place_id || null,
       event_start_datetime: event.event_start_datetime,
       event_end_datetime: event.event_end_datetime,
@@ -142,6 +144,7 @@ export const adminEventsService = {
 
   async update(id: string, event: Partial<Event>, categoryIds?: string[]) {
     const eventUpdates: any = {};
+    if (event.event_name !== undefined) eventUpdates.event_name = event.event_name;
     if (event.place_id !== undefined) eventUpdates.place_id = event.place_id;
     if (event.custom_location_name !== undefined) eventUpdates.custom_location_name = event.custom_location_name;
     if (event.custom_address !== undefined) eventUpdates.custom_address = event.custom_address;

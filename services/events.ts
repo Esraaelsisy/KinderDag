@@ -107,7 +107,7 @@ export const eventsService = {
         *,
         place:places(*)
       `)
-      .or(`custom_location_name.ilike.%${query}%,custom_city.ilike.%${query}%,place.name.ilike.%${query}%,place.city.ilike.%${query}%`)
+      .or(`event_name.ilike.%${query}%,custom_location_name.ilike.%${query}%,custom_city.ilike.%${query}%,place.name.ilike.%${query}%,place.city.ilike.%${query}%`)
       .order('event_start_datetime', { ascending: true });
 
     if (error) throw error;
@@ -221,7 +221,7 @@ function transformEvent(data: any): Event {
   const place = data.place || {};
   return {
     id: data.id,
-    name: place.name || data.custom_location_name || 'Event',
+    name: data.event_name || place.name || data.custom_location_name || 'Event',
     description_en: data.description_en,
     description_nl: data.description_nl,
     city: place.city || data.custom_city || '',
