@@ -28,7 +28,7 @@ export default function EventsScreen() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedDateFilter, setSelectedDateFilter] = useState<DateFilter>('month');
+  const [selectedDateFilter, setSelectedDateFilter] = useState<DateFilter | null>(null);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [filters, setFilters] = useState<EventsFilters>({
     price: 'any',
@@ -54,13 +54,18 @@ export default function EventsScreen() {
   const loadEvents = async () => {
     setLoading(true);
     try {
-      const dateRange = getDateRange(selectedDateFilter);
-      const startDate = new Date(dateRange.start);
-      const endDate = new Date(dateRange.end);
+      let allEvents: Event[];
 
-      let allEvents = searchQuery.trim()
-        ? await eventsService.search(searchQuery)
-        : await eventsService.getByDateRange(startDate, endDate);
+      if (searchQuery.trim()) {
+        allEvents = await eventsService.search(searchQuery);
+      } else if (selectedDateFilter) {
+        const dateRange = getDateRange(selectedDateFilter);
+        const startDate = new Date(dateRange.start);
+        const endDate = new Date(dateRange.end);
+        allEvents = await eventsService.getByDateRange(startDate, endDate);
+      } else {
+        allEvents = await eventsService.getUpcoming();
+      }
 
       if (profile?.location_name) {
         allEvents = allEvents.filter(e => e.city === profile.location_name);
@@ -124,7 +129,17 @@ export default function EventsScreen() {
     }
   };
 
-  const getDateRange = (filter: DateFilter) => {
+  const getDateRange = (filter: DateFilter | null) => {
+    if (!filter) {
+      const now = new Date();
+      const end = new Date(now);
+      end.setFullYear(end.getFullYear() + 1);
+      return {
+        start: now.toISOString(),
+        end: end.toISOString(),
+      };
+    }
+
     const now = new Date();
     const start = new Date(now);
     let end = new Date(now);
@@ -206,7 +221,11 @@ export default function EventsScreen() {
   };
 
   const handleDateFilterToggle = (chipId: string) => {
-    setSelectedDateFilter(chipId as DateFilter);
+    if (selectedDateFilter === chipId) {
+      setSelectedDateFilter(null);
+    } else {
+      setSelectedDateFilter(chipId as DateFilter);
+    }
   };
 
   const onRefresh = async () => {
@@ -290,7 +309,7 @@ export default function EventsScreen() {
       <View style={styles.dateChipsContainer}>
         <FilterChips
           chips={dateChips}
-          selectedChips={[selectedDateFilter]}
+          selectedChips={selectedDateFilter ? [selectedDateFilter] : []}
           onChipPress={handleDateFilterToggle}
         />
       </View>
