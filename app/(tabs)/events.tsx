@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -39,6 +39,9 @@ export default function EventsScreen() {
   const { language } = useLanguage();
   const { profile } = useAuth();
 
+  const locationName = useMemo(() => profile?.location_name, [profile?.location_name]);
+  const filtersKey = useMemo(() => JSON.stringify(filters), [filters.price, filters.distance, filters.ageGroups.join(','), filters.timeOfDay.join(',')]);
+
   const dateChips = [
     { id: 'today', label: language === 'en' ? 'Today' : 'Vandaag', value: 'today' },
     { id: 'tomorrow', label: language === 'en' ? 'Tomorrow' : 'Morgen', value: 'tomorrow' },
@@ -49,7 +52,7 @@ export default function EventsScreen() {
 
   useEffect(() => {
     loadEvents();
-  }, [selectedDateFilter, filters, profile?.location_name]);
+  }, [selectedDateFilter, filtersKey, locationName]);
 
   const loadEvents = async () => {
     setLoading(true);
