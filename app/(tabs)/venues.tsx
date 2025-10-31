@@ -59,7 +59,7 @@ export default function VenuesScreen() {
 
   useEffect(() => {
     loadVenues();
-  }, [filters, profile?.location_name]);
+  }, [filters]);
 
   const loadVenues = async () => {
     setLoading(true);
@@ -67,10 +67,6 @@ export default function VenuesScreen() {
       let allVenues = searchQuery.trim()
         ? await venuesService.search(searchQuery)
         : await venuesService.getAll();
-
-      if (profile?.location_name) {
-        allVenues = allVenues.filter(v => v.city === profile.location_name);
-      }
 
       if (filters.environment === 'indoor') {
         allVenues = allVenues.filter(v => v.is_indoor);

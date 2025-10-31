@@ -39,7 +39,6 @@ export default function EventsScreen() {
   const { language } = useLanguage();
   const { profile } = useAuth();
 
-  const locationName = useMemo(() => profile?.location_name, [profile?.location_name]);
   const filtersKey = useMemo(() => JSON.stringify(filters), [filters.price, filters.distance, filters.ageGroups.join(','), filters.timeOfDay.join(',')]);
 
   const dateChips = [
@@ -51,9 +50,8 @@ export default function EventsScreen() {
 
 
   useEffect(() => {
-    console.log('useEffect triggered with:', { selectedDateFilter, filtersKey, locationName });
     loadEvents();
-  }, [selectedDateFilter, filtersKey, locationName]);
+  }, [selectedDateFilter, filtersKey]);
 
   const loadEvents = async () => {
     setLoading(true);
@@ -69,13 +67,6 @@ export default function EventsScreen() {
         allEvents = await eventsService.getByDateRange(startDate, endDate);
       } else {
         allEvents = await eventsService.getUpcoming();
-      }
-
-      console.log('Raw events from service:', allEvents.length, allEvents);
-
-      if (profile?.location_name) {
-        console.log('Filtering by city:', profile.location_name);
-        allEvents = allEvents.filter(e => e.city === profile.location_name);
       }
 
       if (filters.price === 'free') {
@@ -128,8 +119,6 @@ export default function EventsScreen() {
         new Date(a.event_start_datetime).getTime() - new Date(b.event_start_datetime).getTime()
       );
 
-      console.log('Final filtered events:', allEvents.length);
-      console.log('Setting events state with:', allEvents);
       setEvents(allEvents);
     } catch (error) {
       console.error('Error loading events:', error);
@@ -269,8 +258,6 @@ export default function EventsScreen() {
       minute: '2-digit',
     });
   };
-
-  console.log('Rendering with events:', events.length, events);
 
   const groupedEvents = events.reduce((acc, event) => {
     const dateKey = formatEventDate(event.event_start_datetime || '');
