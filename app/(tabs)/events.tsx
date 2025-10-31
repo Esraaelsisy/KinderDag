@@ -67,7 +67,10 @@ export default function EventsScreen() {
         allEvents = await eventsService.getUpcoming();
       }
 
+      console.log('Raw events from service:', allEvents.length, allEvents);
+
       if (profile?.location_name) {
+        console.log('Filtering by city:', profile.location_name);
         allEvents = allEvents.filter(e => e.city === profile.location_name);
       }
 
@@ -121,6 +124,7 @@ export default function EventsScreen() {
         new Date(a.event_start_datetime).getTime() - new Date(b.event_start_datetime).getTime()
       );
 
+      console.log('Final filtered events:', allEvents.length, allEvents);
       setEvents(allEvents);
     } catch (error) {
       console.error('Error loading events:', error);
