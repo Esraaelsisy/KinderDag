@@ -51,6 +51,7 @@ export default function EventsScreen() {
 
 
   useEffect(() => {
+    console.log('useEffect triggered with:', { selectedDateFilter, filtersKey, locationName });
     loadEvents();
   }, [selectedDateFilter, filtersKey, locationName]);
 
@@ -127,7 +128,8 @@ export default function EventsScreen() {
         new Date(a.event_start_datetime).getTime() - new Date(b.event_start_datetime).getTime()
       );
 
-      console.log('Final filtered events:', allEvents.length, allEvents);
+      console.log('Final filtered events:', allEvents.length);
+      console.log('Setting events state with:', allEvents);
       setEvents(allEvents);
     } catch (error) {
       console.error('Error loading events:', error);
@@ -267,6 +269,8 @@ export default function EventsScreen() {
       minute: '2-digit',
     });
   };
+
+  console.log('Rendering with events:', events.length, events);
 
   const groupedEvents = events.reduce((acc, event) => {
     const dateKey = formatEventDate(event.event_start_datetime || '');
