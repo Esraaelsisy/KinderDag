@@ -28,7 +28,7 @@ export default function EventsScreen() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedDateFilter, setSelectedDateFilter] = useState<DateFilter>('weekend');
+  const [selectedDateFilter, setSelectedDateFilter] = useState<DateFilter>('month');
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [filters, setFilters] = useState<EventsFilters>({
     price: 'any',
@@ -142,10 +142,17 @@ export default function EventsScreen() {
         break;
       case 'weekend':
         const dayOfWeek = now.getDay();
-        const daysUntilSaturday = dayOfWeek === 0 ? 6 : 6 - dayOfWeek;
-        start.setDate(start.getDate() + daysUntilSaturday);
-        end.setDate(start.getDate() + 1);
-        end.setHours(23, 59, 59, 999);
+        if (dayOfWeek === 6) {
+          end.setDate(end.getDate() + 1);
+          end.setHours(23, 59, 59, 999);
+        } else if (dayOfWeek === 0) {
+          end.setHours(23, 59, 59, 999);
+        } else {
+          const daysUntilSaturday = 6 - dayOfWeek;
+          start.setDate(start.getDate() + daysUntilSaturday);
+          end.setDate(start.getDate() + 1);
+          end.setHours(23, 59, 59, 999);
+        }
         break;
       case 'month':
         end.setMonth(end.getMonth() + 1);
