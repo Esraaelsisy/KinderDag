@@ -32,7 +32,12 @@ export default function TabLayout() {
         options={{
           title: 'Categories',
           tabBarIcon: ({ color, size, focused }) => (
-            <Grid3x3 color={color} size={size} strokeWidth={2.5} fill={focused ? color : 'none'} />
+            <Grid3x3
+              color={focused ? Colors.white : color}
+              size={size}
+              strokeWidth={2.5}
+              fill={focused ? Colors.primary : 'none'}
+            />
           ),
         }}
       />
@@ -41,7 +46,12 @@ export default function TabLayout() {
         options={{
           title: t('nav.whatsOn'),
           tabBarIcon: ({ color, size, focused }) => (
-            <Calendar color={color} size={size} strokeWidth={2.5} fill={focused ? color : 'none'} />
+            <Calendar
+              color={focused ? Colors.white : color}
+              size={size}
+              strokeWidth={2.5}
+              fill={focused ? Colors.primary : 'none'}
+            />
           ),
         }}
       />
@@ -68,7 +78,12 @@ export default function TabLayout() {
         options={{
           title: t('nav.playSpots'),
           tabBarIcon: ({ color, size, focused }) => (
-            <MapPinned color={color} size={size} strokeWidth={2.5} fill={focused ? color : 'none'} />
+            <MapPinned
+              color={focused ? Colors.white : color}
+              size={size}
+              strokeWidth={2.5}
+              fill={focused ? Colors.primary : 'none'}
+            />
           ),
         }}
       />
@@ -77,7 +92,12 @@ export default function TabLayout() {
         options={{
           title: t('nav.profile'),
           tabBarIcon: ({ color, size, focused }) => (
-            <User color={color} size={size} strokeWidth={2.5} fill={focused ? color : 'none'} />
+            <User
+              color={focused ? Colors.white : color}
+              size={size}
+              strokeWidth={2.5}
+              fill={focused ? Colors.primary : 'none'}
+            />
           ),
         }}
       />
