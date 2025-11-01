@@ -115,7 +115,7 @@ export default function ActivityCard({
     return (
       <TouchableOpacity
         style={styles.cardHorizontal}
-        onPress={() => router.push(`/activity/${id}?type=${type}`)}
+        onPress={() => router.push(type === 'event' ? `/event/${id}` : `/venue/${id}`)}
         activeOpacity={0.7}
       >
         <View style={styles.imageContainerHorizontal}>
@@ -216,7 +216,7 @@ export default function ActivityCard({
   return (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => router.push(`/activity/${id}?type=${type}`)}
+      onPress={() => router.push(type === 'event' ? `/event/${id}` : `/venue/${id}`)}
       activeOpacity={0.7}
     >
       <View style={styles.imageContainer}>
