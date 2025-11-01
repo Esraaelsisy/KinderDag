@@ -50,9 +50,8 @@ export default function EventDetailScreen() {
       .from('events')
       .select(`
         *,
-        place:places(*),
-        event_categories(category:categories(*)),
-        event_collections(collection:collections(*))
+        place:place_id(*),
+        event_collection_links(collection:collections(*))
       `)
       .eq('id', id)
       .maybeSingle();
@@ -64,11 +63,11 @@ export default function EventDetailScreen() {
         name: data.event_name || 'Event',
         description_en: data.description_en,
         description_nl: data.description_nl,
-        city: place.city || '',
-        province: place.province || '',
-        address: place.address || '',
-        location_lat: place.location_lat || 0,
-        location_lng: place.location_lng || 0,
+        city: place.city || data.custom_city || '',
+        province: place.province || data.custom_province || '',
+        address: place.address || data.custom_address || '',
+        location_lat: place.location_lat || data.custom_lat || 0,
+        location_lng: place.location_lng || data.custom_lng || 0,
         phone: place.phone,
         email: place.email,
         website: place.website,
@@ -87,8 +86,7 @@ export default function EventDetailScreen() {
         weather_dependent: data.weather_dependent || false,
         booking_url: data.booking_url,
         is_featured: data.is_featured || false,
-        categories: data.event_categories?.map((ec: any) => ec.category?.name).filter(Boolean),
-        collections: data.event_collections?.map((ec: any) => ec.collection).filter(Boolean),
+        collections: data.event_collection_links?.map((ec: any) => ec.collection).filter(Boolean),
       });
     }
   };

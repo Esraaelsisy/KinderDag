@@ -46,31 +46,32 @@ export default function VenueDetailScreen() {
 
   const loadVenue = async () => {
     const { data, error } = await supabase
-      .from('places')
+      .from('venues')
       .select(`
         *,
-        place_categories(category:categories(*)),
-        place_collections(collection:collections(*))
+        place:place_id(*),
+        venue_collection_links(collection:collections(*))
       `)
       .eq('id', id)
       .maybeSingle();
 
     if (data && !error) {
+      const place = data.place || {};
       setVenue({
         id: data.id,
-        name: data.name,
+        name: place.name || '',
         description_en: data.description_en,
         description_nl: data.description_nl,
-        city: data.city,
-        province: data.province,
-        address: data.address,
-        location_lat: data.location_lat,
-        location_lng: data.location_lng,
-        phone: data.phone,
-        email: data.email,
-        website: data.website,
+        city: place.city || '',
+        province: place.province || '',
+        address: place.address || '',
+        location_lat: place.location_lat || 0,
+        location_lng: place.location_lng || 0,
+        phone: place.phone,
+        email: place.email,
+        website: place.website,
         images: data.images || [],
-        venue_opening_hours: data.opening_hours,
+        venue_opening_hours: data.venue_opening_hours,
         average_rating: data.average_rating || 0,
         total_reviews: data.total_reviews || 0,
         price_min: data.price_min || 0,
@@ -86,8 +87,7 @@ export default function VenueDetailScreen() {
         is_seasonal: data.is_seasonal || false,
         season_start: data.season_start,
         season_end: data.season_end,
-        categories: data.place_categories?.map((pc: any) => pc.category?.name).filter(Boolean),
-        collections: data.place_collections?.map((pc: any) => pc.collection).filter(Boolean),
+        collections: data.venue_collection_links?.map((vc: any) => vc.collection).filter(Boolean),
       });
     }
   };
@@ -99,7 +99,7 @@ export default function VenueDetailScreen() {
       .from('favorites')
       .select('id')
       .eq('user_id', user.id)
-      .eq('place_id', id)
+      .eq('venue_id', id)
       .maybeSingle();
 
     setIsFavorite(!!data);
@@ -116,14 +116,14 @@ export default function VenueDetailScreen() {
         .from('favorites')
         .delete()
         .eq('user_id', user.id)
-        .eq('place_id', id);
+        .eq('venue_id', id);
       setIsFavorite(false);
     } else {
       await supabase
         .from('favorites')
         .insert({
           user_id: user.id,
-          place_id: id,
+          venue_id: id,
         });
       setIsFavorite(true);
     }
